@@ -3,14 +3,18 @@ import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import Icon from '../components/Icon.astro';
 import PhoneMock from '../components/PhoneMock.astro';
-import BookingForm from '../components/BookingForm.astro';
+import PickupBuilder from '../components/PickupBuilder.astro';
+import PlanFinder from '../components/PlanFinder.astro';
+import StainSOS from '../components/StainSOS.astro';
 import heroImage from '../assets/hero-laundry.jpg';
 import { site } from '../config';
+import { wa, msg } from '../lib/wa';
 import { services, benefits, steps, plans, locations, products, categoryIcon, faqs } from '../data';
 
 const featuredProducts = products.filter((p) => p.featured);
 const marquee = ['Wash & Fold', 'Dry Cleaning', 'Steam Ironing', 'Free pickup & delivery', '48-hour turnaround', 'Eco-friendly care', 'Comforter Wash', 'Shoe Cleaning', 'Curtain Cleaning', 'Stain Removal'];
 const hasApps = Boolean(site.playStore || site.appStore);
+const ext = { target: '_blank', rel: 'noopener' };
 ---
 
 <Base>
@@ -23,8 +27,8 @@ const hasApps = Boolean(site.playStore || site.appStore);
         <p class="lead">Schedule a pickup. We wash, fold, and return your clothes fresh, clean, and on time. Every time.</p>
 
         <div class="hero__actions">
-          <a href="#book" class="btn btn--primary">Schedule a pickup <Icon name="arrow-right" size={18} /></a>
-          <a href="#pricing" class="btn btn--ghost">See pricing</a>
+          <a href={wa()} {...ext} class="btn btn--wa"><Icon name="whatsapp" size={20} /> Book on WhatsApp</a>
+          <a href="#book" class="btn btn--ghost"><Icon name="calendar" size={18} /> Plan a pickup</a>
         </div>
 
         <div class="hero__apps">
@@ -32,10 +36,10 @@ const hasApps = Boolean(site.playStore || site.appStore);
             hasApps ? (
               <>
                 {site.playStore && (
-                  <a class="btn btn--dark btn--sm" href={site.playStore} target="_blank" rel="noopener">Get it on Google Play</a>
+                  <a class="btn btn--dark btn--sm" href={site.playStore} {...ext}>Get it on Google Play</a>
                 )}
                 {site.appStore && (
-                  <a class="btn btn--dark btn--sm" href={site.appStore} target="_blank" rel="noopener">Download on the App Store</a>
+                  <a class="btn btn--dark btn--sm" href={site.appStore} {...ext}>Download on the App Store</a>
                 )}
               </>
             ) : (
@@ -44,6 +48,9 @@ const hasApps = Boolean(site.playStore || site.appStore);
               </span>
             )
           }
+          <button type="button" class="btn btn--dark btn--sm" data-install hidden>
+            <Icon name="download" size={16} /> Install web app
+          </button>
         </div>
 
         <ul class="hero__promises">
@@ -93,8 +100,10 @@ const hasApps = Boolean(site.playStore || site.appStore);
           benefits.map((b) => (
             <article class="benefit reveal">
               <span class="benefit__icon"><Icon name={b.icon} size={22} /></span>
-              <h3>{b.title}</h3>
-              <p>{b.body}</p>
+              <div>
+                <h3>{b.title}</h3>
+                <p>{b.body}</p>
+              </div>
             </article>
           ))
         }
@@ -108,18 +117,18 @@ const hasApps = Boolean(site.playStore || site.appStore);
       <div class="section-head reveal">
         <span class="eyebrow">Our services</span>
         <h2 class="h2">Book trusted laundry care.</h2>
-        <p class="lead">From everyday wash &amp; fold to delicate dry cleaning, dhobermans handles it all.</p>
+        <p class="lead">From everyday wash &amp; fold to delicate dry cleaning, dhobermans handles it all. Tap a service to book it on WhatsApp.</p>
       </div>
       <div class="services">
         {
           services.map((s) => (
-            <a class="service reveal" href={`?service=${s.slug}#book`}>
+            <a class="service reveal" href={wa(msg.service(s.name))} {...ext} aria-label={`Book ${s.name} on WhatsApp`}>
               <div class="service__img">
                 <Image src={s.image} alt="" widths={[320, 480]} sizes="(max-width: 640px) 46vw, 280px" />
               </div>
               <div class="service__foot">
                 <h3>{s.name}</h3>
-                <span class="service__arrow"><Icon name="arrow-right" size={16} /></span>
+                <span class="service__arrow"><Icon name="arrow-up-right" size={16} /></span>
               </div>
             </a>
           ))
@@ -136,10 +145,10 @@ const hasApps = Boolean(site.playStore || site.appStore);
         <h2 class="h2">Simple steps to fresher laundry.</h2>
         <p class="lead">Three taps. Zero hassle. Your laundry, handled end-to-end.</p>
       </div>
-      <div class="steps">
+      <div class="steps swipe">
         {
           steps.map((s, i) => (
-            <article class="step reveal">
+            <article class="step">
               <div class="step__card dots-bg">
                 <PhoneMock {...s.screen} />
               </div>
@@ -150,6 +159,7 @@ const hasApps = Boolean(site.playStore || site.appStore);
           ))
         }
       </div>
+      <p class="swipe-hint">Swipe to see all steps <Icon name="arrow-right" size={14} /></p>
     </div>
   </section>
 
@@ -161,10 +171,10 @@ const hasApps = Boolean(site.playStore || site.appStore);
         <h2 class="h2">Simple, transparent pricing.</h2>
         <p class="lead">No hidden fees. Cancel anytime.</p>
       </div>
-      <div class="plans">
+      <div class="plans swipe" data-plans>
         {
           plans.map((p) => (
-            <article class:list={['plan reveal', { 'plan--featured': p.featured }]}>
+            <article class:list={['plan', { 'plan--featured': p.featured }]} data-featured={p.featured ? 'true' : undefined}>
               <h3>{p.name}</h3>
               <p class="plan__tagline">{p.tagline}</p>
               <p class="plan__price">
@@ -179,13 +189,15 @@ const hasApps = Boolean(site.playStore || site.appStore);
                   </li>
                 ))}
               </ul>
-              <a href={`?plan=${p.id}#book`} class:list={['btn btn--block', p.featured ? 'btn--white' : 'btn--primary']}>
-                Choose {p.name}
+              <a href={wa(msg.plan(p.name, p.price))} {...ext} class:list={['btn btn--block', p.featured ? 'btn--white' : 'btn--primary']}>
+                <Icon name="whatsapp" size={18} /> Choose {p.name}
               </a>
             </article>
           ))
         }
       </div>
+      <p class="swipe-hint">Swipe to compare plans <Icon name="arrow-right" size={14} /></p>
+      <PlanFinder />
     </div>
   </section>
 
@@ -195,7 +207,7 @@ const hasApps = Boolean(site.playStore || site.appStore);
       <div class="section-head reveal">
         <span class="eyebrow">Self-service · Coming soon</span>
         <h2 class="h2">Self-laundry locations.</h2>
-        <p class="lead">Prefer doing it yourself? These are the neighbourhoods planned for future dhobermans self-service spots.</p>
+        <p class="lead">Prefer doing it yourself? These are the neighbourhoods planned for future dhobermans self-service spots. Tap one to get notified when it opens.</p>
       </div>
       <div class="locations">
         <div class="map reveal" role="img" aria-label="Illustrative map of planned locations in Bangalore">
@@ -213,13 +225,15 @@ const hasApps = Boolean(site.playStore || site.appStore);
         <ul class="loc-list">
           {
             locations.map((l) => (
-              <li class="loc reveal">
-                <span class="loc__icon"><Icon name="map-pin" size={18} /></span>
-                <div>
-                  <h3>{l.name}</h3>
-                  <p>{l.address}</p>
-                </div>
-                <span class="tag">Coming soon</span>
+              <li class="reveal">
+                <a class="loc" href={wa(msg.location(l.name, l.address))} {...ext}>
+                  <span class="loc__icon"><Icon name="map-pin" size={18} /></span>
+                  <div>
+                    <h3>{l.name}</h3>
+                    <p>{l.address}</p>
+                  </div>
+                  <span class="loc__notify"><Icon name="bell" size={14} /> Notify me</span>
+                </a>
               </li>
             ))
           }
@@ -256,6 +270,18 @@ const hasApps = Boolean(site.playStore || site.appStore);
     </div>
   </section>
 
+  <!-- Stain SOS -->
+  <section id="stain-sos" class="section section--dark">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">Stain SOS</span>
+        <h2 class="h2">Spilled something? Act fast.</h2>
+        <p class="lead">Quick first aid for the most common stains, until we can take over.</p>
+      </div>
+      <StainSOS />
+    </div>
+  </section>
+
   <!-- FAQ -->
   <section id="faq" class="section">
     <div class="container">
@@ -266,7 +292,7 @@ const hasApps = Boolean(site.playStore || site.appStore);
       <div class="faqs">
         {
           faqs.map((f) => (
-            <details class="faq reveal" name="faq">
+            <details class="faq" name="faq">
               <summary>
                 {f.q}
                 <Icon name="chevron-down" size={20} />
@@ -275,55 +301,36 @@ const hasApps = Boolean(site.playStore || site.appStore);
             </details>
           ))
         }
+        <a class="faq-more" href={wa(msg.question)} {...ext}>
+          <span>Still have a question?</span>
+          <strong><Icon name="whatsapp" size={18} /> Ask us on WhatsApp</strong>
+        </a>
       </div>
     </div>
   </section>
 
-  <!-- Book -->
-  <section id="book" class="section book-section">
-    <div class="container">
-      <div class="book" id="contact">
-        <div class="book__copy reveal">
-          <span class="eyebrow">Get started</span>
-          <h2 class="h2">Ready to simplify laundry?</h2>
-          <p class="lead">Tell us when to come by. We'll confirm your pickup and take it from there.</p>
-          <ul class="book__points">
-            <li><Icon name="check-circle" size={20} />Free pickup &amp; delivery</li>
-            <li><Icon name="check-circle" size={20} />Returned within 48 hours</li>
-            <li><Icon name="check-circle" size={20} />Questions welcome: just add a note</li>
-          </ul>
-          {
-            (site.email || site.phone || site.whatsapp) && (
-              <div class="book__contact">
-                {site.phone && (
-                  <a href={`tel:${site.phone.replace(/\s+/g, '')}`}>
-                    <Icon name="phone" size={18} />
-                    {site.phone}
-                  </a>
-                )}
-                {site.whatsapp && (
-                  <a href={`https://wa.me/${site.whatsapp}`} target="_blank" rel="noopener">
-                    <Icon name="whatsapp" size={18} />
-                    WhatsApp us
-                  </a>
-                )}
-                {site.email && (
-                  <a href={`mailto:${site.email}`}>
-                    <Icon name="mail" size={18} />
-                    {site.email}
-                  </a>
-                )}
-              </div>
-            )
-          }
-        </div>
-        <div class="reveal">
-          <BookingForm />
-        </div>
+  <!-- Pickup planner -->
+  <section id="book" class="section section--surface">
+    <div class="container" id="contact">
+      <div class="section-head reveal">
+        <span class="eyebrow">Pickup planner</span>
+        <h2 class="h2">Ready to simplify laundry?</h2>
+        <p class="lead">Check your area, pick a slot and services, and send it to us on WhatsApp in one tap.</p>
       </div>
+      <PickupBuilder />
     </div>
   </section>
 </Base>
+
+<script>
+  // On phones, open the pricing row on the featured plan.
+  document.addEventListener('astro:page-load', () => {
+    const row = document.querySelector<HTMLElement>('[data-plans]');
+    const featured = row?.querySelector<HTMLElement>('[data-featured]');
+    if (!row || !featured || window.innerWidth > 720) return;
+    row.scrollLeft += featured.getBoundingClientRect().left - row.getBoundingClientRect().left - (row.clientWidth - featured.clientWidth) / 2;
+  });
+</script>
 
 <style>
   /* Hero */
@@ -863,12 +870,34 @@ const hasApps = Boolean(site.playStore || site.appStore);
 
   .loc {
     display: flex;
+    width: 100%;
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
     align-items: center;
     gap: 14px;
     padding: 16px 18px;
     border: 1px solid var(--line);
     border-radius: 18px;
     background: var(--white);
+  }
+
+  .loc:hover {
+    border-color: var(--brand-200);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .loc__notify {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--brand-50);
+    color: var(--brand-600);
+    font-size: 13px;
+    font-weight: 700;
   }
 
   .loc > div {
@@ -1010,61 +1039,26 @@ const hasApps = Boolean(site.playStore || site.appStore);
     color: var(--muted);
   }
 
-  /* Book */
-  .book-section {
-    padding-top: 0;
-  }
-
-  .book {
-    display: grid;
-    grid-template-columns: 1fr 1.1fr;
-    align-items: center;
-    gap: clamp(32px, 5vw, 64px);
-    padding: clamp(28px, 5vw, 64px);
-    border-radius: var(--radius-xl);
-    background: linear-gradient(140deg, #e3f0ff 0%, #f4f9ff 55%, #e9f3ff 100%);
-  }
-
-  .book__points {
-    display: grid;
-    gap: 12px;
-    margin: 28px 0 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .book__points li {
+  /* FAQ footer link */
+  .faq-more {
     display: flex;
     align-items: center;
-    gap: 10px;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin-top: 8px;
+    padding: 20px 22px;
+    border-radius: 18px;
+    background: var(--brand-50);
     color: var(--ink);
     font-weight: 600;
   }
 
-  .book__points :global(svg) {
-    color: var(--brand);
-  }
-
-  .book__contact {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 28px;
-  }
-
-  .book__contact a {
+  .faq-more strong {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 10px 16px;
-    border-radius: 999px;
-    background: var(--white);
-    color: var(--ink);
-    font-weight: 700;
-  }
-
-  .book__contact :global(svg) {
-    color: var(--brand);
+    color: var(--wa);
   }
 
   /* Responsive */
@@ -1077,29 +1071,27 @@ const hasApps = Boolean(site.playStore || site.appStore);
 
   @media (max-width: 900px) {
     .hero__grid,
-    .locations,
-    .book {
+    .locations {
       grid-template-columns: 1fr;
     }
 
     .hero__media {
+      width: 100%;
       max-width: 560px;
       margin-inline: auto;
-      width: 100%;
     }
 
-    .benefits,
-    .steps,
-    .plans {
+    .benefits {
       grid-template-columns: 1fr;
     }
 
+    .steps,
     .plans {
+      grid-template-columns: 1fr;
       max-width: 480px;
     }
 
     .steps {
-      max-width: 480px;
       margin-inline: auto;
     }
 
@@ -1110,10 +1102,50 @@ const hasApps = Boolean(site.playStore || site.appStore);
   }
 
   @media (max-width: 720px) {
+    .hero {
+      padding-top: 28px;
+    }
+
+    .hero__frame {
+      aspect-ratio: 4 / 3.4;
+    }
+
+    .benefit {
+      display: flex;
+      gap: 16px;
+      padding: 20px;
+    }
+
+    .benefit__icon {
+      flex: none;
+      margin-bottom: 0;
+    }
+
+    .benefit h3 {
+      font-size: 19px;
+    }
+
+    .benefit p {
+      font-size: 15px;
+    }
+
     .services,
     .products {
       grid-template-columns: repeat(2, 1fr);
       gap: 12px;
+    }
+
+    .service {
+      padding: 8px;
+      border-radius: 22px;
+    }
+
+    .service__img {
+      border-radius: 16px;
+    }
+
+    .service__foot {
+      padding: 12px 4px 4px;
     }
 
     .service h3 {
@@ -1125,24 +1157,62 @@ const hasApps = Boolean(site.playStore || site.appStore);
       height: 28px;
     }
 
+    .steps,
+    .plans {
+      max-width: none;
+    }
+
+    .step__card {
+      height: 330px;
+    }
+
+    .step h3 {
+      font-size: 20px;
+    }
+
+    .plan {
+      padding: 26px 22px;
+    }
+
+    .plan__price {
+      font-size: 42px;
+    }
+
     .map {
-      min-height: 340px;
+      min-height: 300px;
     }
 
     .map__pin {
-      font-size: 11px;
       padding: 5px 9px 5px 8px;
+      font-size: 11px;
     }
 
     .map__pin :global(.dot) {
       width: 6px;
       height: 6px;
     }
+
+    .loc {
+      padding: 14px;
+    }
+
+    .loc__notify {
+      padding: 6px 10px;
+    }
+
+    .faq summary {
+      padding: 18px;
+      font-size: 16px;
+    }
+
+    .faq p {
+      padding: 0 18px 18px;
+    }
   }
 
   @media (max-width: 480px) {
     .hero__actions .btn {
-      flex: 1;
+      flex: 1 1 100%;
     }
 
     .hero__media {
@@ -1176,6 +1246,11 @@ const hasApps = Boolean(site.playStore || site.appStore);
 
     .product p {
       font-size: 14px;
+    }
+
+    .loc__notify span,
+    .loc__notify {
+      font-size: 12px;
     }
   }
 </style>

@@ -1,0 +1,195 @@
+---
+import Icon from './Icon.astro';
+import { stains } from '../data';
+import { wa, msg } from '../lib/wa';
+---
+
+<div class="sos" data-sos>
+  <div class="sos__tabs" role="tablist" aria-label="Choose a stain">
+    {
+      stains.map((s, i) => (
+        <button
+          type="button"
+          role="tab"
+          id={`tab-${s.id}`}
+          aria-controls={`panel-${s.id}`}
+          aria-selected={i === 0 ? 'true' : 'false'}
+          tabindex={i === 0 ? 0 : -1}
+          class="sos__tab"
+        >
+          {s.name}
+        </button>
+      ))
+    }
+  </div>
+
+  {
+    stains.map((s, i) => (
+      <div class="sos__panel" role="tabpanel" id={`panel-${s.id}`} aria-labelledby={`tab-${s.id}`} hidden={i !== 0}>
+        <ol>
+          {s.steps.map((step) => (
+            <li>{step}</li>
+          ))}
+        </ol>
+        <div class="sos__cta">
+          <p>Stain still there, or the fabric is delicate?</p>
+          <a class="btn btn--primary" href={wa(msg.stain(s.name))} target="_blank" rel="noopener">
+            <Icon name="whatsapp" size={18} /> Send it to the experts
+          </a>
+        </div>
+      </div>
+    ))
+  }
+
+  <p class="sos__note">
+    General guidance only. Check the care label first and test on a hidden area. For silk, wool or dry-clean-only items, skip the
+    DIY and let us handle it.
+  </p>
+</div>
+
+<style>
+  .sos {
+    padding: clamp(16px, 3vw, 32px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-lg);
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .sos__tabs {
+    display: flex;
+    gap: 8px;
+    padding-bottom: 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .sos__tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .sos__tab {
+    flex: none;
+    min-height: 44px;
+    padding: 0 18px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 999px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .sos__tab:hover {
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+
+  .sos__tab[aria-selected='true'] {
+    border-color: var(--white);
+    background: var(--white);
+    color: var(--ink);
+  }
+
+  .sos__panel {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 28px;
+    align-items: center;
+    margin-top: 24px;
+  }
+
+  .sos__panel[hidden] {
+    display: none;
+  }
+
+  .sos__panel ol {
+    display: grid;
+    gap: 14px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: step;
+  }
+
+  .sos__panel li {
+    position: relative;
+    padding-left: 46px;
+    color: rgba(255, 255, 255, 0.85);
+    counter-increment: step;
+  }
+
+  .sos__panel li::before {
+    content: counter(step);
+    position: absolute;
+    top: -2px;
+    left: 0;
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--brand);
+    color: var(--white);
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .sos__cta {
+    display: grid;
+    gap: 14px;
+    padding: 22px;
+    border-radius: var(--radius);
+    background: rgba(0, 123, 255, 0.16);
+  }
+
+  .sos__cta p {
+    color: var(--white);
+    font-weight: 700;
+  }
+
+  .sos__note {
+    margin-top: 24px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 13px;
+  }
+
+  @media (max-width: 860px) {
+    .sos__panel {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script>
+  const init = () => {
+    const root = document.querySelector<HTMLElement>('[data-sos]');
+    if (!root || root.dataset.ready) return;
+    root.dataset.ready = 'true';
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+
+    const select = (tab: HTMLButtonElement, focus = false) => {
+      tabs.forEach((t) => {
+        const on = t === tab;
+        t.setAttribute('aria-selected', String(on));
+        t.tabIndex = on ? 0 : -1;
+        const panel = document.getElementById(t.getAttribute('aria-controls')!);
+        if (panel) panel.hidden = !on;
+      });
+      if (focus) tab.focus();
+      tab.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
+    };
+
+    tabs.forEach((t, i) => {
+      t.addEventListener('click', () => select(t));
+      t.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight') select(tabs[(i + 1) % tabs.length], true);
+        if (e.key === 'ArrowLeft') select(tabs[(i - 1 + tabs.length) % tabs.length], true);
+      });
+    });
+  };
+
+  document.addEventListener('astro:page-load', init);
+</script>

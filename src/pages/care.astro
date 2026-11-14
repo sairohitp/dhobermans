@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import Icon from '../components/Icon.astro';
 import { products, productCategories, categoryIcon } from '../data';
+import { wa, msg } from '../lib/wa';
 ---
 
 <Base
@@ -44,8 +45,8 @@ import { products, productCategories, categoryIcon } from '../data';
                 <p>{p.body}</p>
                 <div class="item__foot">
                   <span class="item__price">{p.price}</span>
-                  <a class="btn btn--primary btn--sm" href={`/?product=${encodeURIComponent(`${p.name} (${p.size})`)}#book`}>
-                    Enquire
+                  <a class="btn btn--wa btn--sm" href={wa(msg.product(p.name, p.size, p.price))} target="_blank" rel="noopener">
+                    <Icon name="whatsapp" size={16} /> Order
                   </a>
                 </div>
               </div>
@@ -53,7 +54,7 @@ import { products, productCategories, categoryIcon } from '../data';
           ))
         }
       </div>
-      <p class="note">Online checkout is coming soon. Tap Enquire and we will get back to you to complete your order.</p>
+      <p class="note">Tap Order to send your order to us on WhatsApp. We will confirm availability and delivery.</p>
     </div>
   </section>
 </Base>
@@ -222,16 +223,64 @@ import { products, productCategories, categoryIcon } from '../data';
       grid-template-columns: repeat(2, 1fr);
       gap: 12px;
     }
-  }
 
-  @media (max-width: 480px) {
-    .grid {
-      grid-template-columns: 1fr;
+    .filters {
+      flex-wrap: nowrap;
+      margin-inline: calc(var(--gutter) * -1);
+      padding: 0 var(--gutter) 4px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .filters::-webkit-scrollbar {
+      display: none;
+    }
+
+    .filter {
+      flex: none;
+      min-height: 44px;
+    }
+
+    .item {
+      padding: 8px;
+      border-radius: 22px;
+    }
+
+    .item__art {
+      border-radius: 16px;
+    }
+
+    .item__body {
+      padding: 12px 4px 4px;
+    }
+
+    .item h2 {
+      font-size: 16px;
+    }
+
+    .item p {
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      font-size: 13px;
+    }
+
+    .item__foot {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .item__price {
+      font-size: 20px;
     }
   }
 </style>
 
 <script>
+  document.addEventListener('astro:page-load', () => {
   const buttons = document.querySelectorAll<HTMLButtonElement>('[data-filter]');
   const items = document.querySelectorAll<HTMLElement>('[data-category]');
   buttons.forEach((btn) => {
@@ -246,5 +295,6 @@ import { products, productCategories, categoryIcon } from '../data';
         it.hidden = f !== 'all' && it.dataset.category !== f;
       });
     });
+  });
   });
 </script>

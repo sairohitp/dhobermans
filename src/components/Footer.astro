@@ -2,6 +2,7 @@
 import Icon from './Icon.astro';
 import { site } from '../config';
 import { services } from '../data';
+import { wa, msg } from '../lib/wa';
 
 const year = new Date().getFullYear();
 const company = [
@@ -12,14 +13,16 @@ const company = [
   { href: '/care', label: "dhobermans' care" },
 ];
 const help = [
-  { href: '/#book', label: 'Schedule a pickup' },
+  { href: '/#book', label: 'Pickup planner' },
+  { href: '/#plan-finder', label: 'Plan finder' },
+  { href: '/#stain-sos', label: 'Stain SOS' },
   { href: '/#faq', label: 'FAQs' },
-  { href: '/#contact', label: 'Contact' },
 ];
 const socials = [
   { href: site.instagram, icon: 'instagram', label: 'Instagram' },
   { href: site.linkedin, icon: 'linkedin', label: 'LinkedIn' },
 ].filter((s) => s.href);
+const shareText = `I use dhobermans for laundry pickup and delivery in ${site.city}. Have a look: ${site.url}`;
 ---
 
 <footer class="footer">
@@ -28,6 +31,10 @@ const socials = [
       <div class="footer__brand">
         <a href="/" class="footer__wordmark">dhobermans</a>
         <p>Laundry pickup and delivery in {site.city}.</p>
+        <p class="footer__contact">
+          <span>WhatsApp us</span>
+          <a href={wa(msg.question)} target="_blank" rel="noopener">{site.whatsappDisplay}</a>
+        </p>
         {
           site.email && (
             <p class="footer__contact">
@@ -36,26 +43,31 @@ const socials = [
             </p>
           )
         }
-        {
-          site.phone && (
-            <p class="footer__contact">
-              <span>Call us</span>
-              <a href={`tel:${site.phone.replace(/\s+/g, '')}`}>{site.phone}</a>
-            </p>
-          )
-        }
+        <button type="button" class="share" data-share data-text={shareText} data-url={site.url}>
+          <Icon name="share" size={16} /> Share with a neighbour
+        </button>
       </div>
 
       <div class="footer__col">
         <h3>Services</h3>
-        <ul>{services.map((s) => <li><a href={`/?service=${s.slug}#book`}>{s.name}</a></li>)}</ul>
+        <ul>
+          {
+            services.map((s) => (
+              <li>
+                <a href={wa(msg.service(s.name))} target="_blank" rel="noopener">
+                  {s.name}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
       </div>
       <div class="footer__col">
         <h3>Company</h3>
         <ul>{company.map((l) => <li><a href={l.href}>{l.label}</a></li>)}</ul>
       </div>
       <div class="footer__col">
-        <h3>Help</h3>
+        <h3>Tools &amp; help</h3>
         <ul>{help.map((l) => <li><a href={l.href}>{l.label}</a></li>)}</ul>
       </div>
     </div>
@@ -110,9 +122,33 @@ const socials = [
   }
 
   .footer__contact a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
     color: #5aa8ff;
     font-size: 17px;
     font-weight: 700;
+  }
+
+  .share {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    margin-top: 20px;
+    padding: 0 16px;
+    border: 1px solid #333;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--white);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+  }
+
+  .share:hover {
+    border-color: #666;
   }
 
   .footer__col h3 {
@@ -127,10 +163,15 @@ const socials = [
 
   .footer__col ul {
     display: grid;
-    gap: 10px;
+    gap: 4px;
     margin: 0;
     padding: 0;
     list-style: none;
+  }
+
+  .footer__col a {
+    display: inline-block;
+    padding-block: 4px;
   }
 
   .footer__col a,
@@ -167,9 +208,20 @@ const socials = [
     }
   }
 
+  @media (max-width: 720px) {
+    .footer {
+      /* room for the fixed mobile action bar */
+      padding-bottom: calc(104px + env(safe-area-inset-bottom));
+    }
+  }
+
   @media (max-width: 480px) {
+    .footer {
+      padding-top: 56px;
+    }
+
     .footer__top {
-      grid-template-columns: 1fr;
+      gap: 32px;
     }
 
     .footer__bottom {
@@ -178,3 +230,23 @@ const socials = [
     }
   }
 </style>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const btn = document.querySelector<HTMLButtonElement>('[data-share]');
+    if (!btn) return;
+    btn.addEventListener('click', async () => {
+      const text = btn.dataset.text ?? '';
+      const url = btn.dataset.url ?? '';
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: 'dhobermans', text, url });
+          return;
+        } catch {
+          return; // user dismissed the share sheet
+        }
+      }
+      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
+    });
+  });
+</script>

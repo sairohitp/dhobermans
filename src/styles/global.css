@@ -22,6 +22,8 @@
   --surface-2: #f3f6f9;
   --dark: #0c0c0c;
   --white: #ffffff;
+  --wa: #0e8040;
+  --wa-600: #0b6b35;
 
   --font-display: 'Lexend', system-ui, sans-serif;
   --font-body: 'Urbanist', system-ui, sans-serif;
@@ -236,6 +238,16 @@ p {
   background: var(--brand-600);
 }
 
+.btn--wa {
+  background: var(--wa);
+  color: var(--white);
+  box-shadow: 0 8px 20px -8px rgba(14, 128, 64, 0.6);
+}
+
+.btn--wa:hover {
+  background: var(--wa-600);
+}
+
 .btn--dark {
   background: var(--ink);
   color: var(--white);
@@ -278,6 +290,7 @@ p {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  min-height: 44px;
   color: var(--brand);
   font-weight: 700;
 }
@@ -374,7 +387,7 @@ p {
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 720px) {
   :root {
     --gutter: 16px;
     --header-h: 64px;
@@ -382,5 +395,57 @@ p {
 
   body {
     font-size: 16px;
+  }
+
+  .section {
+    padding-block: 64px;
+  }
+
+  .section-head {
+    margin-bottom: 32px;
+  }
+
+  .lead {
+    margin-top: 14px;
+  }
+}
+
+/* Horizontal swipe rows on small screens */
+@media (max-width: 720px) {
+  .swipe {
+    display: flex !important;
+    gap: 12px !important;
+    margin-inline: calc(var(--gutter) * -1);
+    padding: 4px var(--gutter) 12px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--gutter);
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .swipe::-webkit-scrollbar {
+    display: none;
+  }
+
+  .swipe > * {
+    flex: 0 0 84%;
+    scroll-snap-align: start;
+  }
+
+  .swipe-hint {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    color: var(--subtle);
+    font-size: 13px;
+    font-weight: 600;
+  }
+}
+
+@media (min-width: 721px) {
+  .swipe-hint {
+    display: none;
   }
 }

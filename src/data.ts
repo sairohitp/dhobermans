@@ -111,7 +111,7 @@ export const categoryIcon: Record<string, string> = {
 export const faqs = [
   {
     q: 'How do I schedule a pickup?',
-    a: "Tap 'Schedule a pickup', select your preferred time slot, and we'll be at your door.",
+    a: "Tap any 'Book on WhatsApp' button, or use the pickup planner to choose your services and slot. Your request opens in WhatsApp, we confirm, and we'll be at your door.",
   },
   {
     q: 'What detergents do you use?',
@@ -135,4 +135,90 @@ export const faqs = [
   },
 ];
 
-export const slots = ['9–11 AM', '6–8 PM'];
+/** Pickup windows (IST). startHour/endHour are 24h clock. */
+export const slots = [
+  { label: '9–11 AM', startHour: 9, endHour: 11 },
+  { label: '6–8 PM', startHour: 18, endHour: 20 },
+];
+
+/**
+ * Plan finder. Typical dry weights per item, rounded from published laundry weight guides
+ * (T-shirt 150–250 g, jeans 600–900 g, bath towel 400–600 g, double sheet 700–900 g).
+ */
+export const finderItems = [
+  { id: 'tops', label: 'T-shirts, shirts & tops', kg: 0.2, hint: '~200 g each' },
+  { id: 'bottoms', label: 'Trousers & jeans', kg: 0.65, hint: '~650 g each' },
+  { id: 'towels', label: 'Bath towels', kg: 0.5, hint: '~500 g each' },
+  { id: 'sheets', label: 'Bedsheets', kg: 0.8, hint: '~800 g each' },
+  { id: 'small', label: 'Innerwear & socks', kg: 0.06, hint: '~60 g each' },
+];
+
+export const finderPresets = [
+  { id: 'solo', label: 'Just me', counts: { tops: 5, bottoms: 3, towels: 1, sheets: 1, small: 5 } },
+  { id: 'couple', label: 'Couple', counts: { tops: 10, bottoms: 5, towels: 2, sheets: 1, small: 10 } },
+  { id: 'family', label: 'Family of 4', counts: { tops: 18, bottoms: 9, towels: 4, sheets: 2, small: 18 } },
+];
+
+/** Stain first aid. Conservative, widely accepted home-care guidance. */
+export const stains = [
+  {
+    id: 'turmeric',
+    name: 'Turmeric & curry',
+    steps: [
+      'Scrape off any excess with a spoon. Do not rub it in.',
+      'Rinse from the back of the fabric under cold running water. Hot water can set the stain.',
+      'Gently work in a little liquid detergent, leave it for 10 minutes, then rinse.',
+      "For whites and colourfast fabrics, dry in direct sunlight: it helps fade turmeric's yellow tint.",
+    ],
+  },
+  {
+    id: 'tea',
+    name: 'Tea & coffee',
+    steps: [
+      'Blot with a clean cloth as soon as possible.',
+      'Rinse from the back of the fabric under cold running water.',
+      'Gently work in a drop of liquid detergent, wait 5 minutes, then rinse.',
+      'Repeat if needed, then wash as usual.',
+    ],
+  },
+  {
+    id: 'oil',
+    name: 'Oil & ghee',
+    steps: [
+      'Blot excess oil with a paper towel.',
+      'Cover with talcum powder or cornflour and leave for 15 to 30 minutes to absorb the oil.',
+      'Brush the powder off, then work in a little dishwashing liquid.',
+      'Rinse with the warmest water the care label allows.',
+    ],
+  },
+  {
+    id: 'ink',
+    name: 'Ink',
+    steps: [
+      'Place a paper towel under the stain.',
+      'Dab, do not rub, with rubbing alcohol or an alcohol-based hand sanitiser on a cotton ball.',
+      'Keep dabbing with a clean part of the cotton as the ink lifts.',
+      'Rinse well, then wash as usual.',
+    ],
+  },
+  {
+    id: 'mud',
+    name: 'Mud',
+    steps: [
+      'Let the mud dry completely.',
+      'Brush off as much as you can.',
+      'Pre-treat with liquid detergent for 10 minutes.',
+      'Wash as usual.',
+    ],
+  },
+  {
+    id: 'makeup',
+    name: 'Lipstick & makeup',
+    steps: [
+      'Scrape off the excess with a blunt edge.',
+      'Dab with a little dishwashing liquid or micellar water.',
+      'Work from the outside of the stain inwards so it does not spread.',
+      'Rinse, then wash as usual.',
+    ],
+  },
+];

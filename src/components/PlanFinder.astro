@@ -1,0 +1,371 @@
+---
+import Icon from './Icon.astro';
+import { finderItems, finderPresets, plans } from '../data';
+import { wa, msg } from '../lib/wa';
+const premium = plans.find((p) => p.id === 'premium')!;
+---
+
+<div class="finder" id="plan-finder" data-finder>
+  <div class="finder__inputs">
+    <div class="finder__head">
+      <span class="finder__badge"><Icon name="scale" size={18} /></span>
+      <div>
+        <h3>Not sure which plan fits?</h3>
+        <p>Tell us what you wash in a typical week. We'll estimate the weight and suggest a plan.</p>
+      </div>
+    </div>
+
+    <div class="presets" role="group" aria-label="Quick presets">
+      {finderPresets.map((p) => <button type="button" class="preset" data-preset={p.id}>{p.label}</button>)}
+    </div>
+
+    <ul class="items">
+      {
+        finderItems.map((it) => (
+          <li class="item">
+            <div class="item__text">
+              <span class="item__label" id={`fi-${it.id}`}>{it.label}</span>
+              <span class="item__hint">{it.hint}</span>
+            </div>
+            <div class="stepper" role="group" aria-labelledby={`fi-${it.id}`}>
+              <button type="button" aria-label={`Fewer ${it.label}`} data-dec={it.id}>
+                <Icon name="minus" size={16} />
+              </button>
+              <output data-count={it.id} data-kg={it.kg} aria-live="polite">0</output>
+              <button type="button" aria-label={`More ${it.label}`} data-inc={it.id}>
+                <Icon name="plus" size={16} />
+              </button>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+
+  <div class="finder__result">
+    <span class="finder__eyebrow">Your estimate</span>
+    <p class="finder__kg"><span data-kg-total>0.0</span> kg<small>/week</small></p>
+    <div class="meter" aria-hidden="true">
+      <div class="meter__fill" data-meter></div>
+      <span class="meter__mark" style="left:25%"><i></i>5 kg</span>
+      <span class="meter__mark" style="left:75%"><i></i>15 kg</span>
+    </div>
+    <div class="finder__plan">
+      <span>Suggested plan</span>
+      <strong data-plan-name>{premium.name}</strong>
+      <em data-plan-meta>{premium.price}/month · {premium.tagline}</em>
+    </div>
+    <a class="btn btn--white btn--block" href={wa(msg.plan(premium.name, premium.price))} target="_blank" rel="noopener" data-plan-cta>
+      <Icon name="whatsapp" size={20} /> Get started on WhatsApp
+    </a>
+    <p class="finder__note">Estimate based on typical dry weights. Actual loads vary.</p>
+  </div>
+</div>
+
+<style>
+  .finder {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    overflow: hidden;
+    max-width: 1080px;
+    margin: 32px auto 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--white);
+  }
+
+  .finder__inputs {
+    padding: clamp(20px, 3vw, 32px);
+  }
+
+  .finder__head {
+    display: flex;
+    gap: 14px;
+  }
+
+  .finder__badge {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: var(--brand-50);
+    color: var(--brand);
+  }
+
+  .finder__head h3 {
+    font-size: 22px;
+  }
+
+  .finder__head p {
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 15px;
+  }
+
+  .presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 20px 0 8px;
+  }
+
+  .preset {
+    min-height: 40px;
+    padding: 0 16px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .preset:hover,
+  .preset.is-active {
+    border-color: var(--brand);
+    background: var(--brand-50);
+    color: var(--brand-700);
+  }
+
+  .items {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .item:last-child {
+    border-bottom: 0;
+  }
+
+  .item__text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.3;
+  }
+
+  .item__label {
+    color: var(--ink);
+    font-weight: 700;
+  }
+
+  .item__hint {
+    color: var(--subtle);
+    font-size: 13px;
+  }
+
+  .stepper {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 4px;
+    padding: 4px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+  }
+
+  .stepper button {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--white);
+    color: var(--ink);
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+  }
+
+  .stepper button:hover {
+    color: var(--brand);
+  }
+
+  .stepper output {
+    min-width: 32px;
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .finder__result {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: clamp(20px, 3vw, 32px);
+    background: linear-gradient(160deg, var(--brand) 0%, var(--brand-700) 100%);
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  .finder__eyebrow {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .finder__kg {
+    color: var(--white);
+    font-family: var(--font-display);
+    font-size: clamp(48px, 6vw, 64px);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+
+  .finder__kg small {
+    margin-left: 4px;
+    color: rgba(255, 255, 255, 0.7);
+    font-family: var(--font-body);
+    font-size: 16px;
+    letter-spacing: 0;
+  }
+
+  .meter {
+    position: relative;
+    height: 10px;
+    margin-bottom: 22px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .meter__fill {
+    width: 0;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--white);
+    transition: width 0.4s ease;
+  }
+
+  .meter__mark {
+    position: absolute;
+    top: 14px;
+    font-size: 12px;
+    font-weight: 700;
+    transform: translateX(-50%);
+  }
+
+  .meter__mark i {
+    position: absolute;
+    top: -18px;
+    left: 50%;
+    width: 2px;
+    height: 14px;
+    background: rgba(255, 255, 255, 0.6);
+  }
+
+  .finder__plan {
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  .finder__plan span {
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .finder__plan strong {
+    color: var(--white);
+    font-family: var(--font-display);
+    font-size: 28px;
+    letter-spacing: -0.02em;
+  }
+
+  .finder__plan em {
+    font-size: 14px;
+    font-style: normal;
+  }
+
+  .finder__note {
+    margin-top: auto;
+    color: rgba(255, 255, 255, 0.65);
+    font-size: 13px;
+  }
+
+  @media (max-width: 860px) {
+    .finder {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script>
+  import { finderPresets, plans } from '../data';
+  import { wa, msg } from '../lib/wa';
+
+  const init = () => {
+    const root = document.querySelector<HTMLElement>('[data-finder]');
+    if (!root || root.dataset.ready) return;
+    root.dataset.ready = 'true';
+
+    const outputs = [...root.querySelectorAll<HTMLOutputElement>('[data-count]')];
+    const total = root.querySelector<HTMLElement>('[data-kg-total]')!;
+    const meter = root.querySelector<HTMLElement>('[data-meter]')!;
+    const planName = root.querySelector<HTMLElement>('[data-plan-name]')!;
+    const planMeta = root.querySelector<HTMLElement>('[data-plan-meta]')!;
+    const cta = root.querySelector<HTMLAnchorElement>('[data-plan-cta]')!;
+    const presetBtns = [...root.querySelectorAll<HTMLButtonElement>('[data-preset]')];
+
+    const counts: Record<string, number> = {};
+
+    const render = () => {
+      let kg = 0;
+      outputs.forEach((o) => {
+        const id = o.dataset.count!;
+        o.value = String(counts[id] ?? 0);
+        o.textContent = o.value;
+        kg += (counts[id] ?? 0) * Number(o.dataset.kg);
+      });
+      total.textContent = kg.toFixed(1);
+      meter.style.width = `${Math.min(100, (kg / 20) * 100)}%`;
+      const plan = kg <= 5 ? plans[0] : kg <= 15 ? plans[1] : plans[2];
+      planName.textContent = plan.name;
+      planMeta.textContent = `${plan.price}/month · ${plan.tagline}`;
+      const text = `Hi dhobermans, your plan finder estimated about ${kg.toFixed(1)} kg of laundry a week and suggested the ${plan.name} plan (${plan.price}/month). Could you help me get started?`;
+      cta.href = kg > 0 ? wa(text) : wa(msg.plan(plan.name, plan.price));
+    };
+
+    const applyPreset = (id: string) => {
+      const p = finderPresets.find((x) => x.id === id);
+      if (!p) return;
+      Object.assign(counts, p.counts);
+      presetBtns.forEach((b) => b.classList.toggle('is-active', b.dataset.preset === id));
+      render();
+    };
+
+    root.addEventListener('click', (e) => {
+      const t = (e.target as HTMLElement).closest('button');
+      if (!t) return;
+      if (t.dataset.preset) return applyPreset(t.dataset.preset);
+      const inc = t.dataset.inc;
+      const dec = t.dataset.dec;
+      if (inc) counts[inc] = Math.min(99, (counts[inc] ?? 0) + 1);
+      if (dec) counts[dec] = Math.max(0, (counts[dec] ?? 0) - 1);
+      if (inc || dec) {
+        presetBtns.forEach((b) => b.classList.remove('is-active'));
+        render();
+      }
+    });
+
+    applyPreset('couple');
+  };
+
+  document.addEventListener('astro:page-load', init);
+</script>
