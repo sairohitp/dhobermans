@@ -1,0 +1,356 @@
+---
+import Icon from './Icon.astro';
+---
+
+<dialog class="pwa" data-pwa aria-labelledby="pwa-title" transition:persist="pwa-prompt">
+  <div class="pwa__sheet" tabindex="-1" autofocus>
+    <button class="pwa__close" type="button" data-pwa-close aria-label="Close">
+      <Icon name="x" size={20} />
+    </button>
+
+    <div class="pwa__head">
+      <img src="/icon-192.png" alt="" width="60" height="60" class="pwa__icon" />
+      <div>
+        <h2 id="pwa-title">Get the dhobermans app</h2>
+        <p>Install our web app. No app store, no big download.</p>
+      </div>
+    </div>
+
+    <ul class="pwa__perks">
+      <li><span><Icon name="sparkle" size={16} /></span>Opens from your home screen, full-screen like any app</li>
+      <li><span><Icon name="whatsapp" size={16} /></span>One tap to book a pickup on WhatsApp</li>
+      <li><span><Icon name="wifi" size={16} /></span>Loads fast, with key pages available offline</li>
+    </ul>
+
+    <div class="pwa__ios" data-pwa-ios hidden>
+      <p>To install on iPhone or iPad:</p>
+      <ol>
+        <li>
+          Tap the <strong>Share</strong> button <span class="pwa__share"><Icon name="share-ios" size={16} /></span> in Safari. In some
+          layouts it sits under the <strong>•••</strong> menu.
+        </li>
+        <li>Scroll down and choose <strong>Add to Home Screen</strong>.</li>
+        <li>Tap <strong>Add</strong>.</li>
+      </ol>
+    </div>
+
+    <div class="pwa__actions">
+      <button type="button" class="btn btn--primary btn--block" data-pwa-install>
+        <Icon name="download" size={18} /> Install app
+      </button>
+      <button type="button" class="btn btn--ghost btn--block" data-pwa-later>Not now</button>
+    </div>
+  </div>
+</dialog>
+
+<style>
+  .pwa {
+    width: calc(100% - 32px);
+    max-width: 440px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--text);
+    overflow: visible;
+  }
+
+  .pwa::backdrop {
+    background: rgba(12, 12, 12, 0.5);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+  }
+
+  .pwa[open] .pwa__sheet {
+    animation: pwa-in 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .pwa__sheet {
+    position: relative;
+    outline: none;
+    padding: 28px 24px 24px;
+    border-radius: var(--radius-lg);
+    background: var(--white);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .pwa__close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--surface-2);
+    color: var(--ink);
+    cursor: pointer;
+  }
+
+  .pwa__head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-right: 40px;
+  }
+
+  .pwa__icon {
+    flex: none;
+    border-radius: 16px;
+    box-shadow: 0 8px 20px -8px rgba(0, 123, 255, 0.6);
+  }
+
+  .pwa__head h2 {
+    font-size: 22px;
+  }
+
+  .pwa__head p {
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.4;
+  }
+
+  .pwa__perks {
+    display: grid;
+    gap: 10px;
+    margin: 22px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .pwa__perks li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--ink);
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+
+  .pwa__perks li > span {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: var(--brand-50);
+    color: var(--brand);
+  }
+
+  .pwa__ios {
+    margin-top: 20px;
+    padding: 16px;
+    border-radius: 16px;
+    background: var(--surface);
+    font-size: 15px;
+  }
+
+  .pwa__ios[hidden] {
+    display: none;
+  }
+
+  .pwa__ios > p {
+    color: var(--ink);
+    font-weight: 700;
+  }
+
+  .pwa__ios ol {
+    display: grid;
+    gap: 8px;
+    margin: 10px 0 0;
+    padding-left: 20px;
+  }
+
+  .pwa__share {
+    display: inline-grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    background: var(--white);
+    color: var(--brand);
+    vertical-align: middle;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .pwa__actions {
+    display: grid;
+    gap: 10px;
+    margin-top: 22px;
+  }
+
+  .pwa__actions [hidden] {
+    display: none;
+  }
+
+  @keyframes pwa-in {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .pwa {
+      width: 100%;
+      max-width: none;
+      max-height: 100%;
+      margin: auto 0 0;
+    }
+
+    .pwa__sheet {
+      padding-bottom: calc(24px + env(safe-area-inset-bottom));
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    }
+  }
+</style>
+
+<script>
+  type InstallEvent = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }> };
+
+  const STORAGE_KEY = 'dhobermans:pwa-prompt';
+  const ENGAGE_DELAY_MS = 10000;
+
+  // Remember the prompt per browser. If storage is unavailable (for example private mode), never auto-show,
+  // so nobody sees it more than once.
+  const store = {
+    seen(): boolean {
+      try {
+        return localStorage.getItem(STORAGE_KEY) !== null;
+      } catch {
+        return true;
+      }
+    },
+    mark(value: string) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ value, at: new Date().toISOString() }));
+      } catch {
+        /* storage unavailable */
+      }
+    },
+  };
+
+  const ua = navigator.userAgent;
+  const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const inAppBrowser = /FBAN|FBAV|Instagram|Line\/|WhatsApp|GSA\//i.test(ua);
+  const isIOSSafari = isIOS && /Safari/i.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS/i.test(ua) && !inAppBrowser;
+  const isStandalone = () =>
+    window.matchMedia('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;
+
+  let installEvent: InstallEvent | null = null;
+  let engaged = false;
+
+  const canInstall = () => !isStandalone() && (installEvent !== null || isIOSSafari);
+  const dialog = () => document.querySelector<HTMLDialogElement>('[data-pwa]');
+
+  const syncTriggers = () => {
+    document.querySelectorAll<HTMLElement>('[data-install]').forEach((el) => (el.hidden = !canInstall()));
+  };
+
+  const close = () => {
+    const d = dialog();
+    if (d?.open) d.close();
+  };
+
+  const open = () => {
+    const d = dialog();
+    if (!d || d.open || !canInstall()) return;
+    const ios = installEvent === null && isIOSSafari;
+    d.querySelector<HTMLElement>('[data-pwa-ios]')!.hidden = !ios;
+    d.querySelector<HTMLElement>('[data-pwa-install]')!.hidden = ios;
+    d.querySelector<HTMLElement>('[data-pwa-later]')!.textContent = ios ? 'Got it' : 'Not now';
+    store.mark('shown');
+    d.showModal();
+  };
+
+  const isTyping = () => {
+    const el = document.activeElement;
+    return !!el && (el.matches('input, textarea, select') || (el as HTMLElement).isContentEditable);
+  };
+
+  const maybeAutoOpen = () => {
+    if (!engaged || store.seen() || !canInstall()) return;
+    if (window.location.pathname.startsWith('/offline')) return;
+    if (document.querySelector('dialog[open]')) return;
+    if (isTyping()) {
+      // Never interrupt someone filling in a field: try again shortly after they leave it.
+      document.addEventListener('focusout', () => window.setTimeout(maybeAutoOpen, 1500), { once: true });
+      return;
+    }
+    open();
+  };
+
+  const engage = () => {
+    if (engaged) return;
+    engaged = true;
+    window.removeEventListener('scroll', onScroll);
+    maybeAutoOpen();
+  };
+  const onScroll = () => {
+    if (window.scrollY > window.innerHeight * 0.6) engage();
+  };
+
+  if (!store.seen() && !isStandalone()) {
+    window.setTimeout(engage, ENGAGE_DELAY_MS);
+    window.addEventListener('scroll', onScroll, { passive: true });
+  }
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault(); // use our own prompt instead of the browser's mini-infobar
+    installEvent = e as InstallEvent;
+    syncTriggers();
+    maybeAutoOpen();
+  });
+
+  window.addEventListener('appinstalled', () => {
+    installEvent = null;
+    store.mark('installed');
+    close();
+    syncTriggers();
+  });
+
+  // Dialog controls (the dialog persists across page transitions, so bind once).
+  const d = dialog();
+  if (d) {
+    d.querySelector('[data-pwa-close]')?.addEventListener('click', close);
+    d.querySelector('[data-pwa-later]')?.addEventListener('click', close);
+    d.addEventListener('click', (e) => {
+      if (e.target === d) close(); // click on the backdrop
+    });
+    d.querySelector('[data-pwa-install]')?.addEventListener('click', async () => {
+      if (!installEvent) return;
+      const ev = installEvent;
+      installEvent = null;
+      await ev.prompt();
+      const { outcome } = await ev.userChoice;
+      store.mark(outcome === 'accepted' ? 'installed' : 'dismissed');
+      close();
+      syncTriggers();
+    });
+  }
+
+  // "Install web app" buttons elsewhere on the page open the same dialog.
+  document.addEventListener('astro:page-load', () => {
+    syncTriggers();
+    document.querySelectorAll<HTMLElement>('[data-install]').forEach((el) => {
+      if (el.dataset.bound) return;
+      el.dataset.bound = 'true';
+      el.addEventListener('click', open);
+    });
+  });
+
+  // Offline support.
+  if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+    const register = () => navigator.serviceWorker.register('/sw.js').catch(() => {});
+    if (document.readyState === 'complete') register();
+    else window.addEventListener('load', register, { once: true });
+  }
+</script>

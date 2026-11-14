@@ -29,7 +29,25 @@ Every booking action opens WhatsApp chat with **+91 88617 61718**, with a pre-fi
 | Stain SOS          | First-aid steps for six common stains, with a hand-off to professional stain removal                       |
 | Mobile action bar  | Fixed "Book on WhatsApp" bar on phones; floating WhatsApp button on desktop                                |
 | Share              | Native share sheet on phones, WhatsApp share elsewhere                                                     |
-| Installable        | Web app manifest and icons; an "Install web app" button appears where the browser supports it              |
+| Progressive web app | Installable app with offline support; see below                                                         |
+
+## Progressive web app
+
+- **Install prompt, once per visitor.** A custom install sheet opens automatically after 10 seconds or once the visitor
+  scrolls past the first screen. It is recorded in the browser (`localStorage` key `dhobermans:pwa-prompt`) and never
+  opens automatically again for that browser. It never interrupts someone typing in a field, and never shows inside the
+  installed app, in private browsing, or in in-app browsers such as WhatsApp's or Instagram's.
+- **Android and desktop Chrome/Edge:** one-tap "Install app" through the browser's native install dialog.
+- **iPhone and iPad (Safari):** step-by-step "Add to Home Screen" instructions, since iOS has no install API.
+- **Install any time:** the "Install web app" button in the hero opens the same sheet whenever installation is available.
+- **Offline:** `src/pwa/sw.js` is a service worker template. Each build writes `dist/sw.js` with a content-based version
+  and precaches the pages, styles, scripts, fonts and icons. Pages load network-first and fall back to the cached copy,
+  or to `/offline/` for pages never visited.
+- **App extras:** home-screen shortcuts (Plan a pickup, Find my plan, Care) and store-style screenshots in
+  `public/manifest.webmanifest`. Regenerate `public/screenshots/` if the hero changes.
+
+To test the install prompt again in your own browser, clear site data for dhobermans.com, or run
+`localStorage.removeItem('dhobermans:pwa-prompt')` in the browser console.
 
 ## Run locally
 
