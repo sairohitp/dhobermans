@@ -1,0 +1,182 @@
+---
+import Icon from './Icon.astro';
+
+const links = [
+  { href: '/#why-us', label: 'Why us' },
+  { href: '/#services', label: 'Services' },
+  { href: '/#how-it-works', label: 'How it works' },
+  { href: '/#pricing', label: 'Pricing' },
+  { href: '/care', label: 'Care' },
+  { href: '/#faq', label: 'FAQs' },
+];
+---
+
+<header class="header" data-header>
+  <div class="container header__inner">
+    <a href="/" class="wordmark" aria-label="dhobermans home">dhobermans</a>
+
+    <nav class="nav" aria-label="Primary">
+      {links.map((l) => <a href={l.href}>{l.label}</a>)}
+    </nav>
+
+    <div class="header__actions">
+      <a href="/#book" class="btn btn--primary btn--sm header__cta">Schedule a pickup</a>
+      <button class="menu-btn" type="button" aria-expanded="false" aria-controls="mobile-nav" data-menu-btn>
+        <span class="sr-only">Open menu</span>
+        <Icon name="menu" size={22} class="menu-btn__open" />
+        <Icon name="x" size={22} class="menu-btn__close" />
+      </button>
+    </div>
+  </div>
+
+  <div class="mobile-nav" id="mobile-nav" data-mobile-nav hidden>
+    <div class="container">
+      {links.map((l) => <a href={l.href}>{l.label}<Icon name="arrow-right" size={18} /></a>)}
+      <a href="/#book" class="btn btn--primary btn--block">Schedule a pickup</a>
+    </div>
+  </div>
+</header>
+
+<style>
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: saturate(180%) blur(12px);
+    -webkit-backdrop-filter: saturate(180%) blur(12px);
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s ease;
+  }
+
+  .header.is-scrolled {
+    border-bottom-color: var(--line);
+  }
+
+  .header__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    height: var(--header-h);
+  }
+
+  .wordmark {
+    color: var(--brand);
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+  }
+
+  .nav {
+    display: flex;
+    gap: 30px;
+    margin-left: auto;
+  }
+
+  .nav a {
+    color: var(--ink);
+    font-size: 15px;
+    font-weight: 600;
+    transition: color 0.2s ease;
+  }
+
+  .nav a:hover {
+    color: var(--brand);
+  }
+
+  .header__actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .menu-btn {
+    display: none;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--white);
+    cursor: pointer;
+  }
+
+  .menu-btn :global(.menu-btn__close) {
+    display: none;
+  }
+
+  .menu-btn[aria-expanded='true'] :global(.menu-btn__open) {
+    display: none;
+  }
+
+  .menu-btn[aria-expanded='true'] :global(.menu-btn__close) {
+    display: block;
+  }
+
+  .mobile-nav {
+    border-top: 1px solid var(--line);
+    background: var(--white);
+    box-shadow: var(--shadow);
+  }
+
+  .mobile-nav .container {
+    display: flex;
+    flex-direction: column;
+    padding-block: 8px 20px;
+  }
+
+  .mobile-nav a:not(.btn) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
+    font-size: 17px;
+    font-weight: 600;
+  }
+
+  .mobile-nav .btn {
+    margin-top: 18px;
+  }
+
+  @media (max-width: 1020px) {
+    .nav {
+      display: none;
+    }
+
+    .menu-btn {
+      display: grid;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .header__cta {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  const header = document.querySelector<HTMLElement>('[data-header]');
+  const btn = document.querySelector<HTMLButtonElement>('[data-menu-btn]');
+  const panel = document.querySelector<HTMLElement>('[data-mobile-nav]');
+
+  const onScroll = () => header?.classList.toggle('is-scrolled', window.scrollY > 8);
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  const setOpen = (open: boolean) => {
+    if (!btn || !panel) return;
+    btn.setAttribute('aria-expanded', String(open));
+    panel.hidden = !open;
+  };
+
+  btn?.addEventListener('click', () => setOpen(btn.getAttribute('aria-expanded') !== 'true'));
+  panel?.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setOpen(false)));
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 1020) setOpen(false);
+  });
+</script>

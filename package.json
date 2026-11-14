@@ -1,0 +1,19 @@
+{
+  "name": "dhobermans",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@fontsource/lexend": "^5.3.0",
+    "@fontsource/urbanist": "^5.3.0",
+    "astro": "^7.4.12"
+  },
+  "engines": {
+    "node": ">=22.23.4"
+  }
+}
