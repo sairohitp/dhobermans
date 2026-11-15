@@ -50,5 +50,11 @@ export default defineConfig({
   trailingSlash: 'ignore',
   integrations: [serviceWorker()],
   // Keep every script as an external file (no inline module scripts), which suits the Content-Security-Policy.
-  vite: { build: { assetsInlineLimit: 0 } },
+  vite: {
+    build: {
+      assetsInlineLimit: 0,
+      // Keep vendor prefixes that older iPhones need (for example -webkit-backdrop-filter before iOS 18).
+      cssTarget: ['chrome100', 'edge100', 'firefox103', 'safari15', 'ios15'],
+    },
+  },
 });
