@@ -104,3 +104,33 @@ export const profile = {
     }
   },
 };
+
+/* ---------- Last pickup, for one-tap "book again" and remembered wash preferences ---------- */
+
+const LAST_KEY = 'dhobermans:last';
+
+export type LastOrder = {
+  services: string[];
+  plan?: string;
+  kg?: number | null;
+  repeat?: string;
+  detergent?: string;
+  softener?: boolean;
+};
+
+export const lastOrder = {
+  get: (): LastOrder | null => {
+    const v = read<LastOrder | null>(LAST_KEY, null);
+    return v && Array.isArray(v.services) && v.services.length ? v : null;
+  },
+  save(o: LastOrder) {
+    write(LAST_KEY, { ...o, at: new Date().toISOString() });
+  },
+  clear() {
+    try {
+      localStorage.removeItem(LAST_KEY);
+    } catch {
+      /* ignore */
+    }
+  },
+};

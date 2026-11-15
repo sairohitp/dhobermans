@@ -42,9 +42,30 @@ import { wa } from '../lib/wa';
   </div>
 
   <div class="finder__result">
-    <span class="finder__label">Your estimate</span>
-    <p class="finder__kg"><span data-kg-total>0.0</span> kg<small>/week</small></p>
-    <p class="finder__month">About <strong data-kg-month>0</strong> kg a month</p>
+    <div class="finder__top">
+      <svg class="wm" viewBox="0 0 120 140" aria-hidden="true">
+        <defs><clipPath id="wm-door"><circle cx="60" cy="86" r="32"></circle></clipPath></defs>
+        <rect class="wm__body" x="6" y="6" width="108" height="128" rx="12"></rect>
+        <path class="wm__line" d="M6 36h108"></path>
+        <circle class="wm__dot" cx="24" cy="21" r="4"></circle>
+        <circle class="wm__dot" cx="38" cy="21" r="4"></circle>
+        <rect class="wm__line" x="80" y="15" width="22" height="12" rx="4"></rect>
+        <circle class="wm__ring" cx="60" cy="86" r="38"></circle>
+        <g clip-path="url(#wm-door)">
+          <g class="wm__water" data-wm-water>
+            <path class="wm__wave" d="M-32 0q8-6 16 0t16 0 16 0 16 0 16 0 16 0 16 0 16 0 16 0 16 0 16 0v80h-176z"></path>
+          </g>
+          <circle class="wm__bubble" cx="48" cy="108" r="3"></circle>
+          <circle class="wm__bubble wm__bubble--2" cx="64" cy="112" r="2"></circle>
+          <circle class="wm__bubble wm__bubble--3" cx="74" cy="106" r="2.5"></circle>
+        </g>
+      </svg>
+      <div>
+        <span class="finder__label">Your estimate</span>
+        <p class="finder__kg"><span data-kg-total>0.0</span> kg<small>/week</small></p>
+        <p class="finder__month">About <strong data-kg-month>0</strong> kg a month</p>
+      </div>
+    </div>
     <div class="finder__rows">
       <div class="finder__row">
         <span>Pay per pickup</span>
@@ -214,6 +235,84 @@ import { wa } from '../lib/wa';
     color: rgba(255, 255, 255, 0.85);
   }
 
+  .finder__top {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+
+  .wm {
+    flex: none;
+    width: 104px;
+    height: auto;
+  }
+
+  .wm__body {
+    fill: rgba(255, 255, 255, 0.12);
+    stroke: rgba(255, 255, 255, 0.9);
+    stroke-width: 2.5;
+  }
+
+  .wm__line {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.7);
+    stroke-width: 2;
+  }
+
+  .wm__dot {
+    fill: rgba(255, 255, 255, 0.8);
+  }
+
+  .wm__ring {
+    fill: rgba(255, 255, 255, 0.14);
+    stroke: var(--white);
+    stroke-width: 3;
+  }
+
+  .wm__water {
+    transform: translateY(110px);
+    transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .wm__wave {
+    fill: rgba(255, 255, 255, 0.88);
+    animation: wm-wave 2.4s linear infinite;
+  }
+
+  @keyframes wm-wave {
+    to {
+      transform: translateX(32px);
+    }
+  }
+
+  .wm__bubble {
+    fill: var(--brand);
+    opacity: 0;
+    animation: wm-bubble 2.8s ease-in infinite;
+  }
+
+  .wm__bubble--2 {
+    animation-delay: 0.9s;
+  }
+
+  .wm__bubble--3 {
+    animation-delay: 1.7s;
+  }
+
+  @keyframes wm-bubble {
+    0% {
+      transform: translateY(0);
+      opacity: 0;
+    }
+    30% {
+      opacity: 0.7;
+    }
+    100% {
+      transform: translateY(-34px);
+      opacity: 0;
+    }
+  }
+
   .finder__label {
     font-size: 15px;
     font-weight: 600;
@@ -237,7 +336,7 @@ import { wa } from '../lib/wa';
   }
 
   .finder__month {
-    margin-top: -6px;
+    margin-top: 6px;
     color: rgba(255, 255, 255, 0.8);
   }
 
@@ -305,6 +404,7 @@ import { wa } from '../lib/wa';
     const outputs = [...root.querySelectorAll<HTMLOutputElement>('[data-count]')];
     const total = root.querySelector<HTMLElement>('[data-kg-total]')!;
     const month = root.querySelector<HTMLElement>('[data-kg-month]')!;
+    const water = root.querySelector<SVGGElement>('[data-wm-water]');
     const payg = root.querySelector<HTMLElement>('[data-cost-payg]')!;
     const pack = root.querySelector<HTMLElement>('[data-cost-pack]')!;
     const save = root.querySelector<HTMLElement>('[data-finder-save]')!;
@@ -322,6 +422,8 @@ import { wa } from '../lib/wa';
         kg += (counts[id] ?? 0) * Number(o.dataset.kg);
       });
       total.textContent = kg.toFixed(1);
+      // The drum fills as the weekly load grows (full at 20 kg).
+      if (water) water.style.transform = `translateY(${110 - Math.min(1, kg / 20) * 48}px)`;
       // Monthly estimate, rounded up to the nearest 5 kg (minimum 10 kg).
       const monthly = Math.max(10, Math.ceil((kg * WEEKS_PER_MONTH) / 5) * 5);
       month.textContent = String(monthly);

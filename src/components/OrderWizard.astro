@@ -2,7 +2,7 @@
 import { Image } from 'astro:assets';
 import Icon from './Icon.astro';
 import { services } from '../data';
-import { planOptions } from '../lib/booking';
+import { planOptions, LOAD_SIZES, LOAD_MAX } from '../lib/booking';
 import { wa, msg } from '../lib/wa';
 
 interface Props {
@@ -39,7 +39,9 @@ const sub: Record<string, string> = {
           </summary>
           <nav>
             <a href="/care/"><Icon name="bag" size={18} /> Shop care products</a>
+            <a href={wa(msg.question)} data-flow="question" data-flow-topic="track"><Icon name="truck" size={18} /> Where is my order?</a>
             <a href={wa(msg.question)} data-flow="question"><Icon name="whatsapp" size={18} /> Ask a question</a>
+            <a href={wa(msg.question)} data-flow="business"><Icon name="briefcase" size={18} /> Business quote</a>
             <a href="/"><Icon name="arrow-up-right" size={18} /> Visit the website</a>
             <button type="button" data-forget><Icon name="trash" size={18} /> Forget my saved details</button>
           </nav>
@@ -51,7 +53,7 @@ const sub: Record<string, string> = {
   <ol class="stepper" data-stepper aria-label="Booking steps"></ol>
 
   <div class="wz__body" data-wz-body>
-    <!-- Service and time -->
+    <!-- 1. Service -->
     <section class="panel" data-panel="service" hidden>
       <h3 class="q">What needs care?</h3>
       <div class="svc-top">
@@ -75,7 +77,7 @@ const sub: Record<string, string> = {
         More services <span>({more.length})</span>
         <Icon name="chevron-down" size={18} />
       </button>
-      <div class="svc-more" id="wz-more" hidden>
+      <div class="pills" id="wz-more" hidden>
         {
           more.map((s) => (
             <label class="pill">
@@ -85,20 +87,70 @@ const sub: Record<string, string> = {
           ))
         }
       </div>
+      <p class="note" data-peritem hidden></p>
 
-      <h3 class="q q--gap">When should we pick up?</h3>
-      <div class="days" role="radiogroup" aria-label="Pickup day" data-days></div>
-      <div class="windows" role="radiogroup" aria-label="Pickup time" data-windows></div>
+      <!-- Shown when Wash & Fold is selected -->
+      <div class="wash" data-wash hidden>
+        <h3 class="q q--sm">How much laundry? <em>(optional)</em></h3>
+        <div class="pills" role="radiogroup" aria-label="Estimated load" data-group="load" data-optional>
+          {
+            LOAD_SIZES.map((kg) => (
+              <button type="button" role="radio" class="opt" data-val={kg} aria-checked="false">
+                {kg >= LOAD_MAX ? `${kg} kg+` : `~${kg} kg`}
+              </button>
+            ))
+          }
+        </div>
+        <p class="note" data-est>1 kg is roughly 5 T-shirts or 2 bath towels.</p>
 
-      <label class="field field--plan">
-        <span>Plan</span>
-        <select class="input" data-f="plan">
-          {planOptions.map((o) => <option value={o.value}>{o.label}</option>)}
-        </select>
-      </label>
+        <label class="field">
+          <span>Plan</span>
+          <select class="input" data-f="plan">
+            {planOptions.map((o) => <option value={o.value}>{o.label}</option>)}
+          </select>
+        </label>
+
+        <details class="prefs">
+          <summary>
+            <span>Wash preferences <em>(optional)</em></span>
+            <Icon name="chevron-down" size={18} />
+          </summary>
+          <div class="prefs__body">
+            <span class="lbl">Detergent</span>
+            <div class="pills" role="radiogroup" aria-label="Detergent" data-group="detergent">
+              <button type="button" role="radio" class="opt" data-val="" aria-checked="true">No preference</button>
+              <button type="button" role="radio" class="opt" data-val="Cloud Wash" aria-checked="false">
+                Cloud Wash<small>Ultra-gentle, plant-based</small>
+              </button>
+              <button type="button" role="radio" class="opt" data-val="Fresh Breeze" aria-checked="false">
+                Fresh Breeze<small>For everyday loads</small>
+              </button>
+            </div>
+            <label class="check">
+              <input type="checkbox" data-softener />
+              <span>Add fabric softener (Petal Soft)</span>
+            </label>
+          </div>
+        </details>
+      </div>
     </section>
 
-    <!-- Location and contact -->
+    <!-- 2. Time -->
+    <section class="panel" data-panel="time" hidden>
+      <h3 class="q">When should we pick up?</h3>
+      <div class="days" role="radiogroup" aria-label="Pickup day" data-days></div>
+      <div class="windows" role="radiogroup" aria-label="Pickup time" data-windows></div>
+      <p class="eta" data-eta hidden><Icon name="truck" size={20} /><span data-eta-text></span></p>
+
+      <h3 class="q q--sm q--gap">Repeat this pickup?</h3>
+      <div class="seg" role="radiogroup" aria-label="Repeat" data-group="repeat">
+        <button type="button" role="radio" data-val="once" aria-checked="true">Just once</button>
+        <button type="button" role="radio" data-val="weekly" aria-checked="false">Every week</button>
+        <button type="button" role="radio" data-val="biweekly" aria-checked="false">Every 2 weeks</button>
+      </div>
+    </section>
+
+    <!-- 3. Address -->
     <section class="panel" data-panel="where" hidden>
       <div class="items" data-items hidden></div>
       <h3 class="q" data-where-q>Where should we pick up?</h3>
@@ -135,7 +187,7 @@ const sub: Record<string, string> = {
 
       <div class="grid2">
         <label class="field full">
-          <span data-address-label>House / flat, street and landmark</span>
+          <span>House / flat, street and landmark</span>
           <input class="input" type="text" autocomplete="street-address" placeholder="e.g. Flat 302, 12th Main, near the park" data-f="address" />
         </label>
         <label class="field">
@@ -155,16 +207,72 @@ const sub: Record<string, string> = {
       <p class="privacy">Your details only go into your WhatsApp message and are saved on this device for next time.</p>
     </section>
 
+    <!-- Business quote -->
+    <section class="panel" data-panel="business" hidden>
+      <h3 class="q">Tell us about your business</h3>
+      <label class="field">
+        <span>Business name</span>
+        <input class="input" type="text" autocomplete="organization" data-f="bizname" />
+      </label>
+      <div class="field">
+        <span>Type</span>
+        <div class="pills" role="radiogroup" aria-label="Business type" data-group="biztype" data-optional>
+          <button type="button" role="radio" class="opt" data-val="Office" aria-checked="false">Office</button>
+          <button type="button" role="radio" class="opt" data-val="Hostel or PG" aria-checked="false">Hostel or PG</button>
+          <button type="button" role="radio" class="opt" data-val="Short-stay host" aria-checked="false">Short-stay host</button>
+          <button type="button" role="radio" class="opt" data-val="Other" aria-checked="false">Other</button>
+        </div>
+      </div>
+      <div class="field">
+        <span>Laundry per month</span>
+        <div class="pills" role="radiogroup" aria-label="Laundry per month" data-group="bizvolume" data-optional>
+          <button type="button" role="radio" class="opt" data-val="Under 100 kg" aria-checked="false">Under 100 kg</button>
+          <button type="button" role="radio" class="opt" data-val="100–249 kg" aria-checked="false">100–249 kg</button>
+          <button type="button" role="radio" class="opt" data-val="250 kg or more" aria-checked="false">250 kg+</button>
+          <button type="button" role="radio" class="opt" data-val="Not sure yet" aria-checked="false">Not sure</button>
+        </div>
+      </div>
+      <div class="field">
+        <span>Pickups</span>
+        <div class="pills" role="radiogroup" aria-label="Pickup frequency" data-group="bizfreq" data-optional>
+          <button type="button" role="radio" class="opt" data-val="Daily" aria-checked="false">Daily</button>
+          <button type="button" role="radio" class="opt" data-val="2–3 times a week" aria-checked="false">2–3 times a week</button>
+          <button type="button" role="radio" class="opt" data-val="Weekly" aria-checked="false">Weekly</button>
+          <button type="button" role="radio" class="opt" data-val="Not sure yet" aria-checked="false">Not sure</button>
+        </div>
+      </div>
+      <div class="grid2">
+        <label class="field">
+          <span>Your name</span>
+          <input class="input" type="text" autocomplete="name" data-f="name4" />
+        </label>
+        <label class="field">
+          <span>Area or pincode</span>
+          <input class="input" type="text" autocomplete="postal-code" data-f="area" />
+        </label>
+        <label class="field full">
+          <span>Notes <em>(optional)</em></span>
+          <input class="input" type="text" placeholder="Linen, uniforms, towels..." data-f="notes4" />
+        </label>
+      </div>
+    </section>
+
     <!-- Question -->
     <section class="panel" data-panel="ask" hidden>
       <h3 class="q">How can we help?</h3>
-      <label class="field">
-        <span>Your name</span>
-        <input class="input" type="text" autocomplete="name" data-f="name2" />
-      </label>
+      <div class="pills" data-topics>
+        <button type="button" class="opt" data-topic="track">Where is my order?</button>
+        <button type="button" class="opt" data-topic="reschedule">Reschedule a pickup</button>
+        <button type="button" class="opt" data-topic="issue">Report an issue</button>
+        <button type="button" class="opt" data-topic="label">Read a care label</button>
+      </div>
       <label class="field">
         <span>Your question</span>
         <textarea class="input" rows="4" placeholder="Type your question" data-f="question"></textarea>
+      </label>
+      <label class="field">
+        <span>Your name</span>
+        <input class="input" type="text" autocomplete="name" data-f="name2" />
       </label>
     </section>
 
@@ -198,17 +306,27 @@ const sub: Record<string, string> = {
 
     <!-- Done -->
     <section class="panel panel--center done" data-panel="done" hidden>
+      <div class="bubbles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
       <span class="done__ok"><Icon name="check" size={30} /></span>
       <h3 class="q">Finish in WhatsApp</h3>
       <p class="lead-sm">Your message is ready in WhatsApp. Tap <strong>send</strong> there and we'll reply shortly.</p>
+      <div class="prep" data-prep hidden>
+        <strong>Before we arrive</strong>
+        <ul>
+          <li><Icon name="check" size={16} />Empty all pockets</li>
+          <li><Icon name="check" size={16} />Keep dry-clean items in a separate bag</li>
+          <li><Icon name="check" size={16} />Keep your laundry ready at the door</li>
+        </ul>
+      </div>
       <div class="done__actions">
-        <button type="button" class="btn btn--ghost btn--block" data-ics hidden><Icon name="bell" size={18} /> Remind me weekly</button>
+        <button type="button" class="btn btn--ghost btn--block" data-ics hidden><Icon name="calendar" size={18} /> <span data-ics-label>Add to my calendar</span></button>
         <button type="button" class="btn btn--ghost btn--block" data-clearcart hidden>Clear my cart</button>
       </div>
     </section>
   </div>
 
   <footer class="wz__foot">
+    <p class="wz__sum" data-wz-sum></p>
     <p class="wz__hint" data-wz-hint aria-live="polite"></p>
     <div class="wz__actions">
       <button type="button" class="btn btn--ghost" data-wz-back>Back</button>
@@ -428,14 +546,37 @@ const sub: Record<string, string> = {
     font-weight: 600;
   }
 
+  .q--sm {
+    font-size: 16px;
+  }
+
   .q--gap {
-    margin-top: 14px;
+    margin-top: 10px;
+  }
+
+  .q em,
+  .field em,
+  .prefs em {
+    color: var(--subtle);
+    font-style: normal;
+    font-weight: 500;
   }
 
   .lead-sm {
     max-width: 420px;
     color: var(--muted);
     font-size: 15px;
+  }
+
+  .note {
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .lbl {
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 600;
   }
 
   /* Services */
@@ -468,8 +609,8 @@ const sub: Record<string, string> = {
   .svc__img {
     flex: none;
     overflow: hidden;
-    width: 60px;
-    height: 60px;
+    width: 56px;
+    height: 56px;
     border-radius: var(--radius);
     background: var(--surface-2);
   }
@@ -549,7 +690,7 @@ const sub: Record<string, string> = {
     transform: rotate(180deg);
   }
 
-  .svc-more {
+  .pills {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
@@ -560,21 +701,101 @@ const sub: Record<string, string> = {
     cursor: pointer;
   }
 
-  .pill span {
+  .pill span,
+  .opt {
     display: inline-flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
     min-height: 42px;
-    padding: 0 14px;
+    padding: 6px 14px;
     border: 1.5px solid var(--line);
     border-radius: var(--radius-btn);
+    background: var(--white);
+    color: var(--ink);
     font-size: 15px;
     font-weight: 500;
+    line-height: 1.25;
+    text-align: left;
+    cursor: pointer;
+    transition:
+      border-color 0.15s ease,
+      background-color 0.15s ease;
   }
 
-  .pill input:checked + span {
+  .opt small {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 400;
+  }
+
+  .pill input:checked + span,
+  .opt[aria-checked='true'] {
     border-color: var(--brand);
     background: var(--brand);
     color: var(--white);
+  }
+
+  .opt[aria-checked='true'] small {
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  /* Wash options */
+  .wash {
+    display: grid;
+    gap: 12px;
+    margin-top: 4px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--line);
+  }
+
+  .prefs {
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-lg);
+  }
+
+  .prefs summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-height: 48px;
+    padding: 0 14px;
+    color: var(--ink);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .prefs summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .prefs[open] summary :global(svg) {
+    transform: rotate(180deg);
+  }
+
+  .prefs__body {
+    display: grid;
+    gap: 10px;
+    padding: 0 14px 14px;
+  }
+
+  .check {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    color: var(--ink);
+    font-size: 15px;
+    cursor: pointer;
+  }
+
+  .check input {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--brand);
   }
 
   /* Day strip and time windows */
@@ -638,7 +859,7 @@ const sub: Record<string, string> = {
     flex-direction: column;
     align-items: flex-start;
     gap: 2px;
-    padding: 12px 14px;
+    padding: 14px;
     border: 1.5px solid var(--line);
     border-radius: var(--radius-lg);
     background: var(--white);
@@ -659,11 +880,57 @@ const sub: Record<string, string> = {
   .windows :global(.win[aria-checked='true']) {
     border-color: var(--brand);
     background: var(--brand-50);
+    box-shadow: inset 0 0 0 1px var(--brand);
   }
 
   .windows :global(.win:disabled) {
     opacity: 0.45;
     cursor: not-allowed;
+  }
+
+  .eta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: var(--radius-lg);
+    background: var(--brand-50);
+    color: var(--ink);
+    font-size: 15px;
+    font-weight: 500;
+  }
+
+  .eta :global(svg) {
+    flex: none;
+    color: var(--brand);
+  }
+
+  .seg {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    padding: 4px;
+    border-radius: var(--radius-btn);
+    background: var(--surface-2);
+  }
+
+  .seg button {
+    min-height: 42px;
+    padding: 0 6px;
+    border: 0;
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .seg button[aria-checked='true'] {
+    background: var(--white);
+    color: var(--ink);
+    font-weight: 600;
+    box-shadow: var(--shadow-sm);
   }
 
   .field {
@@ -678,18 +945,8 @@ const sub: Record<string, string> = {
     font-weight: 600;
   }
 
-  .field em {
-    color: var(--subtle);
-    font-style: normal;
-    font-weight: 500;
-  }
-
   .field :global(.input) {
     min-height: 48px;
-  }
-
-  .field--plan {
-    margin-top: 10px;
   }
 
   /* Location */
@@ -806,7 +1063,9 @@ const sub: Record<string, string> = {
   }
 
   .pinned__link {
+    display: inline-flex;
     flex: none;
+    align-items: center;
     min-height: 36px;
     padding: 0 6px;
     border: 0;
@@ -815,8 +1074,6 @@ const sub: Record<string, string> = {
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    display: inline-flex;
-    align-items: center;
   }
 
   .map {
@@ -962,8 +1219,11 @@ const sub: Record<string, string> = {
     cursor: pointer;
   }
 
+  /* Done */
   .done {
-    padding-top: 28px;
+    position: relative;
+    padding-top: 20px;
+    overflow: hidden;
   }
 
   .done__ok {
@@ -974,21 +1234,119 @@ const sub: Record<string, string> = {
     border-radius: 50%;
     background: var(--wa);
     color: var(--white);
+    animation: pop 0.45s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+  }
+
+  @keyframes pop {
+    from {
+      transform: scale(0.4);
+      opacity: 0;
+    }
+    to {
+      transform: none;
+      opacity: 1;
+    }
+  }
+
+  .bubbles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .bubbles i {
+    position: absolute;
+    bottom: -30px;
+    border: 1.5px solid var(--brand-200);
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #ffffff, rgba(0, 123, 255, 0.14));
+    opacity: 0;
+    animation: bubble 2.8s ease-in forwards;
+  }
+
+  .bubbles i:nth-child(1) { left: 6%; width: 18px; height: 18px; animation-delay: 0.05s; }
+  .bubbles i:nth-child(2) { left: 18%; width: 28px; height: 28px; animation-delay: 0.35s; }
+  .bubbles i:nth-child(3) { left: 32%; width: 14px; height: 14px; animation-delay: 0.6s; }
+  .bubbles i:nth-child(4) { left: 62%; width: 22px; height: 22px; animation-delay: 0.2s; }
+  .bubbles i:nth-child(5) { left: 76%; width: 34px; height: 34px; animation-delay: 0.5s; }
+  .bubbles i:nth-child(6) { left: 88%; width: 16px; height: 16px; animation-delay: 0.1s; }
+  .bubbles i:nth-child(7) { left: 48%; width: 12px; height: 12px; animation-delay: 0.8s; }
+
+  @keyframes bubble {
+    0% {
+      transform: translateY(0) scale(0.6);
+      opacity: 0;
+    }
+    15% {
+      opacity: 0.9;
+    }
+    100% {
+      transform: translateY(-460px) scale(1.1);
+      opacity: 0;
+    }
+  }
+
+  .prep {
+    width: 100%;
+    max-width: 360px;
+    padding: 14px 16px;
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    text-align: left;
+  }
+
+  .prep strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .prep ul {
+    display: grid;
+    gap: 8px;
+    margin: 10px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .prep li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+  }
+
+  .prep li :global(svg) {
+    flex: none;
+    color: var(--brand);
   }
 
   .done__actions {
     display: grid;
     gap: 10px;
     width: 100%;
-    max-width: 320px;
-    margin-top: 8px;
+    max-width: 360px;
   }
 
   /* Footer */
   .wz__foot {
-    padding: 14px 28px calc(16px + env(safe-area-inset-bottom));
+    padding: 12px 28px calc(16px + env(safe-area-inset-bottom));
     border-top: 1px solid var(--line);
     background: var(--white);
+  }
+
+  .wz__sum {
+    margin-bottom: 10px;
+    overflow: hidden;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 500;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .wz__sum:empty {
+    display: none;
   }
 
   .wz__hint {
@@ -1024,7 +1382,7 @@ const sub: Record<string, string> = {
     }
 
     .stepper {
-      padding: 12px 12px 14px;
+      padding: 12px 8px 14px;
     }
 
     .wz__body {
@@ -1055,28 +1413,37 @@ const sub: Record<string, string> = {
 </style>
 
 <script>
-  import { compose, waLink, type Intent, type FlowData } from '../lib/booking';
-  import { pickupDays, windowTimes, pincodeStatus, buildIcs, type PickupDay } from '../lib/slots';
+  import { compose, waLink, estimate, isPack, BY_WEIGHT, DAILY_SERVICES, type Intent, type FlowData, type Repeat } from '../lib/booking';
+  import { pickupDays, windowTimes, returnLabel, pincodeStatus, buildIcs, type PickupDay } from '../lib/slots';
   import { distanceKm, mapsLink, type Pin } from '../lib/geo';
-  import { cart, profile, rupees } from '../lib/store';
+  import { cart, profile, lastOrder, rupees } from '../lib/store';
   import { products, packPrice } from '../data';
   import { site } from '../config';
 
-  type Panel = 'service' | 'where' | 'ask' | 'notify' | 'review' | 'done';
-  type OpenOptions = { intent?: Intent; service?: string; plan?: string; location?: string };
+  type Panel = 'service' | 'time' | 'where' | 'business' | 'ask' | 'notify' | 'review' | 'done';
+  type OpenOptions = { intent?: Intent; service?: string; plan?: string; location?: string; topic?: string; again?: boolean };
 
+  const PICKUP = { panels: ['service', 'time', 'where', 'review'] as Panel[], labels: ['Service', 'Time', 'Address', 'Review'] };
   const FLOWS: Record<Intent, { panels: Panel[]; labels: string[]; title: string }> = {
-    pickup: { panels: ['service', 'where', 'review'], labels: ['Service', 'Pickup', 'Review'], title: 'Book a pickup' },
-    service: { panels: ['service', 'where', 'review'], labels: ['Service', 'Pickup', 'Review'], title: 'Book a pickup' },
-    plan: { panels: ['service', 'where', 'review'], labels: ['Service', 'Pickup', 'Review'], title: 'Start your plan' },
-    stain: { panels: ['service', 'where', 'review'], labels: ['Service', 'Pickup', 'Review'], title: 'Stain removal' },
+    pickup: { ...PICKUP, title: 'Book a pickup' },
+    service: { ...PICKUP, title: 'Book a pickup' },
+    plan: { ...PICKUP, title: 'Start your plan' },
+    stain: { ...PICKUP, title: 'Stain removal' },
     order: { panels: ['where', 'review'], labels: ['Delivery', 'Review'], title: 'Your order' },
     question: { panels: ['ask', 'review'], labels: ['Question', 'Review'], title: 'Ask us anything' },
     location: { panels: ['notify', 'review'], labels: ['Details', 'Review'], title: 'Get notified' },
+    business: { panels: ['business', 'review'], labels: ['Business', 'Review'], title: 'Business quote' },
+  };
+  const TOPICS: Record<string, string> = {
+    track: 'Where is my order? ',
+    reschedule: "I'd like to reschedule my pickup to ",
+    issue: 'I have an issue with my order: ',
+    label: "Can you help me read a care label? I'll send a photo.",
   };
 
   const CHECK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
   const BASE: Pin = { lat: site.base.lat, lng: site.base.lng };
+  const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
   const root = document.querySelector<HTMLElement>('[data-wizard]');
 
@@ -1096,7 +1463,52 @@ const sub: Record<string, string> = {
     let pin: Pin | null = null;
     let location = '';
 
-    /* ---------- Slots ---------- */
+    const isPickup = () => FLOWS[intent].panels[0] === 'service';
+
+    /* ---------- Choice groups (buttons with role="radio") ---------- */
+    const group = (name: string) => $(`[data-group="${name}"]`);
+    const groupVal = (name: string) => group(name).querySelector<HTMLElement>('[aria-checked="true"]')?.dataset.val ?? '';
+    const setGroup = (name: string, v: string) =>
+      group(name)
+        .querySelectorAll<HTMLElement>('[role="radio"]')
+        .forEach((b) => b.setAttribute('aria-checked', String((b.dataset.val ?? '') === v)));
+
+    /* ---------- Service step ---------- */
+    const services = () => [...root.querySelectorAll<HTMLInputElement>('input[name="wz-svc"]:checked')].map((i) => i.value);
+    const byWeight = () => services().includes(BY_WEIGHT);
+    const planValue = () => (byWeight() ? field('plan').value : '');
+    const loadKg = () => (byWeight() ? Number(groupVal('load')) || null : null);
+    const repeat = () => (groupVal('repeat') || 'once') as Repeat;
+    const softener = () => $<HTMLInputElement>('[data-softener]');
+    const prefs = () => {
+      if (!byWeight()) return [];
+      const out: string[] = [];
+      const det = groupVal('detergent');
+      if (det) out.push(`${det} detergent`);
+      if (softener().checked) out.push('Petal Soft fabric softener');
+      return out;
+    };
+
+    const updateService = () => {
+      const s = services();
+      $('[data-wash]').hidden = !byWeight();
+      const perItem = s.filter((x) => x !== BY_WEIGHT);
+      const note = $('[data-peritem]');
+      note.hidden = perItem.length === 0;
+      note.textContent = perItem.length ? `${perItem.join(', ')}: priced per item. We'll confirm the price on WhatsApp.` : '';
+      const e = estimate(Number(groupVal('load')) || null, field('plan').value);
+      $('[data-est]').textContent = !e
+        ? '1 kg is roughly 5 T-shirts or 2 bath towels.'
+        : isPack(field('plan').value)
+          ? `Uses ${e.kgLabel} of your monthly pack (${rupees(e.rate)}/kg).`
+          : `${cap(e.priceLabel)} at ${rupees(e.rate)}/kg. Your final bill is by actual weight.`;
+    };
+
+    /* ---------- Time step ---------- */
+    const renderSum = () => {
+      const panel = panels[index];
+      $('[data-wz-sum]').textContent = isPickup() && (panel === 'time' || panel === 'where') ? summary() : '';
+    };
     const renderDays = () => {
       $('[data-days]').innerHTML = days
         .map((d, i) => `<button type="button" role="radio" class="day" data-day="${i}" aria-checked="${i === dayIdx}"><span>${d.label}</span><small>${d.sub}</small></button>`)
@@ -1106,11 +1518,35 @@ const sub: Record<string, string> = {
       $('[data-windows]').innerHTML = (day?.windows ?? [])
         .map((w, i) => `<button type="button" role="radio" class="win" data-win="${i}" aria-checked="${i === winIdx}" ${w.available ? '' : 'disabled'}><strong>${w.name}</strong><small>${w.available ? w.label : 'Not available'}</small></button>`)
         .join('');
+      updateEta();
+      if (panels.length) renderSum();
     };
-    const slotText = () => {
+    const chosen = () => {
       const d = days[dayIdx];
       const w = d?.windows[winIdx];
-      return d && w ? `${d.long}, ${w.label}` : '';
+      return d && w ? { d, w } : null;
+    };
+    const slotText = () => {
+      const c = chosen();
+      return c ? `${c.d.long}, ${c.w.label}` : '';
+    };
+    const updateEta = () => {
+      const c = chosen();
+      const el = $('[data-eta]');
+      if (!c) {
+        el.hidden = true;
+        return;
+      }
+      const s = services();
+      const other = s.filter((x) => !DAILY_SERVICES.includes(x));
+      const back = returnLabel(windowTimes(c.d, c.w).endUtc);
+      $('[data-eta-text]').textContent =
+        s.length && other.length === s.length
+          ? `We'll confirm the return time for ${other.join(', ')} on WhatsApp.`
+          : other.length
+            ? `Wash, fold & iron back by ${back}. We'll confirm timing for ${other.join(', ')}.`
+            : `Back at your door by ${back}.`;
+      el.hidden = false;
     };
 
     /* ---------- Location ---------- */
@@ -1189,7 +1625,6 @@ const sub: Record<string, string> = {
     };
 
     /* ---------- Data and validation ---------- */
-    const services = () => [...root.querySelectorAll<HTMLInputElement>('input[name="wz-svc"]:checked')].map((i) => i.value);
     const orderLines = () =>
       cart.lines().map((l) => {
         const p = products.find((x) => x.slug === l.slug)!;
@@ -1199,27 +1634,48 @@ const sub: Record<string, string> = {
     const data = (): FlowData => {
       if (intent === 'question') return { intent, name: val('name2'), question: val('question') };
       if (intent === 'location') return { intent, name: val('name3'), pincode: val('pincode3'), location };
+      if (intent === 'business') {
+        return {
+          intent,
+          name: val('name4'),
+          notes: val('notes4'),
+          business: { name: val('bizname'), type: groupVal('biztype'), volume: groupVal('bizvolume'), frequency: groupVal('bizfreq'), area: val('area') },
+        };
+      }
       const contact = { name: val('name'), pincode: val('pincode'), address: val('address'), notes: val('notes'), pin, distanceKm: distance() };
       if (intent === 'order') return { intent, ...contact, items: orderLines(), total: rupees(cart.total()) };
-      return { intent, ...contact, services: services(), slot: slotText(), plan: field('plan').value };
+      return { intent, ...contact, services: services(), slot: slotText(), plan: planValue(), loadKg: loadKg(), repeat: repeat(), prefs: prefs() };
     };
 
     const problem = (p: Panel): string => {
-      if (p === 'service') {
-        if (!services().length) return 'Choose at least one service.';
-        if (winIdx < 0) return 'Choose a pickup time.';
-      }
+      if (p === 'service' && !services().length) return 'Choose at least one service.';
+      if (p === 'time' && !chosen()) return 'Choose a pickup time.';
       if (p === 'where') {
         if (val('address').length < 5) return 'Add your house or flat number, street and a landmark.';
         if (!pin && !/^\d{6}$/.test(val('pincode'))) return 'Share your location or enter your 6-digit pincode.';
         if (val('name').length < 2) return 'Enter your name.';
       }
+      if (p === 'business') {
+        if (val('bizname').length < 2) return 'Enter your business name.';
+        if (val('name4').length < 2) return 'Enter your name.';
+      }
       if (p === 'ask') {
-        if (val('name2').length < 2) return 'Enter your name.';
         if (val('question').length < 3) return 'Type your question.';
+        if (val('name2').length < 2) return 'Enter your name.';
       }
       if (p === 'notify' && val('name3').length < 2) return 'Enter your name.';
       return '';
+    };
+
+    const summary = () => {
+      const s = services();
+      if (!s.length) return '';
+      const parts = [s.length > 1 ? `${s[0]} + ${s.length - 1} more` : s[0]];
+      const c = chosen();
+      if (c) parts.push(`${c.d.label}, ${c.w.label}`);
+      const e = byWeight() && !isPack(planValue()) ? estimate(loadKg(), planValue()) : null;
+      if (e) parts.push(e.priceLabel);
+      return parts.join(' · ');
     };
 
     /* ---------- Rendering ---------- */
@@ -1241,13 +1697,17 @@ const sub: Record<string, string> = {
       renderStepper();
       const done = panel === 'done';
       $('[data-wz-hint]').textContent = '';
+      renderSum();
       $('[data-wz-back]').hidden = index === 0 || done;
       $('[data-wz-next]').hidden = panel === 'review' || done;
       $('[data-wz-send]').hidden = panel !== 'review';
       $('[data-wz-finish]').hidden = !done;
       $('[data-wz-finish]').textContent = mode === 'page' ? 'Book another pickup' : 'Done';
-      $('[data-ics]').hidden = !(done && ['pickup', 'service', 'plan', 'stain'].includes(intent));
+      $('[data-prep]').hidden = !(done && isPickup());
+      $('[data-ics]').hidden = !(done && isPickup() && !!chosen());
+      $('[data-ics-label]').textContent = repeat() === 'once' ? 'Add pickup to my calendar' : 'Add repeat pickups to my calendar';
       $('[data-clearcart]').hidden = !(done && intent === 'order' && cart.count() > 0);
+      if (panel === 'time') updateEta();
       if (panel === 'review') {
         const text = compose(data());
         $('[data-preview]').textContent = text;
@@ -1282,6 +1742,16 @@ const sub: Record<string, string> = {
       el.className = `pin full ${input.value ? st.cls : ''}`;
     };
 
+    const setPlan = (wanted: string) => {
+      const select = field('plan') as unknown as HTMLSelectElement;
+      if (![...select.options].some((o) => o.value === wanted) && /^monthly-\d+$/.test(wanted)) {
+        const kg = Number(wanted.split('-')[1]);
+        select.add(new Option(`Monthly pack · ${kg} kg · ${rupees(packPrice(kg))}/month`, wanted), 1);
+      }
+      select.value = wanted;
+      if (select.selectedIndex < 0) select.value = 'payg';
+    };
+
     /* ---------- Open ---------- */
     const open = (opts: OpenOptions = {}) => {
       intent = opts.intent ?? 'pickup';
@@ -1289,30 +1759,30 @@ const sub: Record<string, string> = {
       index = 0;
       location = opts.location ?? '';
       if (mode === 'sheet') $('[data-wz-title]').textContent = FLOWS[intent].title;
+      const last = lastOrder.get();
+      const again = opts.again && last ? last : null;
 
       // Fresh dates every time (computed in IST on this device).
       days = pickupDays(7);
       dayIdx = 0;
       winIdx = -1;
-      renderDays();
 
       // Services: preselect from context and reveal "More" if needed.
-      root.querySelectorAll<HTMLInputElement>('input[name="wz-svc"]').forEach((i) => {
-        i.checked = i.value === opts.service || (intent === 'plan' && i.value === 'Wash & Fold');
-      });
+      const preselect = again ? again.services : opts.service ? [opts.service] : intent === 'plan' ? [BY_WEIGHT] : [];
+      root.querySelectorAll<HTMLInputElement>('input[name="wz-svc"]').forEach((i) => (i.checked = preselect.includes(i.value)));
       const needMore = !!root.querySelector('#wz-more input:checked');
       $('#wz-more').hidden = !needMore;
       $('[data-more]').setAttribute('aria-expanded', String(needMore));
 
-      // Plan
-      const select = field('plan') as unknown as HTMLSelectElement;
-      const wanted = opts.plan ?? 'payg';
-      if (![...select.options].some((o) => o.value === wanted) && /^monthly-\d+$/.test(wanted)) {
-        const kg = Number(wanted.split('-')[1]);
-        select.add(new Option(`Monthly pack · ${kg} kg · ${rupees(packPrice(kg))}/month`, wanted), 1);
-      }
-      select.value = wanted;
-      if (select.selectedIndex < 0) select.value = 'payg';
+      // Plan, load, repeat and remembered wash preferences.
+      setPlan(again?.plan || opts.plan || 'payg');
+      setGroup('load', again?.kg ? String(again.kg) : '\u0000');
+      setGroup('repeat', again?.repeat || 'once');
+      setGroup('detergent', last?.detergent ?? '');
+      softener().checked = !!last?.softener;
+      ['biztype', 'bizvolume', 'bizfreq'].forEach((g) => setGroup(g, '\u0000'));
+      updateService();
+      renderDays();
 
       // Context text
       $('[data-where-q]').textContent = intent === 'order' ? 'Where should we deliver?' : 'Where should we pick up?';
@@ -1320,7 +1790,7 @@ const sub: Record<string, string> = {
       const items = $('[data-items]');
       items.hidden = intent !== 'order';
       if (intent === 'order') items.textContent = `${orderLines().join('\n')}\nTotal: ${rupees(cart.total())}`;
-      field('question').value = '';
+      field('question').value = opts.topic ? (TOPICS[opts.topic] ?? '') : '';
       field('notes').value = '';
 
       // Saved details make repeat bookings quick.
@@ -1331,6 +1801,7 @@ const sub: Record<string, string> = {
       fill('name', saved.name);
       fill('name2', saved.name);
       fill('name3', saved.name);
+      fill('name4', saved.name);
       fill('pincode', saved.pincode);
       fill('pincode3', saved.pincode);
       fill('address', saved.address);
@@ -1339,8 +1810,10 @@ const sub: Record<string, string> = {
       showPin();
       updatePin();
 
+      // "Book again" starts at the time step with everything else filled in.
+      if (again) index = Math.max(0, panels.indexOf('time'));
       render();
-      if (mode === 'page') history.replaceState({ wz: 0 }, '');
+      if (mode === 'page') history.replaceState({ wz: index }, '');
       const d = dialog();
       if (d && !d.open) d.showModal();
     };
@@ -1355,25 +1828,40 @@ const sub: Record<string, string> = {
       e.preventDefault();
       root.querySelector('details[open]')?.removeAttribute('open');
       const ds = t.dataset;
-      open({ intent: (ds.flow as Intent) || 'pickup', service: ds.flowService, plan: ds.flowPlan, location: ds.flowLocation });
+      open({ intent: (ds.flow as Intent) || 'pickup', service: ds.flowService, plan: ds.flowPlan, location: ds.flowLocation, topic: ds.flowTopic });
     });
     document.addEventListener('dhb:flow', (e) => open((e as CustomEvent<OpenOptions>).detail));
 
     root.addEventListener('click', async (e) => {
       const t = e.target as HTMLElement;
+      const hint = () => ($('[data-wz-hint]').textContent = '');
       const day = t.closest<HTMLElement>('[data-day]');
       const win = t.closest<HTMLButtonElement>('[data-win]');
       const goto = t.closest<HTMLElement>('[data-goto]');
+      const opt = t.closest<HTMLElement>('[data-group] [role="radio"]');
+      const topic = t.closest<HTMLElement>('[data-topic]');
       if (day) {
         dayIdx = Number(day.dataset.day);
         renderDays();
-        $('[data-wz-hint]').textContent = '';
+        hint();
       } else if (win && !win.disabled) {
         winIdx = Number(win.dataset.win);
         renderDays();
-        $('[data-wz-hint]').textContent = '';
+        hint();
         navigator.vibrate?.(8);
-      } else if (goto && Number(goto.dataset.goto) < index) {
+      } else if (opt) {
+        const g = opt.closest<HTMLElement>('[data-group]')!;
+        const was = opt.getAttribute('aria-checked') === 'true';
+        g.querySelectorAll('[role="radio"]').forEach((b) => b.setAttribute('aria-checked', 'false'));
+        if (!(was && g.hasAttribute('data-optional'))) opt.setAttribute('aria-checked', 'true');
+        updateService();
+        hint();
+      } else if (topic) {
+        const q = field('question');
+        q.value = TOPICS[topic.dataset.topic!] ?? '';
+        q.focus();
+        hint();
+      } else if (goto && Number(goto.dataset.goto) < index && panels[index] !== 'done') {
         go(Number(goto.dataset.goto));
       } else if (t.closest('[data-more]')) {
         const btn = $('[data-more]');
@@ -1406,13 +1894,12 @@ const sub: Record<string, string> = {
       } else if (t.closest('[data-edit]')) {
         go(0);
       } else if (t.closest('[data-ics]')) {
-        const d = days[dayIdx];
-        const w = d?.windows[winIdx];
-        if (!d || !w) return;
-        const blob = new Blob([buildIcs(windowTimes(d, w), site.whatsapp)], { type: 'text/calendar;charset=utf-8' });
+        const c = chosen();
+        if (!c) return;
+        const blob = new Blob([buildIcs(windowTimes(c.d, c.w), site.whatsapp, repeat())], { type: 'text/calendar;charset=utf-8' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = 'dhobermans-weekly-pickup.ics';
+        a.download = 'dhobermans-pickup.ics';
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -1422,9 +1909,11 @@ const sub: Record<string, string> = {
         close();
       } else if (t.closest('[data-forget]')) {
         profile.clear();
-        ['name', 'name2', 'name3', 'pincode', 'pincode3', 'address'].forEach((f) => (field(f).value = ''));
+        lastOrder.clear();
+        ['name', 'name2', 'name3', 'name4', 'pincode', 'pincode3', 'address'].forEach((f) => (field(f).value = ''));
         pin = null;
         showPin();
+        updatePin();
         root.querySelector('details[open]')?.removeAttribute('open');
       }
     });
@@ -1437,6 +1926,10 @@ const sub: Record<string, string> = {
       const f = data();
       const saved = profile.get();
       profile.save({ name: f.name || saved.name, pincode: f.pincode || saved.pincode, address: f.address || saved.address, pin: f.pin ?? saved.pin });
+      if (isPickup()) {
+        lastOrder.save({ services: services(), plan: field('plan').value, kg: loadKg(), repeat: repeat(), detergent: groupVal('detergent'), softener: softener().checked });
+        document.dispatchEvent(new CustomEvent('dhb:booked'));
+      }
       window.setTimeout(() => go(panels.length - 1), 350);
     });
 
@@ -1444,7 +1937,11 @@ const sub: Record<string, string> = {
       if ((e.target as HTMLElement).matches('[data-f="pincode"]')) updatePin();
       $('[data-wz-hint]').textContent = '';
     });
-    root.addEventListener('change', () => ($('[data-wz-hint]').textContent = ''));
+    root.addEventListener('change', (e) => {
+      const t = e.target as HTMLElement;
+      if (t.matches('input[name="wz-svc"], [data-f="plan"]')) updateService();
+      $('[data-wz-hint]').textContent = '';
+    });
     root.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && (e.target as HTMLElement).matches('input')) {
         e.preventDefault();
@@ -1457,7 +1954,7 @@ const sub: Record<string, string> = {
         if (e.state && typeof e.state.wz === 'number') go(e.state.wz, false);
       });
       document.addEventListener('click', (e) => {
-        const menu = root.querySelector('details');
+        const menu = root.querySelector('details.wz__menu') as HTMLDetailsElement | null;
         if (menu?.open && !menu.contains(e.target as Node)) menu.removeAttribute('open');
       });
       open({ intent: 'pickup' });

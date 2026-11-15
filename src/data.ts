@@ -18,24 +18,6 @@ export const services = [
   { slug: 'stain-removal', name: 'Stain Removal', image: stain },
 ];
 
-export const benefits = [
-  {
-    icon: 'truck',
-    title: 'Free Pickup & Delivery',
-    body: 'Free within 5 km of our HSR Layout base. Schedule a time and we handle the rest, door to door.',
-  },
-  {
-    icon: 'clock',
-    title: '24-Hour Turnaround',
-    body: 'Your clothes returned fresh, folded and ironed within 24 hours. Express options available.',
-  },
-  {
-    icon: 'leaf',
-    title: 'Eco-Friendly Care',
-    body: 'Gentle, sustainable detergents that are kind to your clothes and the planet.',
-  },
-];
-
 export const steps = [
   {
     title: 'Pick a slot',

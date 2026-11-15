@@ -23,16 +23,21 @@ Message wording: `src/lib/booking.ts`. Without JavaScript, every button still li
 
 | Feature            | What it does                                                                                              |
 | ------------------ | --------------------------------------------------------------------------------------------------------- |
-| Ordering wizard    | 3-step stepper (Service, Pickup, Review): top services plus "More", 7-day date strip with morning/evening windows computed live in IST, location by GPS or map pin (Google Maps link and distance in the message), message preview, then WhatsApp. Same engine runs the installed app (`src/components/OrderWizard.astro`) |
-| Care cart          | Add, change quantity, remove and clear products; saved on the device; one itemised order through the flow  |
-| App booking survey | Services, slot, address, name, review with message preview, send to WhatsApp                              |
+| Ordering wizard    | 4 short steps (Service, Time, Address, Review): top services plus "More", optional load size with a live price estimate, plan, wash preferences (detergent, softener), 7-day date strip with morning/evening windows computed live in IST, a "back by" time, repeat weekly or every 2 weeks, location by GPS or map pin (Google Maps link and distance in the message), message preview, then WhatsApp. The same engine runs the installed app (`src/components/OrderWizard.astro`) |
+| Book again         | Returning customers get a one-tap "Repeat" button in the hero; the wizard opens pre-filled at the Time step |
+| Live pickup promise | The hero shows the next pickup window, when laundry comes back and how long is left to book that slot    |
+| Why-us bento       | Count-up numbers, an animated journey and a "Check my distance" tool for the free 5 km zone               |
+| Business quotes    | A dedicated quote flow (business type, monthly volume, pickup frequency) from the Business pricing card   |
+| Help shortcuts     | "Where is my order?", "Reschedule a pickup" and "Report an issue" open WhatsApp with the question started |
+| Care cart          | Add, change quantity, remove and clear products; saved on the device; one itemised order through the wizard |
 | Pricing            | ₹100/kg wash, fold and iron; monthly pack 10% off (₹90/kg, 20/40/60 kg); business volume tiers 15% off at 100 kg+ (₹85/kg) and 20% off at 250 kg+ (₹80/kg) |
-| Plan finder        | Estimates weekly and monthly laundry weight and compares pay per pickup with a monthly pack               |
-| Weekly reminder    | Downloads a recurring calendar event (.ics) for a chosen slot (installed app)                               |
-| Stain SOS          | First-aid steps for six common stains                                                                      |
+| Plan finder        | Estimates weekly and monthly laundry weight with an animated washing machine, and compares pay per pickup with a monthly pack |
+| Stain SOS + care labels | First-aid steps for six stains, and a decoder for 17 care-label symbols (ISO 3758)                  |
+| Calendar reminder  | After booking, downloads a calendar event (.ics) for the chosen slot: one-time, weekly or every 2 weeks   |
 | Install prompt     | Once per device; QR code hand-off from laptop to phone; see below                                          |
 
-Saved cart and details stay in the visitor's browser (`localStorage`) and are only sent when they tap a WhatsApp button.
+Saved cart, details, last order and wash preferences stay in the visitor's browser (`localStorage`) and are only sent
+when they tap a WhatsApp button.
 The app menu has "Forget my saved details".
 
 ## Progressive web app

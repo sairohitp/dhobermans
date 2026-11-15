@@ -6,9 +6,11 @@ import PhoneMock from '../components/PhoneMock.astro';
 import PlanFinder from '../components/PlanFinder.astro';
 import StainSOS from '../components/StainSOS.astro';
 import heroImage from '../assets/hero-laundry.jpg';
+import CareLabels from '../components/CareLabels.astro';
+import { site } from '../config';
 import { wa, msg } from '../lib/wa';
 import { rupees } from '../lib/store';
-import { services, benefits, steps, plans, pricing, packPrice, fullPrice, tierRate, locations, products, categoryIcon, faqs } from '../data';
+import { services, steps, plans, pricing, packPrice, fullPrice, tierRate, locations, products, categoryIcon, faqs } from '../data';
 
 const featuredProducts = products.filter((p) => p.featured);
 const marquee = ['Wash & Fold', 'Dry Cleaning', 'Steam Ironing', 'Free pickup within 5 km', '24-hour turnaround', '₹100/kg wash, fold & iron', 'Comforter Wash', 'Shoe Cleaning', 'Curtain Cleaning', 'Stain Removal'];
@@ -21,20 +23,32 @@ const defaultPack = pricing.defaultPack;
   <section class="hero">
     <div class="container hero__grid">
       <div class="hero__copy">
-        <h1 class="h1">Laundry, delivered <span class="accent">like magic.</span></h1>
+        <h1 class="h1 kinetic">
+          <span class="w" style="--i:0">Laundry,</span>{' '}<span class="w" style="--i:1">delivered</span>{' '}<span class="accent"><span class="w" style="--i:2">like</span>{' '}<span class="w" style="--i:3">magic.</span></span>
+        </h1>
         <p class="lead">Laundry and dry cleaning pickup and delivery across Bangalore. We wash, fold, and iron your clothes and bring them back within 24 hours.</p>
         <div class="hero__actions">
           <a href={wa()} {...ext} class="btn btn--wa" data-flow="pickup"><Icon name="whatsapp" size={20} /> Book a pickup</a>
           <a href="#pricing" class="btn btn--ghost">From ₹90/kg · See pricing</a>
         </div>
+        <button type="button" class="hero__again" data-again hidden>
+          <Icon name="repeat" size={16} /> <span data-again-text>Repeat my last order</span>
+        </button>
+        <div class="promise" data-promise>
+          <div class="promise__cell">
+            <span class="promise__k"><span class="promise__pulse"></span>Next pickup</span>
+            <strong data-promise-pickup>Morning or evening</strong>
+          </div>
+          <span class="promise__arrow"><Icon name="arrow-right" size={18} /></span>
+          <div class="promise__cell">
+            <span class="promise__k">Back at your door</span>
+            <strong data-promise-back>Within 24 hours</strong>
+          </div>
+          <p class="promise__note" data-promise-note>Free pickup &amp; delivery within 5 km of HSR Layout.</p>
+        </div>
         <button type="button" class="hero__app" data-install hidden>
           <Icon name="download" size={16} /> Get the dhobermans app
         </button>
-        <ul class="hero__promises">
-          <li><Icon name="clock" size={18} />24-hour turnaround</li>
-          <li><Icon name="truck" size={18} />Free pickup within 5 km</li>
-          <li><Icon name="leaf" size={18} />Eco-friendly care</li>
-        </ul>
       </div>
       <div class="hero__media">
         <div class="hero__frame">
@@ -69,16 +83,49 @@ const defaultPack = pricing.defaultPack;
         <h2 class="h2">Fresh clothes, zero effort.</h2>
         <p class="lead">We come to you, clean with care, and bring everything back folded, ironed and on time.</p>
       </div>
-      <div class="benefits">
-        {
-          benefits.map((b) => (
-            <article class="benefit reveal">
-              <span class="benefit__icon"><Icon name={b.icon} size={22} /></span>
-              <h3>{b.title}</h3>
-              <p>{b.body}</p>
-            </article>
-          ))
-        }
+      <div class="bento">
+        <article class="bn bn--time reveal">
+          <span class="clock" aria-hidden="true"><i></i><b></b></span>
+          <p class="bn__big"><span data-countup="24">24</span><small>hours</small></p>
+          <h3>Door to door in a day.</h3>
+          <p>Picked up, washed, folded, ironed and back within 24 hours. Express options available.</p>
+          <ol class="journey" aria-label="How your laundry moves">
+            <li>Pickup</li>
+            <li>Wash</li>
+            <li>Fold &amp; iron</li>
+            <li>Delivery</li>
+          </ol>
+        </article>
+        <article class="bn bn--zone reveal">
+          <div class="bn__text">
+            <p class="bn__big"><span data-countup="5">5</span><small>km</small></p>
+            <h3>Free pickup &amp; delivery.</h3>
+            <p>Within {site.freeRadiusKm} km of our base in {site.base.label}.</p>
+            <button type="button" class="bn__btn" data-distance><Icon name="locate" size={16} /> Check my distance</button>
+            <p class="bn__result" data-distance-result aria-live="polite"></p>
+          </div>
+          <div class="radar" aria-hidden="true"><span></span><span></span><span></span><i></i></div>
+        </article>
+        <article class="bn bn--price reveal">
+          <p class="bn__big"><span>₹<span data-countup="100">100</span></span><small>/kg</small></p>
+          <h3>Simple pricing.</h3>
+          <p>Wash, fold &amp; iron, billed by weight.</p>
+        </article>
+        <article class="bn bn--care reveal">
+          <span class="bn__icon"><Icon name="shield" size={22} /></span>
+          <h3>Care guarantee.</h3>
+          <p>Any damage is covered. We compensate or replace the item.</p>
+        </article>
+        <article class="bn bn--eco reveal">
+          <span class="bn__icon"><Icon name="leaf" size={22} /></span>
+          <h3>Eco-friendly care.</h3>
+          <p>Gentle, sustainable detergents that are kind to your clothes and the planet.</p>
+        </article>
+        <article class="bn bn--sms reveal">
+          <span class="bn__icon"><Icon name="message" size={22} /></span>
+          <h3>Updates at every step.</h3>
+          <p>Real-time SMS updates from pickup to delivery.</p>
+        </article>
       </div>
     </div>
   </section>
@@ -188,7 +235,7 @@ const defaultPack = pricing.defaultPack;
                 href={wa()}
                 {...ext}
                 class:list={['btn btn--block', p.featured ? 'btn--white' : 'btn--primary']}
-                data-flow={p.id === 'payg' ? 'pickup' : 'plan'}
+                data-flow={p.id === 'payg' ? 'pickup' : p.id === 'business' ? 'business' : 'plan'}
                 data-flow-plan={p.id === 'monthly' ? `monthly-${defaultPack}` : p.id}
                 data-plan-cta={p.id}
               >
@@ -200,7 +247,7 @@ const defaultPack = pricing.defaultPack;
       </div>
       <p class="swipe-hint">Swipe to compare plans <Icon name="arrow-right" size={14} /></p>
       <p class="pricing__note">
-        Dry cleaning, shoe, curtain and comforter cleaning and stain removal are priced per item.
+        Not sure what a kilo looks like? It's about 5 T-shirts, or 2 bath towels. Dry cleaning, shoe, curtain and comforter cleaning and stain removal are priced per item.{' '}
         <a href={wa(msg.question)} {...ext} data-flow="question">Ask us for a quote</a>.
       </p>
       <PlanFinder />
@@ -275,14 +322,21 @@ const defaultPack = pricing.defaultPack;
     </div>
   </section>
 
-  <!-- Stain SOS -->
+  <!-- Stain SOS and care label decoder -->
   <section id="stain-sos" class="section section--dark">
     <div class="container">
       <div class="section-head reveal">
         <h2 class="h2">Spilled something? Act fast.</h2>
-        <p class="lead">Quick first aid for the most common stains, until we can take over.</p>
+        <p class="lead">First aid for common stains, and a decoder for those tiny care-label symbols.</p>
       </div>
-      <StainSOS />
+      <div class="lab" data-lab>
+        <div class="lab__switch" role="tablist" aria-label="Laundry tools">
+          <button type="button" role="tab" id="labtab-stains" aria-controls="lab-stains" aria-selected="true">Stain SOS</button>
+          <button type="button" role="tab" id="labtab-labels" aria-controls="lab-labels" aria-selected="false" tabindex="-1">Care label decoder</button>
+        </div>
+        <div id="lab-stains" role="tabpanel" aria-labelledby="labtab-stains"><StainSOS /></div>
+        <div id="lab-labels" role="tabpanel" aria-labelledby="labtab-labels" hidden><CareLabels /></div>
+      </div>
     </div>
   </section>
 
@@ -308,6 +362,11 @@ const defaultPack = pricing.defaultPack;
           <span>Still have a question?</span>
           <strong><Icon name="whatsapp" size={18} /> Ask us on WhatsApp</strong>
         </a>
+        <div class="help">
+          <a href={wa(msg.question)} {...ext} data-flow="question" data-flow-topic="track"><Icon name="truck" size={16} /> Where is my order?</a>
+          <a href={wa(msg.question)} {...ext} data-flow="question" data-flow-topic="reschedule"><Icon name="calendar" size={16} /> Reschedule a pickup</a>
+          <a href={wa(msg.question)} {...ext} data-flow="question" data-flow-topic="issue"><Icon name="shield" size={16} /> Report an issue</a>
+        </div>
       </div>
     </div>
   </section>
@@ -316,6 +375,7 @@ const defaultPack = pricing.defaultPack;
   <section id="book" class="section section--surface">
     <div class="container" id="contact">
       <div class="book reveal">
+        <div class="fizz" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
         <h2 class="h2">Ready to simplify laundry?</h2>
         <p class="lead">Tell us what needs care and when. You'll see your message before it opens in WhatsApp.</p>
         <div class="book__actions">
@@ -333,7 +393,128 @@ const defaultPack = pricing.defaultPack;
 </Base>
 
 <script>
+  import { nextPickup } from '../lib/slots';
+  import { distanceKm } from '../lib/geo';
+  import { profile, lastOrder } from '../lib/store';
+  import { site } from '../config';
+
+  const cap = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
+
+  // Hero: the next pickup window, when it comes back, and how long is left to book it.
+  const renderPromise = () => {
+    const box = document.querySelector<HTMLElement>('[data-promise]');
+    const n = box ? nextPickup() : null;
+    if (!box || !n) return;
+    box.querySelector('[data-promise-pickup]')!.textContent = n.pickup;
+    box.querySelector('[data-promise-back]')!.textContent = `By ${n.back}`;
+    const h = Math.floor(n.minutesLeft / 60);
+    const m = n.minutesLeft % 60;
+    const left = h ? `${h} h${m ? ` ${m} min` : ''}` : `${m} min`;
+    box.querySelector('[data-promise-note]')!.textContent =
+      `${n.minutesLeft <= 360 ? `Book in the next ${left} for this slot.` : `Book by ${n.cutoff} for this slot.`} Free pickup within ${site.freeRadiusKm} km.`;
+  };
+  window.setInterval(renderPromise, 30000);
+
+  // Hero: one-tap repeat of the last pickup for returning customers.
+  const renderAgain = () => {
+    const btn = document.querySelector<HTMLElement>('[data-again]');
+    if (!btn) return;
+    const last = lastOrder.get();
+    btn.hidden = !last;
+    if (!last) return;
+    const first = (profile.get().name ?? '').split(' ')[0];
+    const what = last.services.length > 1 ? `${last.services[0]} + ${last.services.length - 1} more` : last.services[0];
+    btn.querySelector('[data-again-text]')!.textContent = `${first ? `Welcome back, ${cap(first)}. ` : ''}Repeat ${what}`;
+  };
+  document.addEventListener('dhb:booked', renderAgain);
+
+  // Count numbers up when they scroll into view.
+  const countUp = () => {
+    const els = [...document.querySelectorAll<HTMLElement>('[data-countup]')];
+    if (!els.length || !('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((en) => {
+          if (!en.isIntersecting) return;
+          io.unobserve(en.target);
+          const el = en.target as HTMLElement;
+          const to = Number(el.dataset.countup);
+          const t0 = performance.now();
+          const tick = (t: number) => {
+            const k = Math.min(1, (t - t0) / 900);
+            el.textContent = String(Math.round(to * (1 - Math.pow(1 - k, 3))));
+            if (k < 1) requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        });
+      },
+      { threshold: 0.6 },
+    );
+    els.forEach((el) => {
+      if (el.getBoundingClientRect().top > window.innerHeight) el.textContent = '0';
+      io.observe(el);
+    });
+    // Never leave a zero behind when the page is printed or saved.
+    window.addEventListener('beforeprint', () => els.forEach((el) => (el.textContent = el.dataset.countup ?? '')), { once: true });
+  };
+
+  // "Check my distance": is this visitor inside the free pickup zone?
+  const distanceCheck = () => {
+    const btn = document.querySelector<HTMLButtonElement>('[data-distance]');
+    const out = document.querySelector<HTMLElement>('[data-distance-result]');
+    if (!btn || !out || btn.dataset.ready) return;
+    btn.dataset.ready = 'true';
+    const show = (text: string, cls = '') => {
+      out.className = `bn__result ${cls}`;
+      out.textContent = text;
+    };
+    btn.addEventListener('click', () => {
+      if (!('geolocation' in navigator)) return show('Location is not available in this browser. You can pin your address on a map when you book.', 'is-far');
+      show('Finding your location...');
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const pin = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          const km = distanceKm({ lat: site.base.lat, lng: site.base.lng }, pin);
+          if (km <= site.freeRadiusKm) show(`You're about ${km.toFixed(1)} km away: pickup and delivery are free.`, 'is-ok');
+          else show(`You're about ${km.toFixed(1)} km away, outside our free ${site.freeRadiusKm} km zone. Book anyway and we'll confirm the delivery charge.`, 'is-far');
+          profile.save({ ...profile.get(), pin }); // reused when they book, so they don't share it twice
+        },
+        () => show('Location is blocked. You can pin your address on a map when you book.', 'is-far'),
+        { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 },
+      );
+    });
+  };
+
+  // Stain SOS / care label decoder switch.
+  const labSwitch = () => {
+    const root = document.querySelector<HTMLElement>('[data-lab]');
+    if (!root || root.dataset.ready) return;
+    root.dataset.ready = 'true';
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('.lab__switch [role="tab"]')];
+    tabs.forEach((tab) =>
+      tab.addEventListener('click', () =>
+        tabs.forEach((x) => {
+          const on = x === tab;
+          x.setAttribute('aria-selected', String(on));
+          x.tabIndex = on ? 0 : -1;
+          document.getElementById(x.getAttribute('aria-controls')!)!.hidden = !on;
+        }),
+      ),
+    );
+  };
+
   document.addEventListener('astro:page-load', () => {
+    renderPromise();
+    renderAgain();
+    countUp();
+    distanceCheck();
+    labSwitch();
+    const again = document.querySelector<HTMLElement>('[data-again]');
+    if (again && !again.dataset.ready) {
+      again.dataset.ready = 'true';
+      again.addEventListener('click', () => document.dispatchEvent(new CustomEvent('dhb:flow', { detail: { intent: 'pickup', again: true } })));
+    }
+
     // Monthly pack size picker.
     const pack = document.querySelector<HTMLElement>('[data-pack]');
     if (pack && !pack.dataset.ready) {
@@ -415,27 +596,107 @@ const defaultPack = pricing.defaultPack;
     text-underline-offset: 3px;
   }
 
-  .hero__promises {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px 22px;
-    margin: 24px 0 0;
-    padding: 24px 0 0;
-    border-top: 1px solid var(--line);
-    list-style: none;
+  .kinetic .w {
+    display: inline-block;
+    animation: word-rise 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: calc(var(--i) * 70ms + 60ms);
   }
 
-  .hero__promises li {
+  @keyframes word-rise {
+    from {
+      opacity: 0;
+      transform: translateY(0.45em);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .hero__again {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    color: var(--ink);
+    min-height: 44px;
+    margin-top: 14px;
+    padding: 0 14px;
+    border: 1px solid var(--brand-200);
+    border-radius: var(--radius-btn);
+    background: var(--brand-50);
+    color: var(--brand-700);
     font-size: 15px;
-    font-weight: 500;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
   }
 
-  .hero__promises :global(svg) {
-    color: var(--brand);
+  .promise {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 4px 16px;
+    max-width: 520px;
+    margin-top: 24px;
+    padding: 16px 18px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: rgba(255, 255, 255, 0.86);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .promise__cell {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .promise__k {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .promise__cell strong {
+    color: var(--ink);
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  .promise__arrow {
+    color: var(--subtle);
+  }
+
+  .promise__pulse {
+    flex: none;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #1faa59;
+    animation: live 2s infinite;
+  }
+
+  @keyframes live {
+    0% {
+      box-shadow: 0 0 0 0 rgba(31, 170, 89, 0.55);
+    }
+    70%,
+    100% {
+      box-shadow: 0 0 0 8px rgba(31, 170, 89, 0);
+    }
+  }
+
+  .promise__note {
+    grid-column: 1 / -1;
+    margin-top: 8px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--line);
+    color: var(--muted);
+    font-size: 14px;
   }
 
   .hero__media {
@@ -572,43 +833,342 @@ const defaultPack = pricing.defaultPack;
     }
   }
 
-  /* Benefits */
-  .benefits {
+  /* Bento */
+  .bento {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-areas:
+      'time time zone zone'
+      'time time price care'
+      'eco eco sms sms';
+    gap: 16px;
   }
 
-  .benefit {
-    display: grid;
-    justify-items: center;
-    padding: 32px 28px;
-    border: 1px solid rgba(0, 123, 255, 0.16);
+  .bn {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 28px;
+    overflow: hidden;
+    border: 1px solid var(--line);
     border-radius: var(--radius-lg);
-    background: linear-gradient(160deg, rgba(0, 123, 255, 0.09), rgba(255, 255, 255, 0.7) 70%);
-    text-align: center;
+    background: var(--white);
   }
 
-  .benefit__icon {
+  .bn h3 {
+    font-size: 21px;
+  }
+
+  .bn p {
+    margin-top: 6px;
+    color: var(--muted);
+  }
+
+  .bn .bn__big {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin: 0 0 12px;
+    color: var(--ink);
+    font-size: clamp(44px, 5vw, 60px);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+
+  .bn__big small {
+    color: var(--muted);
+    font-size: 18px;
+    font-weight: 500;
+  }
+
+  .bn__icon {
     display: grid;
     place-items: center;
     width: 48px;
     height: 48px;
     margin-bottom: 18px;
     border-radius: var(--radius);
-    background: var(--white);
+    background: var(--brand-50);
     color: var(--brand);
-    box-shadow: var(--shadow-sm);
   }
 
-  .benefit h3 {
-    font-size: 21px;
+  .bn--time {
+    grid-area: time;
+    border-color: transparent;
+    background: linear-gradient(150deg, var(--brand) 0%, var(--brand-700) 100%);
+    color: rgba(255, 255, 255, 0.86);
   }
 
-  .benefit p {
-    max-width: 320px;
-    margin-top: 8px;
-    color: var(--muted);
+  .bn--time h3,
+  .bn--time .bn__big {
+    color: var(--white);
+  }
+
+  .bn--time .bn__big {
+    font-size: clamp(84px, 10vw, 136px);
+  }
+
+  .bn--time .bn__big small {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 24px;
+  }
+
+  .bn--time h3 {
+    font-size: 26px;
+  }
+
+  .bn--time p {
+    max-width: 400px;
+    color: rgba(255, 255, 255, 0.86);
+  }
+
+  .clock {
+    position: absolute;
+    top: 28px;
+    right: 28px;
+    width: 132px;
+    aspect-ratio: 1;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .clock::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    width: 8px;
+    height: 8px;
+    margin: auto;
+    border-radius: 50%;
+    background: var(--white);
+  }
+
+  .clock i,
+  .clock b {
+    position: absolute;
+    bottom: 50%;
+    left: 50%;
+    border-radius: 2px;
+    background: var(--white);
+    transform-origin: 50% 100%;
+    animation: clock-spin linear infinite;
+  }
+
+  .clock i {
+    width: 2px;
+    height: 40%;
+    margin-left: -1px;
+    animation-duration: 8s;
+  }
+
+  .clock b {
+    width: 3px;
+    height: 27%;
+    margin-left: -1.5px;
+    opacity: 0.85;
+    animation-duration: 96s;
+  }
+
+  @keyframes clock-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .journey {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    margin: auto 0 0;
+    padding: 36px 0 0;
+    list-style: none;
+  }
+
+  .journey::before {
+    content: '';
+    position: absolute;
+    top: 41px;
+    right: 12.5%;
+    left: 12.5%;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  .journey::after {
+    content: '';
+    position: absolute;
+    top: 36px;
+    left: 12.5%;
+    width: 12px;
+    height: 12px;
+    margin-left: -6px;
+    border-radius: 50%;
+    background: var(--white);
+    box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.25);
+    animation: travel 7s ease-in-out infinite;
+  }
+
+  @keyframes travel {
+    0%,
+    12% {
+      left: 12.5%;
+    }
+    29%,
+    41% {
+      left: 37.5%;
+    }
+    58%,
+    70% {
+      left: 62.5%;
+    }
+    87%,
+    100% {
+      left: 87.5%;
+    }
+  }
+
+  .journey li {
+    position: relative;
+    padding-top: 22px;
+    color: var(--white);
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+  }
+
+  .journey li::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    margin-left: -4px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.65);
+  }
+
+  .bn--zone {
+    grid-area: zone;
+    flex-direction: row;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .bn__text {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+  }
+
+  .bn__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    margin-top: 14px;
+    padding: 0 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-btn);
+    background: var(--white);
+    color: var(--ink);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .bn__btn:hover {
+    border-color: var(--brand-200);
+  }
+
+  .bn__btn :global(svg) {
+    color: var(--brand);
+  }
+
+  .bn .bn__result {
+    margin-top: 10px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .bn__result:empty {
+    display: none;
+  }
+
+  .bn .bn__result.is-ok {
+    color: #0f7b46;
+  }
+
+  .bn .bn__result.is-far {
+    color: #a15c00;
+  }
+
+  .radar {
+    position: relative;
+    flex: none;
+    width: 150px;
+    aspect-ratio: 1;
+  }
+
+  .radar span {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    border: 1.5px solid var(--brand-200);
+    border-radius: 50%;
+  }
+
+  .radar span:nth-child(2) {
+    width: 66%;
+    height: 66%;
+  }
+
+  .radar span:nth-child(3) {
+    width: 33%;
+    height: 33%;
+    background: var(--brand-50);
+  }
+
+  .radar i {
+    position: absolute;
+    inset: 0;
+    width: 12px;
+    height: 12px;
+    margin: auto;
+    border-radius: 50%;
+    background: var(--brand);
+    animation: ping 2.6s ease-out infinite;
+  }
+
+  @keyframes ping {
+    0% {
+      box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.45);
+    }
+    80%,
+    100% {
+      box-shadow: 0 0 0 68px rgba(0, 123, 255, 0);
+    }
+  }
+
+  .bn--price {
+    grid-area: price;
+  }
+
+  .bn--care {
+    grid-area: care;
+  }
+
+  .bn--eco {
+    grid-area: eco;
+  }
+
+  .bn--sms {
+    grid-area: sms;
   }
 
   /* Services */
@@ -1180,12 +1740,19 @@ const defaultPack = pricing.defaultPack;
 
   /* Book */
   .book {
+    position: relative;
     display: grid;
     justify-items: center;
+    overflow: hidden;
     padding: clamp(40px, 6vw, 72px) clamp(20px, 4vw, 48px);
     border-radius: var(--radius-xl);
     background: linear-gradient(140deg, #e3f0ff 0%, #f4f9ff 55%, #e9f3ff 100%);
     text-align: center;
+  }
+
+  .book > :not(.fizz) {
+    position: relative;
+    z-index: 1;
   }
 
   .book .h2,
@@ -1223,6 +1790,106 @@ const defaultPack = pricing.defaultPack;
     color: var(--brand);
   }
 
+  /* Laundry lab switch */
+  .lab__switch {
+    display: flex;
+    gap: 4px;
+    width: fit-content;
+    max-width: 100%;
+    margin: 0 auto 24px;
+    padding: 4px;
+    border-radius: var(--radius-btn);
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .lab__switch button {
+    min-height: 44px;
+    padding: 0 18px;
+    border: 0;
+    border-radius: var(--radius);
+    background: transparent;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .lab__switch button[aria-selected='true'] {
+    background: var(--white);
+    color: var(--ink);
+  }
+
+  /* Help shortcuts */
+  .help {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .help a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 0 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-btn);
+    color: var(--ink);
+    font-size: 15px;
+    font-weight: 500;
+    transition: border-color 0.2s ease;
+  }
+
+  .help a:hover {
+    border-color: var(--brand-200);
+  }
+
+  .help :global(svg) {
+    color: var(--brand);
+  }
+
+  /* Bubbles */
+  .fizz {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .fizz i {
+    position: absolute;
+    bottom: -44px;
+    border: 1.5px solid rgba(0, 123, 255, 0.22);
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.95), rgba(0, 123, 255, 0.08));
+    opacity: 0;
+    animation: fizz 10s linear infinite;
+  }
+
+  .fizz i:nth-child(1) { left: 5%; width: 22px; height: 22px; animation-delay: 0s; }
+  .fizz i:nth-child(2) { left: 14%; width: 38px; height: 38px; animation-delay: 3.2s; }
+  .fizz i:nth-child(3) { left: 27%; width: 14px; height: 14px; animation-delay: 6.1s; }
+  .fizz i:nth-child(4) { left: 71%; width: 16px; height: 16px; animation-delay: 1.4s; }
+  .fizz i:nth-child(5) { left: 82%; width: 42px; height: 42px; animation-delay: 4.6s; }
+  .fizz i:nth-child(6) { left: 93%; width: 20px; height: 20px; animation-delay: 7.7s; }
+  .fizz i:nth-child(7) { left: 40%; width: 10px; height: 10px; animation-delay: 8.6s; }
+  .fizz i:nth-child(8) { left: 60%; width: 12px; height: 12px; animation-delay: 2.3s; }
+
+  @keyframes fizz {
+    0% {
+      transform: translateY(0);
+      opacity: 0;
+    }
+    10% {
+      opacity: 0.85;
+    }
+    100% {
+      transform: translateY(-560px);
+      opacity: 0;
+    }
+  }
+
   /* Responsive */
   @media (max-width: 1080px) {
     .services,
@@ -1243,8 +1910,14 @@ const defaultPack = pricing.defaultPack;
       margin-inline: auto;
     }
 
-    .benefits {
-      grid-template-columns: 1fr;
+    .bento {
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-areas:
+        'time time'
+        'zone zone'
+        'price care'
+        'eco eco'
+        'sms sms';
     }
 
     .steps,
@@ -1268,8 +1941,59 @@ const defaultPack = pricing.defaultPack;
       aspect-ratio: 4 / 3.4;
     }
 
-    .benefit {
-      padding: 24px 20px;
+    .bento {
+      gap: 12px;
+    }
+
+    .bn {
+      padding: 20px;
+    }
+
+    .bn h3 {
+      font-size: 19px;
+    }
+
+    .bn p {
+      font-size: 15px;
+    }
+
+    .bn .bn__big {
+      font-size: 34px;
+    }
+
+    .bn--time .bn__big {
+      font-size: 84px;
+    }
+
+    .bn--time {
+      min-height: 340px;
+    }
+
+    .clock {
+      top: 20px;
+      right: 20px;
+      width: 92px;
+    }
+
+    .journey li {
+      font-size: 13px;
+    }
+
+    .radar {
+      width: 104px;
+    }
+
+    .promise {
+      padding: 14px;
+      gap: 4px 10px;
+    }
+
+    .promise__cell strong {
+      font-size: 16px;
+    }
+
+    .lab__switch button {
+      padding: 0 14px;
     }
 
     .services,

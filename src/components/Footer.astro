@@ -15,7 +15,7 @@ const company = [
 const help = [
   { href: '/#book', label: 'Book a pickup' },
   { href: '/#plan-finder', label: 'Plan finder' },
-  { href: '/#stain-sos', label: 'Stain SOS' },
+  { href: '/#stain-sos', label: 'Stain SOS & care labels' },
   { href: '/#faq', label: 'FAQs' },
 ];
 const socials = [
@@ -73,7 +73,11 @@ const shareText = `I use dhobermans for laundry pickup and delivery in ${site.ci
       </div>
       <div class="footer__col">
         <h3>Tools &amp; help</h3>
-        <ul>{help.map((l) => <li><a href={l.href}>{l.label}</a></li>)}</ul>
+        <ul>
+          {help.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+          <li><a href={wa(msg.question)} target="_blank" rel="noopener" data-flow="question" data-flow-topic="track">Where is my order?</a></li>
+          <li><a href={wa(msg.question)} target="_blank" rel="noopener" data-flow="business">Business quotes</a></li>
+        </ul>
       </div>
     </div>
 

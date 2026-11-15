@@ -92,8 +92,32 @@ const links = [
     transition: color 0.2s ease;
   }
 
-  .nav a:hover {
+  .nav a:hover,
+  .nav a[aria-current] {
     color: var(--brand);
+  }
+
+  /* Reading progress along the bottom edge of the header */
+  @supports (animation-timeline: scroll()) {
+    .header::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      bottom: -1px;
+      left: 0;
+      height: 2px;
+      background: var(--brand);
+      transform: scaleX(0);
+      transform-origin: 0 50%;
+      animation: progress linear both;
+      animation-timeline: scroll(root block);
+    }
+
+    @keyframes progress {
+      to {
+        transform: scaleX(1);
+      }
+    }
   }
 
   .header__actions {
@@ -216,6 +240,31 @@ const links = [
     });
   };
   document.addEventListener(CART_EVENT, renderBadge);
+
+  // Highlight the menu link of the section in view.
+  let spy: IntersectionObserver | undefined;
+  const scrollSpy = () => {
+    spy?.disconnect();
+    const links = [...document.querySelectorAll<HTMLAnchorElement>('.nav a')];
+    links.forEach((a) => a.removeAttribute('aria-current'));
+    if (window.location.pathname !== '/' || !('IntersectionObserver' in window)) return;
+    const bySection = new Map<Element, HTMLAnchorElement>();
+    links.forEach((a) => {
+      const el = a.hash ? document.getElementById(a.hash.slice(1)) : null;
+      if (el) bySection.set(el, a);
+    });
+    spy = new IntersectionObserver(
+      (entries) =>
+        entries.forEach((en) => {
+          const link = bySection.get(en.target);
+          if (en.isIntersecting) link?.setAttribute('aria-current', 'true');
+          else link?.removeAttribute('aria-current');
+        }),
+      { rootMargin: '-45% 0px -50% 0px' },
+    );
+    bySection.forEach((_, el) => spy!.observe(el));
+  };
+  document.addEventListener('astro:page-load', scrollSpy);
   document.addEventListener('astro:page-load', renderBadge);
 
   const onScroll = () => document.querySelector('[data-header]')?.classList.toggle('is-scrolled', window.scrollY > 8);
