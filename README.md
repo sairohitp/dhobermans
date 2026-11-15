@@ -23,10 +23,10 @@ Message wording: `src/lib/booking.ts`. Without JavaScript, every button still li
 
 | Feature            | What it does                                                                                              |
 | ------------------ | --------------------------------------------------------------------------------------------------------- |
-| Booking flow       | Details, pincode coverage check, next pickup slots (IST), message preview, then WhatsApp; remembers details |
+| Ordering wizard    | 3-step stepper (Service, Pickup, Review): top services plus "More", 7-day date strip with morning/evening windows computed live in IST, location by GPS or map pin (Google Maps link and distance in the message), message preview, then WhatsApp. Same engine runs the installed app (`src/components/OrderWizard.astro`) |
 | Care cart          | Add, change quantity, remove and clear products; saved on the device; one itemised order through the flow  |
 | App booking survey | Services, slot, address, name, review with message preview, send to WhatsApp                              |
-| Pricing            | ₹100/kg wash, fold and iron; monthly pack at 10% off (₹90/kg) with 20/40/60 kg sizes; business from ₹90/kg |
+| Pricing            | ₹100/kg wash, fold and iron; monthly pack 10% off (₹90/kg, 20/40/60 kg); business volume tiers 15% off at 100 kg+ (₹85/kg) and 20% off at 250 kg+ (₹80/kg) |
 | Plan finder        | Estimates weekly and monthly laundry weight and compares pay per pickup with a monthly pack               |
 | Weekly reminder    | Downloads a recurring calendar event (.ics) for a chosen slot (installed app)                               |
 | Stain SOS          | First-aid steps for six common stains                                                                      |
@@ -74,6 +74,15 @@ npm run build && npx wrangler dev
   If you add third-party scripts (for example analytics), add their hosts to the Content-Security-Policy there.
 - DNS is on Cloudflare; the domain stays registered at GoDaddy. `www.dhobermans.com` redirects to `dhobermans.com`
   with a Cloudflare redirect rule. Email (MX, SPF, DMARC) records are unchanged.
+
+## Base location and free delivery zone
+
+`src/config.ts` holds the laundry base (`base`) and the free pickup radius (`freeRadiusKm`, 5 km). The wizard shows each
+customer their distance from the base and adds it, with a Google Maps link to their pin, to the WhatsApp message.
+The base coordinates are currently the approximate centre of HSR Layout: replace `lat` and `lng` with the exact pin.
+
+The map uses OpenStreetMap tiles (free, attribution shown). Its usage policy suits low-volume use like this; switch to
+a commercial tile provider if traffic grows.
 
 ## Where to edit
 

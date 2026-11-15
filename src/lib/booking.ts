@@ -1,5 +1,6 @@
-import { plans, pricing, packPrice, packRate } from '../data';
+import { pricing, packPrice, packRate, tierRate } from '../data';
 import { rupees } from './store';
+import { mapsLink, type Pin } from './geo';
 
 export type Intent = 'pickup' | 'service' | 'plan' | 'stain' | 'location' | 'question' | 'order';
 
@@ -10,6 +11,8 @@ export type FlowData = {
   plan?: string;
   pincode?: string;
   address?: string;
+  pin?: Pin | null;
+  distanceKm?: number | null;
   name?: string;
   notes?: string;
   question?: string;
@@ -18,6 +21,8 @@ export type FlowData = {
   total?: string;
 };
 
+const minBusinessRate = tierRate(pricing.businessTiers[pricing.businessTiers.length - 1].discount);
+
 /** Plan choices offered in booking forms, all derived from the per-kg base rate. */
 export const planOptions = [
   { value: 'payg', label: `Pay per pickup · ${rupees(pricing.perKg)}/kg` },
@@ -25,7 +30,7 @@ export const planOptions = [
     value: `monthly-${kg}`,
     label: `Monthly pack · ${kg} kg · ${rupees(packPrice(kg))}/month`,
   })),
-  { value: 'business', label: `Business · from ${rupees(packRate)}/kg` },
+  { value: 'business', label: `Business · from ${rupees(minBusinessRate)}/kg (100 kg+ a month)` },
 ];
 
 export const planLabel = (value?: string) => {
@@ -34,12 +39,20 @@ export const planLabel = (value?: string) => {
     const kg = Number(value.split('-')[1]);
     return `Monthly pack, ${kg} kg (${rupees(packPrice(kg))}/month, ${rupees(packRate)}/kg)`;
   }
-  if (value === 'business') return `Business (from ${rupees(packRate)}/kg)`;
+  if (value === 'business') return `Business volume rate (from ${rupees(minBusinessRate)}/kg)`;
   if (value === 'payg') return `Pay per pickup (${rupees(pricing.perKg)}/kg)`;
-  return plans.find((p) => p.id === value)?.name ?? value;
+  return value;
 };
 
-const line = (label: string, value?: string) => (value && value.trim() ? `${label}: ${value.trim()}` : '');
+const line = (label: string, value?: string | null) => (value && value.trim() ? `${label}: ${value.trim()}` : '');
+
+const locationLines = (d: FlowData) =>
+  d.pin
+    ? [
+        `Location pin: ${mapsLink(d.pin)}`,
+        d.distanceKm != null ? `Distance: about ${d.distanceKm.toFixed(1)} km from dhobermans` : '',
+      ]
+    : [];
 
 /** The WhatsApp message for any booking intent. */
 export const compose = (d: FlowData): string => {
@@ -61,8 +74,9 @@ export const compose = (d: FlowData): string => {
         ...(d.items ?? []),
         line('Total', d.total),
         line('Name', d.name),
-        line('Pincode', d.pincode),
         line('Delivery address', d.address),
+        line('Pincode', d.pincode),
+        ...locationLines(d),
         line('Notes', d.notes),
       ];
       break;
@@ -71,10 +85,11 @@ export const compose = (d: FlowData): string => {
         "Hi dhobermans, I'd like to schedule a pickup.",
         line('Services', (d.services ?? []).join(', ')),
         line('Plan', planLabel(d.plan)),
-        line('Slot', d.slot),
-        line('Pincode', d.pincode),
-        line('Address', d.address),
+        line('Pickup slot', d.slot),
         line('Name', d.name),
+        line('Address', d.address),
+        line('Pincode', d.pincode),
+        ...locationLines(d),
         line('Notes', d.notes),
       ];
   }

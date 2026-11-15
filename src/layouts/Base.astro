@@ -33,6 +33,13 @@ const business: Record<string, unknown> = {
   image: ogUrl,
   logo: `${site.url}/icon-512.png`,
   telephone: '+91-8861761718',
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: site.base.label,
+    addressLocality: 'Bengaluru',
+    addressRegion: 'Karnataka',
+    addressCountry: 'IN',
+  },
   areaServed: { '@type': 'City', name: 'Bengaluru', alternateName: 'Bangalore' },
   priceRange: '₹₹',
   hasOfferCatalog: {

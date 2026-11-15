@@ -21,8 +21,8 @@ export const services = [
 export const benefits = [
   {
     icon: 'truck',
-    title: 'Pickup & Delivery',
-    body: 'We come to you. Schedule a time, and our team handles the rest, door to door.',
+    title: 'Free Pickup & Delivery',
+    body: 'Free within 5 km of our HSR Layout base. Schedule a time and we handle the rest, door to door.',
   },
   {
     icon: 'clock',
@@ -38,18 +38,18 @@ export const benefits = [
 
 export const steps = [
   {
-    title: 'Schedule a pickup in seconds',
-    body: 'Choose a pickup slot that suits you and tell us what needs care.',
+    title: 'Pick a slot',
+    body: 'Choose what needs care and a pickup time that suits you.',
     screen: { icon: 'calendar', heading: 'Book a slot', rows: ['Today · 6–8 PM', 'Tomorrow · 9–11 AM', 'Tomorrow · 6–8 PM'], cta: 'Confirm slot' },
   },
   {
-    title: 'We pick it up from your door',
-    body: 'A dhobermans rider collects your bag and tags it, so every item is tracked.',
+    title: 'We collect',
+    body: 'A rider picks up your bag and tags it, so every item is tracked.',
     screen: { icon: 'truck', heading: 'Pickup en route', rows: ['Rider assigned', 'ETA · 12 mins', 'Bag tagged · #DH204'], cta: 'Track live' },
   },
   {
-    title: 'Washed, folded, delivered fresh',
-    body: 'Your clothes come back clean, folded and ready to wear, within 24 hours.',
+    title: 'Delivered fresh',
+    body: 'Washed, folded and ironed, back at your door within 24 hours.',
     screen: { icon: 'check-circle', heading: 'Order ready', rows: ['Wash · Done', 'Fold · Done', 'Out for delivery'], cta: 'View order' },
   },
 ];
@@ -60,10 +60,21 @@ export const pricing = {
   packDiscount: 0.1,
   packSizes: [20, 40, 60],
   defaultPack: 40,
+  /** Business volume tiers (monthly kg). Proposed: confirm before launch. */
+  businessTiers: [
+    { minKg: 100, maxKg: 249, discount: 0.15 },
+    { minKg: 250, maxKg: null as number | null, discount: 0.2 },
+  ],
 };
 export const packRate = Math.round(pricing.perKg * (1 - pricing.packDiscount)); // 90
 export const packPrice = (kg: number) => Math.round(kg * pricing.perKg * (1 - pricing.packDiscount));
 export const fullPrice = (kg: number) => kg * pricing.perKg;
+export const tierRate = (discount: number) => Math.round(pricing.perKg * (1 - discount));
+/** Business rate for a monthly volume, or null below the first tier. */
+export const businessRate = (kg: number) => {
+  const tier = [...pricing.businessTiers].reverse().find((t) => kg >= t.minKg);
+  return tier ? tierRate(tier.discount) : null;
+};
 
 export const plans = [
   {
@@ -71,7 +82,7 @@ export const plans = [
     name: 'Pay per pickup',
     tagline: 'Wash, fold & iron, billed by weight',
     rate: pricing.perKg,
-    features: ['Wash, fold & iron included', '24-hour turnaround', 'Free pickup & delivery', 'Eco-friendly detergents'],
+    features: ['Wash, fold & iron included', '24-hour turnaround', 'Free pickup & delivery within 5 km', 'Eco-friendly detergents'],
     cta: 'Book a pickup',
   },
   {
@@ -80,17 +91,17 @@ export const plans = [
     tagline: 'Save 10% on every kg',
     rate: packRate,
     featured: true,
-    features: ['10% off the per-kg rate', 'Wash, fold & iron included', '24-hour turnaround', 'Free pickup & delivery'],
+    features: ['10% off the per-kg rate', 'Wash, fold & iron included', '24-hour turnaround', 'Free pickup & delivery within 5 km'],
     cta: 'Choose this pack',
   },
   {
     id: 'business',
     name: 'Business',
-    tagline: 'For offices & hostels',
-    rate: packRate,
+    tagline: 'Offices, hostels, PGs & short-stay hosts',
+    rate: tierRate(pricing.businessTiers[pricing.businessTiers.length - 1].discount),
     from: true,
-    features: ['Monthly pack rate on bulk volumes', 'Dedicated account manager', 'Invoice billing', '24-hour turnaround'],
-    cta: 'Get a quote',
+    features: ['Scheduled pickup days', 'Dedicated account manager', 'Monthly invoice', 'Free pickup & delivery within 5 km'],
+    cta: 'Get a business quote',
   },
 ];
 
@@ -142,7 +153,7 @@ export const faqs = [
   },
   {
     q: 'How much does it cost?',
-    a: '₹100 per kg for wash, fold and iron, with free pickup and delivery. Take a monthly pack and save 10% (₹90 per kg).',
+    a: '₹100 per kg for wash, fold and iron. Take a monthly pack and save 10% (₹90 per kg). Businesses sending 100 kg or more a month get volume rates from ₹80 per kg.',
   },
   {
     q: 'How long does it take?',
@@ -154,14 +165,14 @@ export const faqs = [
   },
   {
     q: 'What areas do you service?',
-    a: 'We currently operate across Bangalore and deliver city-wide. Self-service locations are planned in the neighbourhoods shown on our map.',
+    a: 'We are based in HSR Layout, Sector 1. Pickup and delivery are free within 5 km of us. Further away? Message us and we will confirm the delivery charge.',
   },
 ];
 
 /** Pickup windows (IST). startHour/endHour are 24h clock. */
 export const slots = [
-  { label: '9–11 AM', startHour: 9, endHour: 11 },
-  { label: '6–8 PM', startHour: 18, endHour: 20 },
+  { name: 'Morning', label: '9–11 AM', startHour: 9, endHour: 11 },
+  { name: 'Evening', label: '6–8 PM', startHour: 18, endHour: 20 },
 ];
 
 /**

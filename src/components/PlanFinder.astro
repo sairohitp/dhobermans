@@ -54,6 +54,10 @@ import { wa } from '../lib/wa';
         <span>Monthly pack <em data-finder-save>save ₹0</em></span>
         <strong data-cost-pack>₹0</strong>
       </div>
+      <div class="finder__row" data-biz-row hidden>
+        <span>Business volume rate <em data-biz-note></em></span>
+        <strong data-cost-biz>₹0</strong>
+      </div>
     </div>
     <a class="btn btn--white btn--block" href={wa()} target="_blank" rel="noopener" data-plan-cta data-flow="plan" data-flow-plan="monthly-40">
       Start a monthly pack
@@ -288,7 +292,7 @@ import { wa } from '../lib/wa';
 </style>
 
 <script>
-  import { finderPresets, packPrice, fullPrice } from '../data';
+  import { finderPresets, packPrice, fullPrice, businessRate } from '../data';
   import { rupees } from '../lib/store';
 
   const WEEKS_PER_MONTH = 52 / 12;
@@ -325,6 +329,13 @@ import { wa } from '../lib/wa';
       pack.textContent = `${rupees(packPrice(monthly))}/month`;
       save.textContent = `save ${rupees(fullPrice(monthly) - packPrice(monthly))}`;
       cta.dataset.flowPlan = `monthly-${monthly}`;
+      const biz = businessRate(monthly);
+      const bizRow = root.querySelector<HTMLElement>('[data-biz-row]')!;
+      bizRow.hidden = biz === null;
+      if (biz !== null) {
+        root.querySelector('[data-cost-biz]')!.textContent = `${rupees(monthly * biz)}/month`;
+        root.querySelector('[data-biz-note]')!.textContent = `${rupees(biz)}/kg at 100 kg+`;
+      }
     };
 
     const applyPreset = (id: string) => {

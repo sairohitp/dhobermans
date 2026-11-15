@@ -14,6 +14,19 @@ export const site = {
   /** How the WhatsApp number is displayed on the site. */
   whatsappDisplay: '+91 88617 61718',
 
+  /** Laundry base. Pickup and delivery are free within `freeRadiusKm` of it. */
+  base: {
+    label: 'HSR Layout, Sector 1',
+    full: 'HSR Layout, Sector 1, Bengaluru, Karnataka',
+    /**
+     * APPROXIMATE: the centre of HSR Layout. Replace with the exact pin of the laundry
+     * (in Google Maps, right-click the location and copy the coordinates).
+     */
+    lat: 12.9121,
+    lng: 77.6446,
+  },
+  freeRadiusKm: 5,
+
   /** Optional contact email, shown in the footer when set. Example: 'hello@dhobermans.com' */
   email: '',
 

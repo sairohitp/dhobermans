@@ -8,10 +8,10 @@ import StainSOS from '../components/StainSOS.astro';
 import heroImage from '../assets/hero-laundry.jpg';
 import { wa, msg } from '../lib/wa';
 import { rupees } from '../lib/store';
-import { services, benefits, steps, plans, pricing, packPrice, fullPrice, locations, products, categoryIcon, faqs } from '../data';
+import { services, benefits, steps, plans, pricing, packPrice, fullPrice, tierRate, locations, products, categoryIcon, faqs } from '../data';
 
 const featuredProducts = products.filter((p) => p.featured);
-const marquee = ['Wash & Fold', 'Dry Cleaning', 'Steam Ironing', 'Free pickup & delivery', '24-hour turnaround', '₹100/kg wash, fold & iron', 'Comforter Wash', 'Shoe Cleaning', 'Curtain Cleaning', 'Stain Removal'];
+const marquee = ['Wash & Fold', 'Dry Cleaning', 'Steam Ironing', 'Free pickup within 5 km', '24-hour turnaround', '₹100/kg wash, fold & iron', 'Comforter Wash', 'Shoe Cleaning', 'Curtain Cleaning', 'Stain Removal'];
 const ext = { target: '_blank', rel: 'noopener' };
 const defaultPack = pricing.defaultPack;
 ---
@@ -32,7 +32,7 @@ const defaultPack = pricing.defaultPack;
         </button>
         <ul class="hero__promises">
           <li><Icon name="clock" size={18} />24-hour turnaround</li>
-          <li><Icon name="truck" size={18} />Free pickup &amp; delivery</li>
+          <li><Icon name="truck" size={18} />Free pickup within 5 km</li>
           <li><Icon name="leaf" size={18} />Eco-friendly care</li>
         </ul>
       </div>
@@ -138,7 +138,7 @@ const defaultPack = pricing.defaultPack;
     <div class="container">
       <div class="section-head reveal">
         <h2 class="h2">Simple, transparent pricing.</h2>
-        <p class="lead">{rupees(pricing.perKg)} per kg for wash, fold and iron, with free pickup and delivery. Take a monthly pack and save 10%.</p>
+        <p class="lead">{rupees(pricing.perKg)} per kg for wash, fold and iron. Take a monthly pack and save 10%. Pickup and delivery are free within 5 km of HSR Layout.</p>
       </div>
       <div class="plans swipe" data-plans>
         {
@@ -152,6 +152,16 @@ const defaultPack = pricing.defaultPack;
                 <span>/kg</span>
                 {p.id === 'monthly' && <s class="plan__was">{rupees(pricing.perKg)}</s>}
               </p>
+              {p.id === 'business' && (
+                <ul class="tiers" aria-label="Business volume rates">
+                  {pricing.businessTiers.map((t) => (
+                    <li>
+                      <span>{t.maxKg ? `${t.minKg}–${t.maxKg} kg a month` : `${t.minKg} kg+ a month`}</span>
+                      <strong>{rupees(tierRate(t.discount))}/kg</strong>
+                    </li>
+                  ))}
+                </ul>
+              )}
               {p.id === 'monthly' && (
                 <div class="pack" data-pack>
                   <div class="pack__sizes" role="radiogroup" aria-label="Monthly pack size">
@@ -314,7 +324,7 @@ const defaultPack = pricing.defaultPack;
         </div>
         <ul class="book__points">
           <li><Icon name="check-circle" size={18} />24-hour turnaround</li>
-          <li><Icon name="check-circle" size={18} />Free pickup &amp; delivery</li>
+          <li><Icon name="check-circle" size={18} />Free pickup within 5 km</li>
           <li><Icon name="check-circle" size={18} />{rupees(pricing.perKg)}/kg wash, fold &amp; iron</li>
         </ul>
       </div>
@@ -680,7 +690,8 @@ const defaultPack = pricing.defaultPack;
     position: relative;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 28px;
+    grid-template-rows: auto auto auto auto;
+    gap: 0 28px;
     margin: 0;
     padding: 0;
     list-style: none;
@@ -697,9 +708,10 @@ const defaultPack = pricing.defaultPack;
 
   .step {
     position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    display: grid;
+    grid-row: span 4;
+    grid-template-rows: subgrid;
+    justify-items: center;
     text-align: center;
   }
 
@@ -738,8 +750,30 @@ const defaultPack = pricing.defaultPack;
   }
 
   .step p {
-    max-width: 320px;
+    max-width: 300px;
     margin-top: 8px;
+  }
+
+  .tiers {
+    display: grid;
+    gap: 6px;
+    margin: 20px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .tiers li {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: var(--radius);
+    background: var(--surface);
+    font-size: 15px;
+  }
+
+  .tiers strong {
+    color: var(--ink);
   }
 
   /* Plans */
@@ -1267,6 +1301,12 @@ const defaultPack = pricing.defaultPack;
     .steps,
     .plans {
       max-width: none;
+    }
+
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
     .step__card {

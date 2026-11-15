@@ -32,6 +32,11 @@ const shareText = `I use dhobermans for laundry pickup and delivery in ${site.ci
         <a href="/" class="footer__wordmark">dhobermans</a>
         <p>Laundry pickup and delivery in {site.city}.</p>
         <p class="footer__contact">
+          <span>Find us</span>
+          <span class="footer__addr">{site.base.full}</span>
+          <span>Free pickup &amp; delivery within {site.freeRadiusKm} km</span>
+        </p>
+        <p class="footer__contact">
           <span>WhatsApp us</span>
           <a href={wa(msg.question)} target="_blank" rel="noopener" data-flow="question">{site.whatsappDisplay}</a>
         </p>
@@ -119,6 +124,11 @@ const shareText = `I use dhobermans for laundry pickup and delivery in ${site.ci
   .footer__contact {
     display: flex;
     flex-direction: column;
+  }
+
+  .footer__addr {
+    color: var(--white);
+    font-weight: 500;
   }
 
   .footer__contact a {

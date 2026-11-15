@@ -1,0 +1,1471 @@
+---
+import { Image } from 'astro:assets';
+import Icon from './Icon.astro';
+import { services } from '../data';
+import { planOptions } from '../lib/booking';
+import { wa, msg } from '../lib/wa';
+
+interface Props {
+  mode: 'sheet' | 'page';
+}
+const { mode } = Astro.props;
+
+// Most people book one or two everyday services: show those first, the rest behind "More".
+const TOP = ['Wash & Fold', 'Steam Ironing', 'Dry Cleaning'];
+const top = TOP.map((n) => services.find((s) => s.name === n)!).filter(Boolean);
+const more = services.filter((s) => !TOP.includes(s.name));
+const sub: Record<string, string> = {
+  'Wash & Fold': 'Washed, folded & ironed · ₹100/kg',
+  'Steam Ironing': 'Ironing only',
+  'Dry Cleaning': 'Suits, silks & delicates',
+};
+---
+
+<div class="wz" data-wizard data-mode={mode}>
+  <header class="wz__head">
+    <span class="wz__side"></span>
+    <h2 class:list={['wz__title', { 'wz__title--brand': mode === 'page' }]} id="wz-title" data-wz-title>
+      {mode === 'page' ? 'dhobermans' : 'Book a pickup'}
+    </h2>
+    {
+      mode === 'sheet' ? (
+        <button type="button" class="wz__icon" data-wz-close aria-label="Close">
+          <Icon name="x" size={20} />
+        </button>
+      ) : (
+        <details class="wz__menu">
+          <summary class="wz__icon" aria-label="Menu">
+            <Icon name="more" size={20} />
+          </summary>
+          <nav>
+            <a href="/care/"><Icon name="bag" size={18} /> Shop care products</a>
+            <a href={wa(msg.question)} data-flow="question"><Icon name="whatsapp" size={18} /> Ask a question</a>
+            <a href="/"><Icon name="arrow-up-right" size={18} /> Visit the website</a>
+            <button type="button" data-forget><Icon name="trash" size={18} /> Forget my saved details</button>
+          </nav>
+        </details>
+      )
+    }
+  </header>
+
+  <ol class="stepper" data-stepper aria-label="Booking steps"></ol>
+
+  <div class="wz__body" data-wz-body>
+    <!-- Service and time -->
+    <section class="panel" data-panel="service" hidden>
+      <h3 class="q">What needs care?</h3>
+      <div class="svc-top">
+        {
+          top.map((s) => (
+            <label class="svc">
+              <input type="checkbox" name="wz-svc" value={s.name} />
+              <span class="svc__img">
+                <Image src={s.image} alt="" widths={[120, 200]} sizes="72px" loading="lazy" />
+              </span>
+              <span class="svc__text">
+                <strong>{s.name}</strong>
+                <small>{sub[s.name]}</small>
+              </span>
+              <span class="svc__tick"><Icon name="check" size={14} /></span>
+            </label>
+          ))
+        }
+      </div>
+      <button type="button" class="more" data-more aria-expanded="false" aria-controls="wz-more">
+        More services <span>({more.length})</span>
+        <Icon name="chevron-down" size={18} />
+      </button>
+      <div class="svc-more" id="wz-more" hidden>
+        {
+          more.map((s) => (
+            <label class="pill">
+              <input type="checkbox" name="wz-svc" value={s.name} />
+              <span>{s.name}</span>
+            </label>
+          ))
+        }
+      </div>
+
+      <h3 class="q q--gap">When should we pick up?</h3>
+      <div class="days" role="radiogroup" aria-label="Pickup day" data-days></div>
+      <div class="windows" role="radiogroup" aria-label="Pickup time" data-windows></div>
+
+      <label class="field field--plan">
+        <span>Plan</span>
+        <select class="input" data-f="plan">
+          {planOptions.map((o) => <option value={o.value}>{o.label}</option>)}
+        </select>
+      </label>
+    </section>
+
+    <!-- Location and contact -->
+    <section class="panel" data-panel="where" hidden>
+      <div class="items" data-items hidden></div>
+      <h3 class="q" data-where-q>Where should we pick up?</h3>
+
+      <div class="loc">
+        <div class="loc__actions" data-loc-actions>
+          <button type="button" class="loc__btn" data-gps>
+            <span class="loc__icon"><Icon name="locate" size={20} /></span>
+            <span><strong>Use my current location</strong><small>Quickest: we get your exact pin</small></span>
+          </button>
+          <button type="button" class="loc__btn" data-mapbtn>
+            <span class="loc__icon"><Icon name="map" size={20} /></span>
+            <span><strong>Pick on a map</strong><small>Move the map to your door</small></span>
+          </button>
+        </div>
+        <p class="loc__status" data-loc-status aria-live="polite"></p>
+
+        <div class="pinned" data-pinned hidden>
+          <span class="pinned__ok"><Icon name="check" size={16} /></span>
+          <span class="pinned__text"><strong>Location pinned</strong><small data-pinned-text></small></span>
+          <a class="pinned__link" data-pinned-link href="#" target="_blank" rel="noopener">View</a>
+          <button type="button" class="pinned__link" data-pin-change>Change</button>
+        </div>
+
+        <div class="map" data-map hidden>
+          <div class="map__canvas" data-map-canvas></div>
+          <span class="map__pin" aria-hidden="true"><Icon name="map-pin" size={38} stroke={2.2} /></span>
+          <div class="map__bar">
+            <button type="button" class="btn btn--ghost btn--sm" data-map-locate><Icon name="locate" size={16} /> My location</button>
+            <button type="button" class="btn btn--primary btn--sm" data-map-confirm>Use this spot</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <label class="field full">
+          <span data-address-label>House / flat, street and landmark</span>
+          <input class="input" type="text" autocomplete="street-address" placeholder="e.g. Flat 302, 12th Main, near the park" data-f="address" />
+        </label>
+        <label class="field">
+          <span>Pincode <em data-pin-optional hidden>(optional)</em></span>
+          <input class="input" type="text" inputmode="numeric" autocomplete="postal-code" placeholder="560102" data-f="pincode" />
+        </label>
+        <label class="field">
+          <span>Your name</span>
+          <input class="input" type="text" autocomplete="name" data-f="name" />
+        </label>
+        <small class="pin full" data-pin-status aria-live="polite"></small>
+        <label class="field full">
+          <span>Notes <em>(optional)</em></span>
+          <input class="input" type="text" placeholder="Gate code, delicate items..." data-f="notes" />
+        </label>
+      </div>
+      <p class="privacy">Your details only go into your WhatsApp message and are saved on this device for next time.</p>
+    </section>
+
+    <!-- Question -->
+    <section class="panel" data-panel="ask" hidden>
+      <h3 class="q">How can we help?</h3>
+      <label class="field">
+        <span>Your name</span>
+        <input class="input" type="text" autocomplete="name" data-f="name2" />
+      </label>
+      <label class="field">
+        <span>Your question</span>
+        <textarea class="input" rows="4" placeholder="Type your question" data-f="question"></textarea>
+      </label>
+    </section>
+
+    <!-- Location alert -->
+    <section class="panel" data-panel="notify" hidden>
+      <h3 class="q">Get notified</h3>
+      <p class="lead-sm" data-notify-text></p>
+      <label class="field">
+        <span>Your name</span>
+        <input class="input" type="text" autocomplete="name" data-f="name3" />
+      </label>
+      <label class="field">
+        <span>Pincode <em>(optional)</em></span>
+        <input class="input" type="text" inputmode="numeric" autocomplete="postal-code" data-f="pincode3" />
+      </label>
+    </section>
+
+    <!-- Review -->
+    <section class="panel panel--center" data-panel="review" hidden>
+      <h3 class="q">Review your message</h3>
+      <p class="lead-sm">WhatsApp opens with this message ready. Just tap send.</p>
+      <div class="chat">
+        <div class="chat__head">
+          <span class="chat__avatar"><Icon name="whatsapp" size={16} /></span>
+          <span><strong>dhobermans</strong><small>WhatsApp</small></span>
+        </div>
+        <div class="chat__body"><p class="bubble" data-preview></p></div>
+      </div>
+      <button type="button" class="link" data-edit>Edit details</button>
+    </section>
+
+    <!-- Done -->
+    <section class="panel panel--center done" data-panel="done" hidden>
+      <span class="done__ok"><Icon name="check" size={30} /></span>
+      <h3 class="q">Finish in WhatsApp</h3>
+      <p class="lead-sm">Your message is ready in WhatsApp. Tap <strong>send</strong> there and we'll reply shortly.</p>
+      <div class="done__actions">
+        <button type="button" class="btn btn--ghost btn--block" data-ics hidden><Icon name="bell" size={18} /> Remind me weekly</button>
+        <button type="button" class="btn btn--ghost btn--block" data-clearcart hidden>Clear my cart</button>
+      </div>
+    </section>
+  </div>
+
+  <footer class="wz__foot">
+    <p class="wz__hint" data-wz-hint aria-live="polite"></p>
+    <div class="wz__actions">
+      <button type="button" class="btn btn--ghost" data-wz-back>Back</button>
+      <button type="button" class="btn btn--primary" data-wz-next>Continue</button>
+      <a class="btn btn--wa" href={wa()} target="_blank" rel="noopener" data-wz-send hidden>
+        <Icon name="whatsapp" size={20} /> Open WhatsApp
+      </a>
+      <button type="button" class="btn btn--primary" data-wz-finish hidden>Done</button>
+    </div>
+  </footer>
+</div>
+
+<style>
+  .wz {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    background: var(--white);
+    color: var(--text);
+  }
+
+  .wz[data-mode='page'] {
+    max-width: 640px;
+    min-height: 100dvh;
+    margin: 0 auto;
+  }
+
+  /* Header */
+  .wz__head {
+    display: grid;
+    grid-template-columns: 44px 1fr 44px;
+    align-items: center;
+    padding: 18px 20px 6px;
+  }
+
+  .wz[data-mode='page'] .wz__head {
+    padding-top: calc(12px + env(safe-area-inset-top));
+  }
+
+  .wz__title {
+    font-size: 19px;
+    text-align: center;
+  }
+
+  .wz__title--brand {
+    color: var(--brand);
+    font-size: 21px;
+  }
+
+  .wz__icon {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--surface-2);
+    color: var(--ink);
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .wz__icon::-webkit-details-marker {
+    display: none;
+  }
+
+  .wz__menu {
+    position: relative;
+  }
+
+  .wz__menu nav {
+    position: absolute;
+    top: 46px;
+    right: 0;
+    z-index: 10;
+    display: grid;
+    min-width: 250px;
+    padding: 6px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--white);
+    box-shadow: var(--shadow);
+  }
+
+  .wz__menu nav a,
+  .wz__menu nav button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 46px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: var(--radius);
+    background: none;
+    color: var(--ink);
+    font-size: 15px;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .wz__menu nav a:hover,
+  .wz__menu nav button:hover {
+    background: var(--surface);
+  }
+
+  /* Stepper */
+  .stepper {
+    display: flex;
+    margin: 0;
+    padding: 14px 28px 18px;
+    border-bottom: 1px solid var(--line);
+    list-style: none;
+  }
+
+  .stepper :global(.st) {
+    position: relative;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .stepper :global(.st:not(:first-child)::before) {
+    content: '';
+    position: absolute;
+    top: 16px;
+    right: calc(50% + 22px);
+    left: calc(-50% + 22px);
+    height: 2px;
+    border-radius: 2px;
+    background: var(--line);
+    transition: background-color 0.3s ease;
+  }
+
+  .stepper :global(.st.is-done::before),
+  .stepper :global(.st.is-current::before) {
+    background: var(--brand);
+  }
+
+  .stepper :global(.st__dot) {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border: 2px solid var(--line);
+    border-radius: 50%;
+    background: var(--white);
+    color: var(--subtle);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: default;
+    transition: all 0.25s ease;
+  }
+
+  .stepper :global(.st.is-current .st__dot) {
+    border-color: var(--brand);
+    background: var(--brand);
+    color: var(--white);
+    box-shadow: 0 0 0 5px var(--brand-100);
+  }
+
+  .stepper :global(.st.is-done .st__dot) {
+    border-color: var(--brand);
+    background: var(--brand-50);
+    color: var(--brand);
+    cursor: pointer;
+  }
+
+  .stepper :global(.st__label) {
+    color: var(--subtle);
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .stepper :global(.st.is-current .st__label),
+  .stepper :global(.st.is-done .st__label) {
+    color: var(--ink);
+  }
+
+  /* Body */
+  .wz__body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 24px 28px 28px;
+  }
+
+  .panel {
+    display: grid;
+    gap: 14px;
+    animation: panel-in 0.25s ease;
+  }
+
+  @keyframes panel-in {
+    from {
+      opacity: 0;
+      transform: translateX(10px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .panel--center {
+    justify-items: center;
+    text-align: center;
+  }
+
+  .q {
+    color: var(--ink);
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  .q--gap {
+    margin-top: 14px;
+  }
+
+  .lead-sm {
+    max-width: 420px;
+    color: var(--muted);
+    font-size: 15px;
+  }
+
+  /* Services */
+  .svc-top {
+    display: grid;
+    gap: 10px;
+  }
+
+  .svc {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 14px 10px 10px;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition:
+      border-color 0.15s ease,
+      background-color 0.15s ease;
+  }
+
+  .svc input,
+  .pill input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .svc__img {
+    flex: none;
+    overflow: hidden;
+    width: 60px;
+    height: 60px;
+    border-radius: var(--radius);
+    background: var(--surface-2);
+  }
+
+  .svc__img :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .svc__text {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    line-height: 1.3;
+  }
+
+  .svc__text strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .svc__text small {
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .svc__tick {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 1.5px var(--line);
+    color: transparent;
+  }
+
+  .svc:has(input:checked) {
+    border-color: var(--brand);
+    background: var(--brand-50);
+  }
+
+  .svc:has(input:checked) .svc__tick {
+    background: var(--brand);
+    box-shadow: none;
+    color: var(--white);
+  }
+
+  .svc:has(input:focus-visible),
+  .pill:has(input:focus-visible) {
+    outline: 3px solid var(--brand-200);
+    outline-offset: 2px;
+  }
+
+  .more {
+    display: inline-flex;
+    align-items: center;
+    justify-self: start;
+    gap: 6px;
+    min-height: 40px;
+    padding: 0 4px;
+    border: 0;
+    background: none;
+    color: var(--brand);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .more span {
+    color: var(--subtle);
+    font-weight: 500;
+  }
+
+  .more[aria-expanded='true'] :global(svg) {
+    transform: rotate(180deg);
+  }
+
+  .svc-more {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .pill {
+    position: relative;
+    cursor: pointer;
+  }
+
+  .pill span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 42px;
+    padding: 0 14px;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-btn);
+    font-size: 15px;
+    font-weight: 500;
+  }
+
+  .pill input:checked + span {
+    border-color: var(--brand);
+    background: var(--brand);
+    color: var(--white);
+  }
+
+  /* Day strip and time windows */
+  .days {
+    display: flex;
+    gap: 8px;
+    margin-inline: -28px;
+    padding: 2px 28px 4px;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+  }
+
+  .days::-webkit-scrollbar {
+    display: none;
+  }
+
+  .days :global(.day) {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    min-width: 76px;
+    padding: 10px 12px;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--white);
+    color: var(--ink);
+    cursor: pointer;
+    scroll-snap-align: start;
+  }
+
+  .days :global(.day span) {
+    font-weight: 600;
+  }
+
+  .days :global(.day small) {
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .days :global(.day[aria-checked='true']) {
+    border-color: var(--brand);
+    background: var(--brand);
+    color: var(--white);
+  }
+
+  .days :global(.day[aria-checked='true'] small) {
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .windows {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .windows :global(.win) {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding: 12px 14px;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--white);
+    color: var(--ink);
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .windows :global(.win strong) {
+    font-weight: 600;
+  }
+
+  .windows :global(.win small) {
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .windows :global(.win[aria-checked='true']) {
+    border-color: var(--brand);
+    background: var(--brand-50);
+  }
+
+  .windows :global(.win:disabled) {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .field {
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  .field > span {
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .field em {
+    color: var(--subtle);
+    font-style: normal;
+    font-weight: 500;
+  }
+
+  .field :global(.input) {
+    min-height: 48px;
+  }
+
+  .field--plan {
+    margin-top: 10px;
+  }
+
+  /* Location */
+  .items {
+    padding: 12px 14px;
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    font-size: 14px;
+    white-space: pre-line;
+  }
+
+  .loc {
+    display: grid;
+    gap: 10px;
+  }
+
+  .loc__actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .loc__btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--white);
+    color: var(--ink);
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+  }
+
+  .loc__btn:hover {
+    border-color: var(--brand-200);
+  }
+
+  .loc__btn > span:last-child {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.3;
+  }
+
+  .loc__btn strong {
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .loc__btn small {
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .loc__icon {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius);
+    background: var(--brand-50);
+    color: var(--brand);
+  }
+
+  .loc__status {
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .loc__status:empty {
+    display: none;
+  }
+
+  .pinned {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1.5px solid #9ad5b3;
+    border-radius: var(--radius-lg);
+    background: #f0faf4;
+  }
+
+  .pinned__ok {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #0f7b46;
+    color: var(--white);
+  }
+
+  .pinned__text {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.35;
+  }
+
+  .pinned__text strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .pinned__text small {
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .pinned__link {
+    flex: none;
+    min-height: 36px;
+    padding: 0 6px;
+    border: 0;
+    background: none;
+    color: var(--brand);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .map {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+  }
+
+  .map__canvas {
+    height: 280px;
+    background: var(--surface-2);
+  }
+
+  .map__pin {
+    position: absolute;
+    top: 140px;
+    left: 50%;
+    z-index: 500;
+    color: var(--brand);
+    transform: translate(-50%, -100%);
+    pointer-events: none;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.25));
+  }
+
+  .map__pin :global(svg) {
+    fill: var(--white);
+  }
+
+  .map__bar {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px;
+    border-top: 1px solid var(--line);
+    background: var(--white);
+  }
+
+  .grid2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 6px;
+  }
+
+  .grid2 .full {
+    grid-column: 1 / -1;
+  }
+
+  .pin {
+    margin-top: -4px;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .pin:empty {
+    display: none;
+  }
+
+  .pin.is-ok {
+    color: #0f7b46;
+  }
+
+  .pin.is-maybe {
+    color: #a15c00;
+  }
+
+  .privacy {
+    color: var(--subtle);
+    font-size: 13px;
+    text-align: center;
+  }
+
+  /* Review */
+  .chat {
+    width: 100%;
+    max-width: 460px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    text-align: left;
+  }
+
+  .chat__head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: #075e54;
+    color: var(--white);
+  }
+
+  .chat__head span:last-child {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+  }
+
+  .chat__head small {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+  }
+
+  .chat__avatar {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--wa);
+  }
+
+  .chat__body {
+    padding: 16px 14px;
+    background:
+      radial-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px) 0 0 / 12px 12px,
+      #efeae2;
+  }
+
+  .bubble {
+    margin-left: auto;
+    max-width: 94%;
+    padding: 10px 12px;
+    border-radius: 8px 2px 8px 8px;
+    background: #d9fdd3;
+    color: #111b21;
+    font-size: 14px;
+    line-height: 1.5;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08);
+  }
+
+  .link {
+    min-height: 40px;
+    padding: 0 8px;
+    border: 0;
+    background: none;
+    color: var(--brand);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .done {
+    padding-top: 28px;
+  }
+
+  .done__ok {
+    display: grid;
+    place-items: center;
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    background: var(--wa);
+    color: var(--white);
+  }
+
+  .done__actions {
+    display: grid;
+    gap: 10px;
+    width: 100%;
+    max-width: 320px;
+    margin-top: 8px;
+  }
+
+  /* Footer */
+  .wz__foot {
+    padding: 14px 28px calc(16px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--line);
+    background: var(--white);
+  }
+
+  .wz__hint {
+    margin-bottom: 10px;
+    color: #c62828;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+  }
+
+  .wz__hint:empty {
+    display: none;
+  }
+
+  .wz__actions {
+    display: flex;
+    gap: 10px;
+  }
+
+  .wz__actions .btn {
+    flex: 1;
+    min-height: 52px;
+  }
+
+  .wz__actions [data-wz-back] {
+    flex: 0 0 auto;
+    padding-inline: 22px;
+  }
+
+  @media (max-width: 560px) {
+    .wz__head {
+      padding: calc(10px + env(safe-area-inset-top)) 16px 4px;
+    }
+
+    .stepper {
+      padding: 12px 12px 14px;
+    }
+
+    .wz__body {
+      padding: 20px 16px 24px;
+    }
+
+    .days {
+      margin-inline: -16px;
+      padding-inline: 16px;
+    }
+
+    .loc__actions {
+      grid-template-columns: 1fr;
+    }
+
+    .map__canvas {
+      height: 240px;
+    }
+
+    .map__pin {
+      top: 120px;
+    }
+
+    .wz__foot {
+      padding-inline: 16px;
+    }
+  }
+</style>
+
+<script>
+  import { compose, waLink, type Intent, type FlowData } from '../lib/booking';
+  import { pickupDays, windowTimes, pincodeStatus, buildIcs, type PickupDay } from '../lib/slots';
+  import { distanceKm, mapsLink, type Pin } from '../lib/geo';
+  import { cart, profile, rupees } from '../lib/store';
+  import { products, packPrice } from '../data';
+  import { site } from '../config';
+
+  type Panel = 'service' | 'where' | 'ask' | 'notify' | 'review' | 'done';
+  type OpenOptions = { intent?: Intent; service?: string; plan?: string; location?: string };
+
+  const FLOWS: Record<Intent, { panels: Panel[]; labels: string[]; title: string }> = {
+    pickup: { panels: ['service', 'where', 'review'], labels: ['Service', 'Pickup', 'Review'], title: 'Book a pickup' },
+    service: { panels: ['service', 'where', 'review'], labels: ['Service', 'Pickup', 'Review'], title: 'Book a pickup' },
+    plan: { panels: ['service', 'where', 'review'], labels: ['Service', 'Pickup', 'Review'], title: 'Start your plan' },
+    stain: { panels: ['service', 'where', 'review'], labels: ['Service', 'Pickup', 'Review'], title: 'Stain removal' },
+    order: { panels: ['where', 'review'], labels: ['Delivery', 'Review'], title: 'Your order' },
+    question: { panels: ['ask', 'review'], labels: ['Question', 'Review'], title: 'Ask us anything' },
+    location: { panels: ['notify', 'review'], labels: ['Details', 'Review'], title: 'Get notified' },
+  };
+
+  const CHECK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
+  const BASE: Pin = { lat: site.base.lat, lng: site.base.lng };
+
+  const root = document.querySelector<HTMLElement>('[data-wizard]');
+
+  if (root) {
+    const mode = root.dataset.mode as 'sheet' | 'page';
+    const $ = <T extends Element = HTMLElement>(sel: string) => root.querySelector<T>(sel)!;
+    const field = (f: string) => $<HTMLInputElement>(`[data-f="${f}"]`);
+    const val = (f: string) => (field(f).value || '').trim();
+    const dialog = () => root.closest('dialog') as HTMLDialogElement | null;
+
+    let intent: Intent = 'pickup';
+    let panels: Panel[] = [];
+    let index = 0;
+    let days: PickupDay[] = [];
+    let dayIdx = 0;
+    let winIdx = -1;
+    let pin: Pin | null = null;
+    let location = '';
+
+    /* ---------- Slots ---------- */
+    const renderDays = () => {
+      $('[data-days]').innerHTML = days
+        .map((d, i) => `<button type="button" role="radio" class="day" data-day="${i}" aria-checked="${i === dayIdx}"><span>${d.label}</span><small>${d.sub}</small></button>`)
+        .join('');
+      const day = days[dayIdx];
+      if (day && winIdx >= 0 && !day.windows[winIdx]?.available) winIdx = -1;
+      $('[data-windows]').innerHTML = (day?.windows ?? [])
+        .map((w, i) => `<button type="button" role="radio" class="win" data-win="${i}" aria-checked="${i === winIdx}" ${w.available ? '' : 'disabled'}><strong>${w.name}</strong><small>${w.available ? w.label : 'Not available'}</small></button>`)
+        .join('');
+    };
+    const slotText = () => {
+      const d = days[dayIdx];
+      const w = d?.windows[winIdx];
+      return d && w ? `${d.long}, ${w.label}` : '';
+    };
+
+    /* ---------- Location ---------- */
+    const distance = () => (pin ? distanceKm(BASE, pin) : null);
+    const showPin = () => {
+      const pinned = $('[data-pinned]');
+      $('[data-pin-optional]').hidden = !pin;
+      if (!pin) {
+        pinned.hidden = true;
+        $('[data-loc-actions]').hidden = false;
+        return;
+      }
+      const km = distance()!;
+      const free = km <= site.freeRadiusKm;
+      $('[data-pinned-text]').textContent = `About ${km.toFixed(1)} km from us · ${free ? 'free pickup & delivery' : `outside our free ${site.freeRadiusKm} km zone; we'll confirm the delivery charge`}`;
+      $<HTMLAnchorElement>('[data-pinned-link]').href = mapsLink(pin);
+      pinned.hidden = false;
+      $('[data-loc-actions]').hidden = true;
+      $('[data-map]').hidden = true;
+    };
+    const status = (t: string) => ($('[data-loc-status]').textContent = t);
+
+    const locate = (): Promise<Pin> =>
+      new Promise((resolve, reject) => {
+        if (!('geolocation' in navigator)) return reject(new Error('unsupported'));
+        navigator.geolocation.getCurrentPosition(
+          (p) => resolve({ lat: p.coords.latitude, lng: p.coords.longitude }),
+          (e) => reject(e),
+          { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 },
+        );
+      });
+    const locateError = (e: unknown) => {
+      const code = (e as GeolocationPositionError)?.code;
+      status(
+        code === 1
+          ? 'Location access is blocked. Pick on the map or type your address below.'
+          : "We couldn't get your location. Pick on the map or type your address below.",
+      );
+    };
+
+    // Map (Leaflet with OpenStreetMap tiles), loaded only when needed.
+    let L: any = null;
+    let map: any = null;
+    const openMap = async (center?: Pin) => {
+      const box = $('[data-map]');
+      box.hidden = false;
+      $('[data-pinned]').hidden = true;
+      status('Loading map...');
+      try {
+        if (!L) {
+          const mod: any = await import('leaflet');
+          await import('leaflet/dist/leaflet.css');
+          L = mod.default ?? mod;
+        }
+        const start = center ?? pin ?? BASE;
+        if (!map) {
+          map = L.map($('[data-map-canvas]'), { zoomControl: true, attributionControl: true }).setView([start.lat, start.lng], center || pin ? 17 : 13);
+          L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>',
+          }).addTo(map);
+          L.circle([BASE.lat, BASE.lng], { radius: site.freeRadiusKm * 1000, color: '#007bff', weight: 1, fillOpacity: 0.05, interactive: false }).addTo(map);
+          L.circleMarker([BASE.lat, BASE.lng], { radius: 6, color: '#ffffff', weight: 2, fillColor: '#007bff', fillOpacity: 1 })
+            .bindTooltip('dhobermans', { direction: 'top' })
+            .addTo(map);
+        } else {
+          map.setView([start.lat, start.lng], center || pin ? 17 : 13);
+        }
+        window.setTimeout(() => map.invalidateSize(), 60);
+        status('Move the map so the pin sits on your door. The shaded circle is our free pickup zone.');
+        box.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      } catch {
+        box.hidden = true;
+        status("The map couldn't load. Use your current location or type your address below.");
+      }
+    };
+
+    /* ---------- Data and validation ---------- */
+    const services = () => [...root.querySelectorAll<HTMLInputElement>('input[name="wz-svc"]:checked')].map((i) => i.value);
+    const orderLines = () =>
+      cart.lines().map((l) => {
+        const p = products.find((x) => x.slug === l.slug)!;
+        return `• ${l.qty} × ${p.name} (${p.size}) = ${rupees(l.qty * p.amount)}`;
+      });
+
+    const data = (): FlowData => {
+      if (intent === 'question') return { intent, name: val('name2'), question: val('question') };
+      if (intent === 'location') return { intent, name: val('name3'), pincode: val('pincode3'), location };
+      const contact = { name: val('name'), pincode: val('pincode'), address: val('address'), notes: val('notes'), pin, distanceKm: distance() };
+      if (intent === 'order') return { intent, ...contact, items: orderLines(), total: rupees(cart.total()) };
+      return { intent, ...contact, services: services(), slot: slotText(), plan: field('plan').value };
+    };
+
+    const problem = (p: Panel): string => {
+      if (p === 'service') {
+        if (!services().length) return 'Choose at least one service.';
+        if (winIdx < 0) return 'Choose a pickup time.';
+      }
+      if (p === 'where') {
+        if (val('address').length < 5) return 'Add your house or flat number, street and a landmark.';
+        if (!pin && !/^\d{6}$/.test(val('pincode'))) return 'Share your location or enter your 6-digit pincode.';
+        if (val('name').length < 2) return 'Enter your name.';
+      }
+      if (p === 'ask') {
+        if (val('name2').length < 2) return 'Enter your name.';
+        if (val('question').length < 3) return 'Type your question.';
+      }
+      if (p === 'notify' && val('name3').length < 2) return 'Enter your name.';
+      return '';
+    };
+
+    /* ---------- Rendering ---------- */
+    const renderStepper = () => {
+      const labels = FLOWS[intent].labels;
+      const current = Math.min(index, labels.length);
+      $('[data-stepper]').innerHTML = labels
+        .map((label, i) => {
+          const state = i < current ? 'is-done' : i === current ? 'is-current' : '';
+          const dot = i < current ? CHECK : String(i + 1);
+          return `<li class="st ${state}" ${i === current ? 'aria-current="step"' : ''}><button type="button" class="st__dot" data-goto="${i}" ${i < current ? '' : 'tabindex="-1"'} aria-label="${label}${i < current ? ', completed' : ''}">${dot}</button><span class="st__label">${label}</span></li>`;
+        })
+        .join('');
+    };
+
+    const render = () => {
+      const panel = panels[index];
+      root.querySelectorAll<HTMLElement>('[data-panel]').forEach((el) => (el.hidden = el.dataset.panel !== panel));
+      renderStepper();
+      const done = panel === 'done';
+      $('[data-wz-hint]').textContent = '';
+      $('[data-wz-back]').hidden = index === 0 || done;
+      $('[data-wz-next]').hidden = panel === 'review' || done;
+      $('[data-wz-send]').hidden = panel !== 'review';
+      $('[data-wz-finish]').hidden = !done;
+      $('[data-wz-finish]').textContent = mode === 'page' ? 'Book another pickup' : 'Done';
+      $('[data-ics]').hidden = !(done && ['pickup', 'service', 'plan', 'stain'].includes(intent));
+      $('[data-clearcart]').hidden = !(done && intent === 'order' && cart.count() > 0);
+      if (panel === 'review') {
+        const text = compose(data());
+        $('[data-preview]').textContent = text;
+        $<HTMLAnchorElement>('[data-wz-send]').href = waLink(site.whatsapp, text);
+      }
+      $('[data-wz-body]').scrollTop = 0;
+      if (panel === 'where' && map) window.setTimeout(() => map.invalidateSize(), 60);
+    };
+
+    const go = (i: number, push = true) => {
+      index = Math.max(0, Math.min(i, panels.length - 1));
+      render();
+      if (mode === 'page' && push) history.pushState({ wz: index }, '');
+    };
+
+    const next = () => {
+      const issue = problem(panels[index]);
+      if (issue) {
+        $('[data-wz-hint]').textContent = issue;
+        navigator.vibrate?.(30);
+        return;
+      }
+      go(index + 1);
+    };
+
+    const updatePin = () => {
+      const input = field('pincode');
+      input.value = input.value.replace(/\D/g, '').slice(0, 6);
+      const st = pincodeStatus(input.value);
+      const el = $('[data-pin-status]');
+      el.textContent = input.value ? st.text : '';
+      el.className = `pin full ${input.value ? st.cls : ''}`;
+    };
+
+    /* ---------- Open ---------- */
+    const open = (opts: OpenOptions = {}) => {
+      intent = opts.intent ?? 'pickup';
+      panels = [...FLOWS[intent].panels, 'done'];
+      index = 0;
+      location = opts.location ?? '';
+      if (mode === 'sheet') $('[data-wz-title]').textContent = FLOWS[intent].title;
+
+      // Fresh dates every time (computed in IST on this device).
+      days = pickupDays(7);
+      dayIdx = 0;
+      winIdx = -1;
+      renderDays();
+
+      // Services: preselect from context and reveal "More" if needed.
+      root.querySelectorAll<HTMLInputElement>('input[name="wz-svc"]').forEach((i) => {
+        i.checked = i.value === opts.service || (intent === 'plan' && i.value === 'Wash & Fold');
+      });
+      const needMore = !!root.querySelector('#wz-more input:checked');
+      $('#wz-more').hidden = !needMore;
+      $('[data-more]').setAttribute('aria-expanded', String(needMore));
+
+      // Plan
+      const select = field('plan') as unknown as HTMLSelectElement;
+      const wanted = opts.plan ?? 'payg';
+      if (![...select.options].some((o) => o.value === wanted) && /^monthly-\d+$/.test(wanted)) {
+        const kg = Number(wanted.split('-')[1]);
+        select.add(new Option(`Monthly pack · ${kg} kg · ${rupees(packPrice(kg))}/month`, wanted), 1);
+      }
+      select.value = wanted;
+      if (select.selectedIndex < 0) select.value = 'payg';
+
+      // Context text
+      $('[data-where-q]').textContent = intent === 'order' ? 'Where should we deliver?' : 'Where should we pick up?';
+      $('[data-notify-text]').textContent = location ? `We'll message you on WhatsApp when the ${location} spot opens.` : '';
+      const items = $('[data-items]');
+      items.hidden = intent !== 'order';
+      if (intent === 'order') items.textContent = `${orderLines().join('\n')}\nTotal: ${rupees(cart.total())}`;
+      field('question').value = '';
+      field('notes').value = '';
+
+      // Saved details make repeat bookings quick.
+      const saved = profile.get();
+      const fill = (f: string, v?: string) => {
+        if (v && !val(f)) field(f).value = v;
+      };
+      fill('name', saved.name);
+      fill('name2', saved.name);
+      fill('name3', saved.name);
+      fill('pincode', saved.pincode);
+      fill('pincode3', saved.pincode);
+      fill('address', saved.address);
+      if (!pin && saved.pin) pin = saved.pin;
+      status('');
+      showPin();
+      updatePin();
+
+      render();
+      if (mode === 'page') history.replaceState({ wz: 0 }, '');
+      const d = dialog();
+      if (d && !d.open) d.showModal();
+    };
+
+    const close = () => dialog()?.close();
+
+    /* ---------- Events ---------- */
+    // Every WhatsApp touchpoint opens the wizard first (the wa.me link still works without JavaScript).
+    document.addEventListener('click', (e) => {
+      const t = (e.target as HTMLElement).closest<HTMLElement>('[data-flow]');
+      if (!t) return;
+      e.preventDefault();
+      root.querySelector('details[open]')?.removeAttribute('open');
+      const ds = t.dataset;
+      open({ intent: (ds.flow as Intent) || 'pickup', service: ds.flowService, plan: ds.flowPlan, location: ds.flowLocation });
+    });
+    document.addEventListener('dhb:flow', (e) => open((e as CustomEvent<OpenOptions>).detail));
+
+    root.addEventListener('click', async (e) => {
+      const t = e.target as HTMLElement;
+      const day = t.closest<HTMLElement>('[data-day]');
+      const win = t.closest<HTMLButtonElement>('[data-win]');
+      const goto = t.closest<HTMLElement>('[data-goto]');
+      if (day) {
+        dayIdx = Number(day.dataset.day);
+        renderDays();
+        $('[data-wz-hint]').textContent = '';
+      } else if (win && !win.disabled) {
+        winIdx = Number(win.dataset.win);
+        renderDays();
+        $('[data-wz-hint]').textContent = '';
+        navigator.vibrate?.(8);
+      } else if (goto && Number(goto.dataset.goto) < index) {
+        go(Number(goto.dataset.goto));
+      } else if (t.closest('[data-more]')) {
+        const btn = $('[data-more]');
+        const openNow = btn.getAttribute('aria-expanded') !== 'true';
+        btn.setAttribute('aria-expanded', String(openNow));
+        $('#wz-more').hidden = !openNow;
+      } else if (t.closest('[data-gps]') || t.closest('[data-map-locate]')) {
+        const fromMap = !!t.closest('[data-map-locate]');
+        status('Finding your location...');
+        try {
+          const p = await locate();
+          if (fromMap && map) {
+            map.setView([p.lat, p.lng], 17);
+            status('Fine-tune the pin if needed, then tap "Use this spot".');
+          } else {
+            pin = p;
+            status('');
+            showPin();
+          }
+        } catch (err) {
+          locateError(err);
+        }
+      } else if (t.closest('[data-mapbtn]') || t.closest('[data-pin-change]')) {
+        openMap();
+      } else if (t.closest('[data-map-confirm]') && map) {
+        const c = map.getCenter();
+        pin = { lat: c.lat, lng: c.lng };
+        status('');
+        showPin();
+      } else if (t.closest('[data-edit]')) {
+        go(0);
+      } else if (t.closest('[data-ics]')) {
+        const d = days[dayIdx];
+        const w = d?.windows[winIdx];
+        if (!d || !w) return;
+        const blob = new Blob([buildIcs(windowTimes(d, w), site.whatsapp)], { type: 'text/calendar;charset=utf-8' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'dhobermans-weekly-pickup.ics';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      } else if (t.closest('[data-clearcart]')) {
+        cart.clear();
+        close();
+      } else if (t.closest('[data-forget]')) {
+        profile.clear();
+        ['name', 'name2', 'name3', 'pincode', 'pincode3', 'address'].forEach((f) => (field(f).value = ''));
+        pin = null;
+        showPin();
+        root.querySelector('details[open]')?.removeAttribute('open');
+      }
+    });
+
+    $('[data-wz-next]').addEventListener('click', next);
+    $('[data-wz-back]').addEventListener('click', () => (mode === 'page' ? history.back() : go(index - 1)));
+    $('[data-wz-finish]').addEventListener('click', () => (mode === 'page' ? open({ intent: 'pickup' }) : close()));
+    root.querySelector('[data-wz-close]')?.addEventListener('click', close);
+    $('[data-wz-send]').addEventListener('click', () => {
+      const f = data();
+      const saved = profile.get();
+      profile.save({ name: f.name || saved.name, pincode: f.pincode || saved.pincode, address: f.address || saved.address, pin: f.pin ?? saved.pin });
+      window.setTimeout(() => go(panels.length - 1), 350);
+    });
+
+    root.addEventListener('input', (e) => {
+      if ((e.target as HTMLElement).matches('[data-f="pincode"]')) updatePin();
+      $('[data-wz-hint]').textContent = '';
+    });
+    root.addEventListener('change', () => ($('[data-wz-hint]').textContent = ''));
+    root.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && (e.target as HTMLElement).matches('input')) {
+        e.preventDefault();
+        next();
+      }
+    });
+
+    if (mode === 'page') {
+      window.addEventListener('popstate', (e) => {
+        if (e.state && typeof e.state.wz === 'number') go(e.state.wz, false);
+      });
+      document.addEventListener('click', (e) => {
+        const menu = root.querySelector('details');
+        if (menu?.open && !menu.contains(e.target as Node)) menu.removeAttribute('open');
+      });
+      open({ intent: 'pickup' });
+    } else {
+      const d = dialog();
+      d?.addEventListener('click', (e) => {
+        if (e.target === d) close(); // backdrop
+      });
+    }
+  }
+</script>

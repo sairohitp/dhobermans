@@ -84,7 +84,7 @@ export const rupees = (n: number) => `₹${n.toLocaleString('en-IN')}`;
 
 /* ---------- Saved details for faster repeat requests ---------- */
 
-export type Profile = { name?: string; pincode?: string; address?: string };
+export type Profile = { name?: string; pincode?: string; address?: string; pin?: { lat: number; lng: number } };
 
 export const profile = {
   get: (): Profile => read<Profile>(PROFILE_KEY, {}),
@@ -93,6 +93,7 @@ export const profile = {
     if (p.name?.trim()) clean.name = p.name.trim().slice(0, 80);
     if (p.pincode && /^\d{6}$/.test(p.pincode)) clean.pincode = p.pincode;
     if (p.address?.trim()) clean.address = p.address.trim().slice(0, 300);
+    if (p.pin && Number.isFinite(p.pin.lat) && Number.isFinite(p.pin.lng)) clean.pin = { lat: p.pin.lat, lng: p.pin.lng };
     write(PROFILE_KEY, clean);
   },
   clear() {
