@@ -10,10 +10,10 @@ const company = [
   { href: '/#how-it-works', label: 'How it works' },
   { href: '/#pricing', label: 'Pricing' },
   { href: '/#locations', label: 'Self-laundry locations' },
-  { href: '/care/', label: "dhobermans' care" },
+  { href: '/care/', label: "Shop dhobermans' care" },
 ];
 const help = [
-  { href: '/#book', label: 'Pickup planner' },
+  { href: '/#book', label: 'Book a pickup' },
   { href: '/#plan-finder', label: 'Plan finder' },
   { href: '/#stain-sos', label: 'Stain SOS' },
   { href: '/#faq', label: 'FAQs' },
@@ -33,7 +33,7 @@ const shareText = `I use dhobermans for laundry pickup and delivery in ${site.ci
         <p>Laundry pickup and delivery in {site.city}.</p>
         <p class="footer__contact">
           <span>WhatsApp us</span>
-          <a href={wa(msg.question)} target="_blank" rel="noopener">{site.whatsappDisplay}</a>
+          <a href={wa(msg.question)} target="_blank" rel="noopener" data-flow="question">{site.whatsappDisplay}</a>
         </p>
         {
           site.email && (
@@ -54,7 +54,7 @@ const shareText = `I use dhobermans for laundry pickup and delivery in ${site.ci
           {
             services.map((s) => (
               <li>
-                <a href={wa(msg.service(s.name))} target="_blank" rel="noopener">
+                <a href={wa(msg.service(s.name))} target="_blank" rel="noopener" data-flow="service" data-flow-service={s.name}>
                   {s.name}
                 </a>
               </li>
@@ -138,7 +138,7 @@ const shareText = `I use dhobermans for laundry pickup and delivery in ${site.ci
     margin-top: 20px;
     padding: 0 16px;
     border: 1px solid #333;
-    border-radius: 999px;
+    border-radius: var(--radius-btn);
     background: transparent;
     color: var(--white);
     font-size: 14px;

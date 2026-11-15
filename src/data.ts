@@ -26,8 +26,8 @@ export const benefits = [
   },
   {
     icon: 'clock',
-    title: '48-Hour Turnaround',
-    body: 'Your clothes returned fresh and folded within two days. Express options available.',
+    title: '24-Hour Turnaround',
+    body: 'Your clothes returned fresh, folded and ironed within 24 hours. Express options available.',
   },
   {
     icon: 'leaf',
@@ -49,33 +49,48 @@ export const steps = [
   },
   {
     title: 'Washed, folded, delivered fresh',
-    body: 'Your clothes come back clean, folded and ready to wear, within 48 hours.',
+    body: 'Your clothes come back clean, folded and ready to wear, within 24 hours.',
     screen: { icon: 'check-circle', heading: 'Order ready', rows: ['Wash · Done', 'Fold · Done', 'Out for delivery'], cta: 'View order' },
   },
 ];
 
+/** Pricing: everything stems from the per-kg base rate for wash, fold and iron. */
+export const pricing = {
+  perKg: 100,
+  packDiscount: 0.1,
+  packSizes: [20, 40, 60],
+  defaultPack: 40,
+};
+export const packRate = Math.round(pricing.perKg * (1 - pricing.packDiscount)); // 90
+export const packPrice = (kg: number) => Math.round(kg * pricing.perKg * (1 - pricing.packDiscount));
+export const fullPrice = (kg: number) => kg * pricing.perKg;
+
 export const plans = [
   {
-    id: 'basic',
-    name: 'Basic',
-    tagline: 'Perfect for individuals',
-    price: '₹299',
-    features: ['Up to 5 kg/week', '48-hour turnaround', 'Free pickup & delivery', 'Eco-friendly wash'],
+    id: 'payg',
+    name: 'Pay per pickup',
+    tagline: 'Wash, fold & iron, billed by weight',
+    rate: pricing.perKg,
+    features: ['Wash, fold & iron included', '24-hour turnaround', 'Free pickup & delivery', 'Eco-friendly detergents'],
+    cta: 'Book a pickup',
   },
   {
-    id: 'premium',
-    name: 'Premium',
-    tagline: 'Best for families',
-    price: '₹599',
+    id: 'monthly',
+    name: 'Monthly pack',
+    tagline: 'Save 10% on every kg',
+    rate: packRate,
     featured: true,
-    features: ['Up to 15 kg/week', '24-hour express turnaround', 'Free pickup & delivery', 'Premium detergents', 'Ironing included'],
+    features: ['10% off the per-kg rate', 'Wash, fold & iron included', '24-hour turnaround', 'Free pickup & delivery'],
+    cta: 'Choose this pack',
   },
   {
     id: 'business',
     name: 'Business',
     tagline: 'For offices & hostels',
-    price: '₹1,499',
-    features: ['Unlimited loads', 'Same-day turnaround', 'Dedicated account manager', 'Bulk pricing', 'Invoice billing'],
+    rate: packRate,
+    from: true,
+    features: ['Monthly pack rate on bulk volumes', 'Dedicated account manager', 'Invoice billing', '24-hour turnaround'],
+    cta: 'Get a quote',
   },
 ];
 
@@ -111,7 +126,7 @@ export const categoryIcon: Record<string, string> = {
 export const faqs = [
   {
     q: 'How do I schedule a pickup?',
-    a: "Tap any 'Book on WhatsApp' button, or use the pickup planner to choose your services and slot. Your request opens in WhatsApp, we confirm, and we'll be at your door.",
+    a: "Tap any 'Book a pickup' button, choose your services and slot, and check the message preview. It opens in WhatsApp, we confirm, and we'll be at your door.",
   },
   {
     q: 'What detergents do you use?',
@@ -126,8 +141,16 @@ export const faqs = [
     a: "We have a comprehensive care guarantee. Any damage is fully covered and we'll compensate or replace the item.",
   },
   {
+    q: 'How much does it cost?',
+    a: '₹100 per kg for wash, fold and iron, with free pickup and delivery. Take a monthly pack and save 10% (₹90 per kg).',
+  },
+  {
+    q: 'How long does it take?',
+    a: 'Your clothes come back washed, folded and ironed within 24 hours of pickup.',
+  },
+  {
     q: 'Do you handle dry cleaning?',
-    a: 'Absolutely. Our Premium and Business plans include dry cleaning for delicates and formal wear.',
+    a: 'Absolutely. Dry cleaning for delicates and formal wear is priced per item. Send us a message and we will share the price.',
   },
   {
     q: 'What areas do you service?',

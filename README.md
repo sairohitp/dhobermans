@@ -14,19 +14,21 @@ Built with [Astro](https://astro.build) as a static site, hosted on Cloudflare W
 
 ## WhatsApp touchpoints
 
-Every booking action opens WhatsApp chat with **+91 88617 61718** with a pre-filled message for its context
-(service, plan, product order, location, stain, question, app booking). Number: `src/config.ts`. Message wording:
-`src/lib/wa.ts`, `src/components/Cart.astro` (orders) and `src/pages/app/index.astro` (app bookings).
+Every WhatsApp button first opens a short booking flow (`src/components/BookingSheet.astro`): the visitor's details,
+then a preview of the exact message, then "Open WhatsApp" to **+91 88617 61718**. The flow adapts to where it was opened:
+a service, a plan or pack size, a care order, a location alert, or a question. Number: `src/config.ts`.
+Message wording: `src/lib/booking.ts`. Without JavaScript, every button still links straight to WhatsApp.
 
 ## Features
 
 | Feature            | What it does                                                                                              |
 | ------------------ | --------------------------------------------------------------------------------------------------------- |
-| Care cart          | Add, change quantity, remove and clear products; saved on the device; one itemised WhatsApp order with total |
-| App booking survey | Services, slot, address, name, review, send to WhatsApp; remembers details for repeat bookings           |
-| Pickup planner     | Pincode coverage check, next pickup slots (IST), live WhatsApp message preview                           |
-| Weekly reminder    | Downloads a recurring calendar event (.ics) for the chosen slot                                            |
-| Plan finder        | Estimates weekly laundry weight from item counts and suggests a plan                                       |
+| Booking flow       | Details, pincode coverage check, next pickup slots (IST), message preview, then WhatsApp; remembers details |
+| Care cart          | Add, change quantity, remove and clear products; saved on the device; one itemised order through the flow  |
+| App booking survey | Services, slot, address, name, review with message preview, send to WhatsApp                              |
+| Pricing            | ₹100/kg wash, fold and iron; monthly pack at 10% off (₹90/kg) with 20/40/60 kg sizes; business from ₹90/kg |
+| Plan finder        | Estimates weekly and monthly laundry weight and compares pay per pickup with a monthly pack               |
+| Weekly reminder    | Downloads a recurring calendar event (.ics) for a chosen slot (installed app)                               |
 | Stain SOS          | First-aid steps for six common stains                                                                      |
 | Install prompt     | Once per device; QR code hand-off from laptop to phone; see below                                          |
 
@@ -78,7 +80,7 @@ npm run build && npx wrangler dev
 | What                                          | File                    |
 | --------------------------------------------- | ----------------------- |
 | WhatsApp number, email, app links, socials    | `src/config.ts`         |
-| Services, pricing, FAQs, locations, products, stains | `src/data.ts`    |
+| Services, pricing (`pricing`), FAQs, locations, products, stains | `src/data.ts` |
 | Images                                        | `src/assets/`           |
 | Colours, font, spacing                        | `src/styles/global.css` |
 | Security headers and caching                  | `public/_headers`       |
@@ -93,6 +95,6 @@ npm run build && npx wrangler dev
 
 ## Pre-launch checklist
 
-- [ ] Confirm prices, plan features and product prices in `src/data.ts`
-- [ ] Confirm FAQ claims (SMS tracking, care guarantee, dry cleaning in plans)
+- [ ] Confirm product prices and monthly pack sizes in `src/data.ts`
+- [ ] Confirm FAQ claims (SMS tracking, care guarantee, express options)
 - [ ] Add Privacy Policy and Terms pages

@@ -2,8 +2,9 @@
 import { Image } from 'astro:assets';
 import AppLayout from '../../layouts/AppLayout.astro';
 import Icon from '../../components/Icon.astro';
-import { services, plans } from '../../data';
+import { services } from '../../data';
 import { wa, msg } from '../../lib/wa';
+import { planOptions } from '../../lib/booking';
 ---
 
 <AppLayout>
@@ -79,8 +80,7 @@ import { wa, msg } from '../../lib/wa';
         <label class="field">
           <span>Plan <em>(optional)</em></span>
           <select class="input" data-f="plan">
-            <option value="">Pay per pickup / not sure</option>
-            {plans.map((p) => <option value={`${p.name} (${p.price}/month)`}>{p.name} · {p.price}/month</option>)}
+            {planOptions.map((o) => <option value={o.value}>{o.label}</option>)}
           </select>
         </label>
         <label class="field">
@@ -94,6 +94,8 @@ import { wa, msg } from '../../lib/wa';
         <p class="screen__count">Review</p>
         <h1>Check your request</h1>
         <dl class="review" data-review></dl>
+        <p class="preview__label">WhatsApp message preview</p>
+        <div class="preview"><p class="bubble" data-app-preview></p></div>
       </section>
 
       <!-- Done -->
@@ -186,7 +188,7 @@ import { wa, msg } from '../../lib/wa';
     min-width: 250px;
     padding: 6px;
     border: 1px solid var(--line);
-    border-radius: 14px;
+    border-radius: var(--radius-lg);
     background: var(--white);
     box-shadow: var(--shadow);
   }
@@ -199,7 +201,7 @@ import { wa, msg } from '../../lib/wa';
     min-height: 46px;
     padding: 0 12px;
     border: 0;
-    border-radius: 10px;
+    border-radius: var(--radius);
     background: none;
     color: var(--ink);
     font-size: 15px;
@@ -215,7 +217,7 @@ import { wa, msg } from '../../lib/wa';
   .progress {
     height: 4px;
     margin: 0 20px;
-    border-radius: 999px;
+    border-radius: 3px;
     background: var(--surface-2);
   }
 
@@ -262,7 +264,7 @@ import { wa, msg } from '../../lib/wa';
     gap: 8px;
     padding: 8px;
     border: 1.5px solid var(--line);
-    border-radius: 12px;
+    border-radius: var(--radius);
     cursor: pointer;
     transition: border-color 0.15s ease, background-color 0.15s ease;
   }
@@ -276,7 +278,7 @@ import { wa, msg } from '../../lib/wa';
   .tile__img {
     overflow: hidden;
     aspect-ratio: 4 / 3;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     background: var(--surface-2);
   }
 
@@ -336,7 +338,7 @@ import { wa, msg } from '../../lib/wa';
     min-height: 56px;
     padding: 0 16px;
     border: 1.5px solid var(--line);
-    border-radius: 12px;
+    border-radius: var(--radius);
     color: var(--ink);
     font-weight: 500;
     cursor: pointer;
@@ -394,7 +396,7 @@ import { wa, msg } from '../../lib/wa';
     display: grid;
     margin: 20px 0 0;
     border: 1px solid var(--line);
-    border-radius: 12px;
+    border-radius: var(--radius);
   }
 
   .review :global(.row) {
@@ -434,6 +436,33 @@ import { wa, msg } from '../../lib/wa';
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
+  }
+
+  .preview__label {
+    margin: 24px 0 8px;
+    color: var(--subtle);
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .preview {
+    padding: 14px;
+    border-radius: var(--radius-lg);
+    background:
+      radial-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px) 0 0 / 12px 12px,
+      #efeae2;
+  }
+
+  .bubble {
+    margin-left: auto;
+    max-width: 92%;
+    padding: 10px 12px;
+    border-radius: 8px 2px 8px 8px;
+    background: #d9fdd3;
+    color: #111b21;
+    font-size: 14px;
+    line-height: 1.5;
+    white-space: pre-line;
   }
 
   .screen--done {
@@ -490,6 +519,7 @@ import { wa, msg } from '../../lib/wa';
 <script>
   import { nextSlots, pincodeStatus, buildIcs, type Slot } from '../../lib/slots';
   import { profile } from '../../lib/store';
+  import { compose, planLabel } from '../../lib/booking';
   import { site } from '../../config';
 
   const root = document.querySelector<HTMLElement>('[data-app]')!;
@@ -530,21 +560,17 @@ import { wa, msg } from '../../lib/wa';
     return '';
   };
 
-  const message = () => {
-    const slot = chosenSlot();
-    return [
-      "Hi dhobermans, I'd like to schedule a pickup.",
-      `Services: ${chosenServices().join(', ')}`,
-      slot ? `Slot: ${slot.long}` : '',
-      `Pincode: ${field('pincode').value}`,
-      `Address: ${field('address').value.trim()}`,
-      `Name: ${field('name').value.trim()}`,
-      field('plan').value ? `Plan: ${field('plan').value}` : '',
-      field('notes').value.trim() ? `Notes: ${field('notes').value.trim()}` : '',
-    ]
-      .filter(Boolean)
-      .join('\n');
-  };
+  const message = () =>
+    compose({
+      intent: 'pickup',
+      services: chosenServices(),
+      slot: chosenSlot()?.long,
+      plan: field('plan').value,
+      pincode: field('pincode').value,
+      address: field('address').value,
+      name: field('name').value,
+      notes: field('notes').value,
+    });
 
   const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 
@@ -555,11 +581,12 @@ import { wa, msg } from '../../lib/wa';
       ['Address', `${field('address').value.trim()}\n${field('pincode').value}`, 3],
       ['Name', field('name').value.trim(), 4],
     ];
-    if (field('plan').value) rows.push(['Plan', field('plan').value, 4]);
+    if (field('plan').value) rows.push(['Plan', planLabel(field('plan').value), 4]);
     if (field('notes').value.trim()) rows.push(['Notes', field('notes').value.trim(), 4]);
     $('[data-review]').innerHTML = rows
       .map(([k, v, s]) => `<div class="row"><dt>${k}</dt><dd>${esc(v)}</dd><button type="button" class="edit" data-edit="${s}">Edit</button></div>`)
       .join('');
+    $('[data-app-preview]').textContent = message();
     $<HTMLAnchorElement>('[data-send]').href = `https://wa.me/${site.whatsapp}?text=${encodeURIComponent(message())}`;
   };
 

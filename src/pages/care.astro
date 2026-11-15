@@ -118,7 +118,7 @@ const itemList = {
     min-height: 44px;
     padding: 0 18px;
     border: 1px solid var(--line);
-    border-radius: 999px;
+    border-radius: var(--radius-btn);
     background: var(--white);
     color: var(--ink);
     font-size: 15px;
@@ -169,7 +169,7 @@ const itemList = {
     display: grid;
     place-items: center;
     aspect-ratio: 4 / 3;
-    border-radius: 20px;
+    border-radius: var(--radius-lg);
     background: linear-gradient(160deg, var(--brand-50), #ffffff 90%);
     color: var(--brand);
   }
@@ -268,11 +268,11 @@ const itemList = {
 
     .item {
       padding: 8px;
-      border-radius: 22px;
+      border-radius: var(--radius-lg);
     }
 
     .item__art {
-      border-radius: 16px;
+      border-radius: var(--radius-lg);
     }
 
     .item__body {

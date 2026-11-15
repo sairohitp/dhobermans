@@ -3,19 +3,16 @@ import Icon from './Icon.astro';
 import { wa } from '../lib/wa';
 ---
 
-<a class="wa-fab" href={wa()} target="_blank" rel="noopener" aria-label="Chat with dhobermans on WhatsApp">
+<a class="wa-fab" href={wa()} target="_blank" rel="noopener" aria-label="Book a pickup on WhatsApp" data-flow="pickup">
   <Icon name="whatsapp" size={28} />
-  <span class="wa-fab__tip">Book on WhatsApp</span>
+  <span class="wa-fab__tip">Book a pickup</span>
 </a>
 
 <div class="dock" aria-label="Quick actions">
-  <a class="dock__secondary" href="/#book">
-    <Icon name="calendar" size={18} />
-    Plan
-  </a>
-  <a class="dock__primary" href={wa()} target="_blank" rel="noopener">
+  <a class="dock__secondary" href="/#pricing">Pricing</a>
+  <a class="dock__primary" href={wa()} target="_blank" rel="noopener" data-flow="pickup">
     <Icon name="whatsapp" size={20} />
-    Book on WhatsApp
+    Book a pickup
   </a>
 </div>
 
@@ -55,7 +52,7 @@ import { wa } from '../lib/wa';
     position: absolute;
     right: 72px;
     padding: 8px 14px;
-    border-radius: 999px;
+    border-radius: var(--radius-btn);
     background: var(--ink);
     color: var(--white);
     font-size: 14px;
@@ -115,7 +112,7 @@ import { wa } from '../lib/wa';
       justify-content: center;
       gap: 8px;
       min-height: 50px;
-      border-radius: 999px;
+      border-radius: var(--radius-btn);
       font-size: 16px;
       font-weight: 700;
     }

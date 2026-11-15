@@ -3,17 +3,17 @@ import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import Icon from '../components/Icon.astro';
 import PhoneMock from '../components/PhoneMock.astro';
-import PickupBuilder from '../components/PickupBuilder.astro';
 import PlanFinder from '../components/PlanFinder.astro';
 import StainSOS from '../components/StainSOS.astro';
 import heroImage from '../assets/hero-laundry.jpg';
-import { site } from '../config';
 import { wa, msg } from '../lib/wa';
-import { services, benefits, steps, plans, locations, products, categoryIcon, faqs } from '../data';
+import { rupees } from '../lib/store';
+import { services, benefits, steps, plans, pricing, packPrice, fullPrice, locations, products, categoryIcon, faqs } from '../data';
 
 const featuredProducts = products.filter((p) => p.featured);
-const marquee = ['Wash & Fold', 'Dry Cleaning', 'Steam Ironing', 'Free pickup & delivery', '48-hour turnaround', 'Eco-friendly care', 'Comforter Wash', 'Shoe Cleaning', 'Curtain Cleaning', 'Stain Removal'];
+const marquee = ['Wash & Fold', 'Dry Cleaning', 'Steam Ironing', 'Free pickup & delivery', '24-hour turnaround', '₹100/kg wash, fold & iron', 'Comforter Wash', 'Shoe Cleaning', 'Curtain Cleaning', 'Stain Removal'];
 const ext = { target: '_blank', rel: 'noopener' };
+const defaultPack = pricing.defaultPack;
 ---
 
 <Base>
@@ -22,28 +22,20 @@ const ext = { target: '_blank', rel: 'noopener' };
     <div class="container hero__grid">
       <div class="hero__copy">
         <h1 class="h1">Laundry, delivered <span class="accent">like magic.</span></h1>
-        <p class="lead">Laundry and dry cleaning pickup and delivery across Bangalore. We wash, fold, and return your clothes fresh, clean, and on time. Every time.</p>
-
+        <p class="lead">Laundry and dry cleaning pickup and delivery across Bangalore. We wash, fold, and iron your clothes and bring them back within 24 hours.</p>
         <div class="hero__actions">
-          <a href={wa()} {...ext} class="btn btn--wa"><Icon name="whatsapp" size={20} /> Book on WhatsApp</a>
-          <a href="#book" class="btn btn--ghost"><Icon name="calendar" size={18} /> Plan a pickup</a>
+          <a href={wa()} {...ext} class="btn btn--wa" data-flow="pickup"><Icon name="whatsapp" size={20} /> Book a pickup</a>
+          <a href="#pricing" class="btn btn--ghost">From ₹90/kg · See pricing</a>
         </div>
-
-        <div class="hero__apps">
-          {site.playStore && <a class="btn btn--dark btn--sm" href={site.playStore} {...ext}>Get it on Google Play</a>}
-          {site.appStore && <a class="btn btn--dark btn--sm" href={site.appStore} {...ext}>Download on the App Store</a>}
-          <button type="button" class="hero__app" data-install hidden>
-            <Icon name="download" size={16} /> Get the dhobermans app
-          </button>
-        </div>
-
+        <button type="button" class="hero__app" data-install hidden>
+          <Icon name="download" size={16} /> Get the dhobermans app
+        </button>
         <ul class="hero__promises">
-          <li><Icon name="clock" size={18} />48-hour turnaround</li>
-          <li><Icon name="truck" size={18} />Door-to-door</li>
+          <li><Icon name="clock" size={18} />24-hour turnaround</li>
+          <li><Icon name="truck" size={18} />Free pickup &amp; delivery</li>
           <li><Icon name="leaf" size={18} />Eco-friendly care</li>
         </ul>
       </div>
-
       <div class="hero__media">
         <div class="hero__frame">
           <Image src={heroImage} alt="Freshly folded white towels on a marble counter" widths={[640, 960, 1280]} sizes="(max-width: 900px) 100vw, 560px" loading="eager" fetchpriority="high" />
@@ -54,13 +46,12 @@ const ext = { target: '_blank', rel: 'noopener' };
         </div>
         <div class="float-card float-card--bottom">
           <span class="float-card__icon float-card__icon--ok"><Icon name="check" size={18} /></span>
-          <div><strong>Order ready</strong><span>Washed · Folded · Delivered</span></div>
+          <div><strong>Order ready</strong><span>Washed · Folded · Ironed</span></div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Marquee -->
   <div class="marquee" aria-label="What we take care of">
     <div class="marquee__track">
       {[0, 1].map((n) => (
@@ -76,17 +67,15 @@ const ext = { target: '_blank', rel: 'noopener' };
     <div class="container">
       <div class="section-head reveal">
         <h2 class="h2">Fresh clothes, zero effort.</h2>
-        <p class="lead">We come to you, clean with care, and bring everything back folded and on time.</p>
+        <p class="lead">We come to you, clean with care, and bring everything back folded, ironed and on time.</p>
       </div>
       <div class="benefits">
         {
           benefits.map((b) => (
             <article class="benefit reveal">
               <span class="benefit__icon"><Icon name={b.icon} size={22} /></span>
-              <div>
-                <h3>{b.title}</h3>
-                <p>{b.body}</p>
-              </div>
+              <h3>{b.title}</h3>
+              <p>{b.body}</p>
             </article>
           ))
         }
@@ -99,12 +88,12 @@ const ext = { target: '_blank', rel: 'noopener' };
     <div class="container">
       <div class="section-head reveal">
         <h2 class="h2">Book trusted laundry care.</h2>
-        <p class="lead">From everyday wash &amp; fold to delicate dry cleaning, dhobermans handles it all. Tap a service to book it on WhatsApp.</p>
+        <p class="lead">From everyday wash &amp; fold to delicate dry cleaning, dhobermans handles it all. Tap a service to book it.</p>
       </div>
       <div class="services">
         {
           services.map((s) => (
-            <a class="service reveal" href={wa(msg.service(s.name))} {...ext} aria-label={`Book ${s.name} on WhatsApp`}>
+            <a class="service reveal" href={wa(msg.service(s.name))} {...ext} data-flow="service" data-flow-service={s.name} aria-label={`Book ${s.name}`}>
               <div class="service__img">
                 <Image src={s.image} alt={`${s.name} by dhobermans in Bangalore`} widths={[320, 480]} sizes="(max-width: 640px) 46vw, 280px" />
               </div>
@@ -126,19 +115,20 @@ const ext = { target: '_blank', rel: 'noopener' };
         <h2 class="h2">Simple steps to fresher laundry.</h2>
         <p class="lead">Three taps. Zero hassle. Your laundry, handled end-to-end.</p>
       </div>
-      <div class="steps swipe">
+      <ol class="steps swipe">
         {
           steps.map((s, i) => (
-            <article class="step">
+            <li class="step">
               <div class="step__card dots-bg">
                 <PhoneMock {...s.screen} />
               </div>
-              <h3><span class="step__num">{i + 1}.</span> {s.title}</h3>
+              <span class="step__num" aria-hidden="true">{i + 1}</span>
+              <h3>{s.title}</h3>
               <p>{s.body}</p>
-            </article>
+            </li>
           ))
         }
-      </div>
+      </ol>
       <p class="swipe-hint">Swipe to see all steps <Icon name="arrow-right" size={14} /></p>
     </div>
   </section>
@@ -146,9 +136,9 @@ const ext = { target: '_blank', rel: 'noopener' };
   <!-- Pricing -->
   <section id="pricing" class="section section--surface">
     <div class="container">
-      <div class="section-head section-head--center reveal">
+      <div class="section-head reveal">
         <h2 class="h2">Simple, transparent pricing.</h2>
-        <p class="lead">No hidden fees. Cancel anytime.</p>
+        <p class="lead">{rupees(pricing.perKg)} per kg for wash, fold and iron, with free pickup and delivery. Take a monthly pack and save 10%.</p>
       </div>
       <div class="plans swipe" data-plans>
         {
@@ -157,9 +147,25 @@ const ext = { target: '_blank', rel: 'noopener' };
               <h3>{p.name}</h3>
               <p class="plan__tagline">{p.tagline}</p>
               <p class="plan__price">
-                {p.price}
-                <span>/month</span>
+                {p.from && <small class="plan__from">from </small>}
+                {rupees(p.rate)}
+                <span>/kg</span>
+                {p.id === 'monthly' && <s class="plan__was">{rupees(pricing.perKg)}</s>}
               </p>
+              {p.id === 'monthly' && (
+                <div class="pack" data-pack>
+                  <div class="pack__sizes" role="radiogroup" aria-label="Monthly pack size">
+                    {pricing.packSizes.map((kg) => (
+                      <button type="button" role="radio" aria-checked={kg === defaultPack ? 'true' : 'false'} class:list={['pack__size', { 'is-on': kg === defaultPack }]} data-kg={kg} data-price={rupees(packPrice(kg))} data-save={rupees(fullPrice(kg) - packPrice(kg))}>
+                        {kg} kg
+                      </button>
+                    ))}
+                  </div>
+                  <p class="pack__total">
+                    <strong data-pack-price>{rupees(packPrice(defaultPack))}</strong> a month <span data-pack-save>· you save {rupees(fullPrice(defaultPack) - packPrice(defaultPack))}</span>
+                  </p>
+                </div>
+              )}
               <ul>
                 {p.features.map((f) => (
                   <li>
@@ -168,14 +174,25 @@ const ext = { target: '_blank', rel: 'noopener' };
                   </li>
                 ))}
               </ul>
-              <a href={wa(msg.plan(p.name, p.price))} {...ext} class:list={['btn btn--block', p.featured ? 'btn--white' : 'btn--primary']}>
-                <Icon name="whatsapp" size={18} /> Choose {p.name}
+              <a
+                href={wa()}
+                {...ext}
+                class:list={['btn btn--block', p.featured ? 'btn--white' : 'btn--primary']}
+                data-flow={p.id === 'payg' ? 'pickup' : 'plan'}
+                data-flow-plan={p.id === 'monthly' ? `monthly-${defaultPack}` : p.id}
+                data-plan-cta={p.id}
+              >
+                {p.cta}
               </a>
             </article>
           ))
         }
       </div>
       <p class="swipe-hint">Swipe to compare plans <Icon name="arrow-right" size={14} /></p>
+      <p class="pricing__note">
+        Dry cleaning, shoe, curtain and comforter cleaning and stain removal are priced per item.
+        <a href={wa(msg.question)} {...ext} data-flow="question">Ask us for a quote</a>.
+      </p>
       <PlanFinder />
     </div>
   </section>
@@ -204,7 +221,7 @@ const ext = { target: '_blank', rel: 'noopener' };
           {
             locations.map((l) => (
               <li class="reveal">
-                <a class="loc" href={wa(msg.location(l.name, l.address))} {...ext}>
+                <a class="loc" href={wa(msg.location(l.name, l.address))} {...ext} data-flow="location" data-flow-location={`${l.name} (${l.address})`}>
                   <span class="loc__icon"><Icon name="map-pin" size={18} /></span>
                   <div>
                     <h3>{l.name}</h3>
@@ -223,12 +240,9 @@ const ext = { target: '_blank', rel: 'noopener' };
   <!-- Care -->
   <section id="care" class="section section--surface">
     <div class="container">
-      <div class="section-head care-head reveal">
-        <div>
-          <h2 class="h2">Care for what you wear.</h2>
-          <p class="lead">Our own line of detergents, comforter washes, diffusers, and fragrances, crafted to keep your fabrics and spaces feeling brand new.</p>
-        </div>
-        <a href="/care/" class="link-arrow">Explore the full collection <Icon name="arrow-right" size={18} /></a>
+      <div class="section-head reveal">
+        <h2 class="h2">Care for what you wear.</h2>
+        <p class="lead">Our own line of detergents, comforter washes, diffusers, and fragrances, crafted to keep your fabrics and spaces feeling brand new.</p>
       </div>
       <div class="products">
         {
@@ -237,12 +251,16 @@ const ext = { target: '_blank', rel: 'noopener' };
               <div class="product__art">
                 <Icon name={categoryIcon[p.category]} size={40} stroke={1.5} />
               </div>
-              <span class="product__cat">{p.category}</span>
+              <span class="product__cat">{p.category} · {p.size}</span>
               <h3>{p.name}</h3>
               <p>{p.short}</p>
+              <span class="product__price">{p.price}</span>
             </a>
           ))
         }
+      </div>
+      <div class="section-cta">
+        <a href="/care/" class="btn btn--primary"><Icon name="bag" size={18} /> Shop the full collection</a>
       </div>
     </div>
   </section>
@@ -261,7 +279,7 @@ const ext = { target: '_blank', rel: 'noopener' };
   <!-- FAQ -->
   <section id="faq" class="section">
     <div class="container">
-      <div class="section-head section-head--center reveal">
+      <div class="section-head reveal">
         <h2 class="h2">Frequently asked questions.</h2>
       </div>
       <div class="faqs">
@@ -276,7 +294,7 @@ const ext = { target: '_blank', rel: 'noopener' };
             </details>
           ))
         }
-        <a class="faq-more" href={wa(msg.question)} {...ext}>
+        <a class="faq-more" href={wa(msg.question)} {...ext} data-flow="question">
           <span>Still have a question?</span>
           <strong><Icon name="whatsapp" size={18} /> Ask us on WhatsApp</strong>
         </a>
@@ -284,25 +302,52 @@ const ext = { target: '_blank', rel: 'noopener' };
     </div>
   </section>
 
-  <!-- Pickup planner -->
+  <!-- Book -->
   <section id="book" class="section section--surface">
     <div class="container" id="contact">
-      <div class="section-head reveal">
+      <div class="book reveal">
         <h2 class="h2">Ready to simplify laundry?</h2>
-        <p class="lead">Check your area, pick a slot and services, and send it to us on WhatsApp in one tap.</p>
+        <p class="lead">Tell us what needs care and when. You'll see your message before it opens in WhatsApp.</p>
+        <div class="book__actions">
+          <a href={wa()} {...ext} class="btn btn--wa" data-flow="pickup"><Icon name="whatsapp" size={20} /> Book a pickup</a>
+          <a href={wa(msg.question)} {...ext} class="btn btn--ghost" data-flow="question">Ask a question</a>
+        </div>
+        <ul class="book__points">
+          <li><Icon name="check-circle" size={18} />24-hour turnaround</li>
+          <li><Icon name="check-circle" size={18} />Free pickup &amp; delivery</li>
+          <li><Icon name="check-circle" size={18} />{rupees(pricing.perKg)}/kg wash, fold &amp; iron</li>
+        </ul>
       </div>
-      <PickupBuilder />
     </div>
   </section>
 </Base>
 
 <script>
-  // On phones, open the pricing row on the featured plan.
   document.addEventListener('astro:page-load', () => {
+    // Monthly pack size picker.
+    const pack = document.querySelector<HTMLElement>('[data-pack]');
+    if (pack && !pack.dataset.ready) {
+      pack.dataset.ready = 'true';
+      const cta = document.querySelector<HTMLElement>('[data-plan-cta="monthly"]');
+      pack.addEventListener('click', (e) => {
+        const b = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-kg]');
+        if (!b) return;
+        pack.querySelectorAll<HTMLButtonElement>('[data-kg]').forEach((x) => {
+          x.classList.toggle('is-on', x === b);
+          x.setAttribute('aria-checked', String(x === b));
+        });
+        pack.querySelector('[data-pack-price]')!.textContent = b.dataset.price!;
+        pack.querySelector('[data-pack-save]')!.textContent = `· you save ${b.dataset.save}`;
+        if (cta) cta.dataset.flowPlan = `monthly-${b.dataset.kg}`;
+      });
+    }
+
+    // On phones, open the pricing row on the featured plan.
     const row = document.querySelector<HTMLElement>('[data-plans]');
     const featured = row?.querySelector<HTMLElement>('[data-featured]');
-    if (!row || !featured || window.innerWidth > 720) return;
-    row.scrollLeft += featured.getBoundingClientRect().left - row.getBoundingClientRect().left - (row.clientWidth - featured.clientWidth) / 2;
+    if (row && featured && window.innerWidth <= 720) {
+      row.scrollLeft += featured.getBoundingClientRect().left - row.getBoundingClientRect().left - (row.clientWidth - featured.clientWidth) / 2;
+    }
   });
 </script>
 
@@ -324,20 +369,6 @@ const ext = { target: '_blank', rel: 'noopener' };
     pointer-events: none;
   }
 
-  .hero::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 50%;
-    height: 60%;
-    background-image: radial-gradient(rgba(0, 123, 255, 0.22) 1.2px, transparent 1.2px);
-    background-size: 16px 16px;
-    mask-image: radial-gradient(70% 80% at 0% 100%, #000 10%, transparent 75%);
-    -webkit-mask-image: radial-gradient(70% 80% at 0% 100%, #000 10%, transparent 75%);
-    pointer-events: none;
-  }
-
   .hero__grid {
     position: relative;
     z-index: 1;
@@ -354,18 +385,12 @@ const ext = { target: '_blank', rel: 'noopener' };
     margin-top: 32px;
   }
 
-  .hero__apps {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 20px;
-  }
-
   .hero__app {
     display: inline-flex;
     align-items: center;
     gap: 8px;
     min-height: 44px;
+    margin-top: 12px;
     padding: 0;
     border: 0;
     background: none;
@@ -376,7 +401,6 @@ const ext = { target: '_blank', rel: 'noopener' };
   }
 
   .hero__app:hover {
-    color: var(--brand-600);
     text-decoration: underline;
     text-underline-offset: 3px;
   }
@@ -385,7 +409,7 @@ const ext = { target: '_blank', rel: 'noopener' };
     display: flex;
     flex-wrap: wrap;
     gap: 10px 22px;
-    margin: 28px 0 0;
+    margin: 24px 0 0;
     padding: 24px 0 0;
     border-top: 1px solid var(--line);
     list-style: none;
@@ -397,7 +421,7 @@ const ext = { target: '_blank', rel: 'noopener' };
     gap: 8px;
     color: var(--ink);
     font-size: 15px;
-    font-weight: 600;
+    font-weight: 500;
   }
 
   .hero__promises :global(svg) {
@@ -411,8 +435,8 @@ const ext = { target: '_blank', rel: 'noopener' };
 
   .hero__frame {
     overflow: hidden;
-    border-radius: var(--radius-xl);
     aspect-ratio: 4 / 4.4;
+    border-radius: var(--radius-xl);
     box-shadow: var(--shadow-lg);
   }
 
@@ -430,8 +454,8 @@ const ext = { target: '_blank', rel: 'noopener' };
     gap: 12px;
     padding: 12px 18px 12px 12px;
     border: 1px solid rgba(231, 234, 240, 0.9);
-    border-radius: 18px;
-    background: rgba(255, 255, 255, 0.94);
+    border-radius: var(--radius-lg);
+    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     box-shadow: var(--shadow);
@@ -447,12 +471,12 @@ const ext = { target: '_blank', rel: 'noopener' };
   .float-card strong {
     color: var(--ink);
     font-size: 15px;
+    font-weight: 600;
   }
 
   .float-card span:not(.float-card__icon) {
     color: var(--muted);
     font-size: 13px;
-    font-weight: 600;
   }
 
   .float-card__icon {
@@ -460,7 +484,7 @@ const ext = { target: '_blank', rel: 'noopener' };
     place-items: center;
     width: 38px;
     height: 38px;
-    border-radius: 12px;
+    border-radius: var(--radius);
     background: var(--brand-50);
     color: var(--brand);
   }
@@ -519,10 +543,8 @@ const ext = { target: '_blank', rel: 'noopener' };
     align-items: center;
     gap: 48px;
     color: #9aa3af;
-    font-family: var(--font-display);
     font-size: clamp(1.25rem, 2vw, 1.6rem);
     font-weight: 600;
-    letter-spacing: var(--tracking);
     white-space: nowrap;
   }
 
@@ -548,10 +570,13 @@ const ext = { target: '_blank', rel: 'noopener' };
   }
 
   .benefit {
-    padding: 28px;
+    display: grid;
+    justify-items: center;
+    padding: 32px 28px;
     border: 1px solid rgba(0, 123, 255, 0.16);
-    border-radius: var(--radius);
-    background: linear-gradient(135deg, rgba(0, 123, 255, 0.1), rgba(255, 255, 255, 0.6) 70%);
+    border-radius: var(--radius-lg);
+    background: linear-gradient(160deg, rgba(0, 123, 255, 0.09), rgba(255, 255, 255, 0.7) 70%);
+    text-align: center;
   }
 
   .benefit__icon {
@@ -559,18 +584,19 @@ const ext = { target: '_blank', rel: 'noopener' };
     place-items: center;
     width: 48px;
     height: 48px;
-    margin-bottom: 20px;
-    border-radius: 14px;
+    margin-bottom: 18px;
+    border-radius: var(--radius);
     background: var(--white);
     color: var(--brand);
     box-shadow: var(--shadow-sm);
   }
 
   .benefit h3 {
-    font-size: 22px;
+    font-size: 21px;
   }
 
   .benefit p {
+    max-width: 320px;
     margin-top: 8px;
     color: var(--muted);
   }
@@ -587,7 +613,7 @@ const ext = { target: '_blank', rel: 'noopener' };
     flex-direction: column;
     padding: 8px;
     border: 1px solid var(--line);
-    border-radius: 12px;
+    border-radius: var(--radius-lg);
     background: var(--white);
     transition:
       border-color 0.2s ease,
@@ -604,7 +630,7 @@ const ext = { target: '_blank', rel: 'noopener' };
   .service__img {
     overflow: hidden;
     aspect-ratio: 1;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     background: var(--surface-2);
   }
 
@@ -628,10 +654,8 @@ const ext = { target: '_blank', rel: 'noopener' };
   }
 
   .service h3 {
-    font-family: var(--font-body);
     font-size: 17px;
     font-weight: 600;
-    letter-spacing: var(--tracking);
   }
 
   .service__arrow {
@@ -653,15 +677,37 @@ const ext = { target: '_blank', rel: 'noopener' };
 
   /* Steps */
   .steps {
+    position: relative;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
+    gap: 28px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .steps::before {
+    content: '';
+    position: absolute;
+    top: 380px;
+    left: calc(100% / 6);
+    right: calc(100% / 6);
+    border-top: 2px dashed rgba(255, 255, 255, 0.22);
+  }
+
+  .step {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
   }
 
   .step__card {
     display: flex;
     align-items: flex-end;
     justify-content: center;
+    width: 100%;
     height: 380px;
     padding-top: 40px;
     overflow: hidden;
@@ -670,17 +716,29 @@ const ext = { target: '_blank', rel: 'noopener' };
   }
 
   .step__num {
-    color: #5aa8ff;
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    margin-top: -24px;
+    border: 4px solid var(--dark);
+    border-radius: 50%;
+    background: var(--white);
+    color: var(--ink);
+    font-size: 18px;
+    font-weight: 700;
   }
 
   .step h3 {
-    margin-top: 24px;
-    font-family: var(--font-body);
-    font-size: 24px;
-    letter-spacing: var(--tracking);
+    max-width: 300px;
+    margin-top: 16px;
+    font-size: 22px;
   }
 
   .step p {
+    max-width: 320px;
     margin-top: 8px;
   }
 
@@ -690,8 +748,6 @@ const ext = { target: '_blank', rel: 'noopener' };
     grid-template-columns: repeat(3, 1fr);
     align-items: stretch;
     gap: 20px;
-    max-width: 1080px;
-    margin-inline: auto;
   }
 
   .plan {
@@ -714,30 +770,77 @@ const ext = { target: '_blank', rel: 'noopener' };
   }
 
   .plan__price {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 4px;
     margin-top: 24px;
     color: var(--ink);
-    font-family: var(--font-display);
     font-size: 48px;
     font-weight: 700;
-    letter-spacing: var(--tracking);
     line-height: 1;
   }
 
-  .plan__price span {
+  .plan__price span,
+  .plan__from {
     color: var(--muted);
-    font-family: var(--font-body);
     font-size: 16px;
+    font-weight: 500;
+  }
+
+  .plan__was {
+    margin-left: 8px;
+    color: var(--muted);
+    font-size: 18px;
+    font-weight: 500;
+  }
+
+  .pack {
+    margin-top: 20px;
+  }
+
+  .pack__sizes {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    padding: 4px;
+    border-radius: var(--radius-btn);
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  .pack__size {
+    min-height: 40px;
+    border: 0;
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--white);
+    font-size: 15px;
     font-weight: 600;
-    letter-spacing: var(--tracking);
+    cursor: pointer;
+  }
+
+  .pack__size.is-on {
+    background: var(--white);
+    color: var(--brand);
+  }
+
+  .pack__total {
+    margin-top: 10px;
+    font-size: 15px;
+  }
+
+  .pack__total strong {
+    color: var(--white);
+    font-size: 18px;
   }
 
   .plan ul {
     display: grid;
     gap: 12px;
-    margin: 28px 0 32px;
+    flex: 1;
+    margin: 24px 0 32px;
     padding: 0;
     list-style: none;
-    flex: 1;
   }
 
   .plan li {
@@ -745,7 +848,6 @@ const ext = { target: '_blank', rel: 'noopener' };
     align-items: center;
     gap: 10px;
     font-size: 16px;
-    font-weight: 500;
   }
 
   .plan li :global(svg) {
@@ -766,12 +868,26 @@ const ext = { target: '_blank', rel: 'noopener' };
   }
 
   .plan--featured .plan__tagline,
-  .plan--featured .plan__price span {
+  .plan--featured .plan__price span,
+  .plan--featured .plan__was {
     color: rgba(255, 255, 255, 0.72);
   }
 
   .plan--featured li :global(svg) {
     color: var(--white);
+  }
+
+  .pricing__note {
+    max-width: 640px;
+    margin: 28px auto 0;
+    color: var(--muted);
+    font-size: 15px;
+    text-align: center;
+  }
+
+  .pricing__note a {
+    color: var(--brand);
+    font-weight: 600;
   }
 
   /* Locations */
@@ -799,14 +915,14 @@ const ext = { target: '_blank', rel: 'noopener' };
     top: 18px;
     color: var(--subtle);
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 500;
   }
 
   .map__label--l {
     left: 22px;
     color: var(--ink);
-    font-family: var(--font-display);
     font-size: 15px;
+    font-weight: 600;
   }
 
   .map__label--r {
@@ -820,12 +936,12 @@ const ext = { target: '_blank', rel: 'noopener' };
     gap: 8px;
     padding: 7px 12px 7px 10px;
     border: 1px solid var(--line);
-    border-radius: 999px;
+    border-radius: var(--radius);
     background: var(--white);
     box-shadow: var(--shadow-sm);
     color: var(--ink);
     font-size: 13px;
-    font-weight: 700;
+    font-weight: 600;
     white-space: nowrap;
     transform: translate(-50%, -50%);
   }
@@ -840,31 +956,21 @@ const ext = { target: '_blank', rel: 'noopener' };
 
   .loc {
     display: flex;
+    align-items: center;
+    gap: 14px;
     width: 100%;
+    padding: 16px 18px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--white);
     transition:
       border-color 0.2s ease,
       box-shadow 0.2s ease;
-    align-items: center;
-    gap: 14px;
-    padding: 16px 18px;
-    border: 1px solid var(--line);
-    border-radius: 18px;
-    background: var(--white);
   }
 
   .loc:hover {
     border-color: var(--brand-200);
     box-shadow: var(--shadow-sm);
-  }
-
-  .loc__notify {
-    display: inline-flex;
-    flex: none;
-    align-items: center;
-    gap: 4px;
-    color: var(--brand);
-    font-size: 14px;
-    font-weight: 600;
   }
 
   .loc > div {
@@ -878,15 +984,13 @@ const ext = { target: '_blank', rel: 'noopener' };
     place-items: center;
     width: 40px;
     height: 40px;
-    border-radius: 12px;
+    border-radius: var(--radius);
     background: var(--brand-50);
     color: var(--brand);
   }
 
   .loc h3 {
-    font-family: var(--font-body);
     font-size: 17px;
-    letter-spacing: var(--tracking);
   }
 
   .loc p {
@@ -894,14 +998,17 @@ const ext = { target: '_blank', rel: 'noopener' };
     font-size: 15px;
   }
 
-  /* Care */
-  .care-head {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 24px;
+  .loc__notify {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 4px;
+    color: var(--brand);
+    font-size: 14px;
+    font-weight: 600;
   }
 
+  /* Care */
   .products {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -912,7 +1019,7 @@ const ext = { target: '_blank', rel: 'noopener' };
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    padding: 12px 12px 22px;
+    padding: 10px 10px 20px;
     border: 1px solid var(--line);
     border-radius: var(--radius-lg);
     background: var(--white);
@@ -931,8 +1038,8 @@ const ext = { target: '_blank', rel: 'noopener' };
     place-items: center;
     width: 100%;
     aspect-ratio: 4 / 3;
-    margin-bottom: 18px;
-    border-radius: 20px;
+    margin-bottom: 16px;
+    border-radius: var(--radius-sm);
     background: linear-gradient(160deg, var(--brand-50), #ffffff 90%);
     color: var(--brand);
   }
@@ -941,14 +1048,11 @@ const ext = { target: '_blank', rel: 'noopener' };
     margin-inline: 10px;
     color: var(--subtle);
     font-size: 14px;
-    font-weight: 500;
   }
 
   .product h3 {
     margin: 4px 10px 0;
-    font-family: var(--font-body);
-    font-size: 19px;
-    letter-spacing: var(--tracking);
+    font-size: 18px;
   }
 
   .product p {
@@ -957,17 +1061,24 @@ const ext = { target: '_blank', rel: 'noopener' };
     font-size: 15px;
   }
 
+  .product__price {
+    margin: 12px 10px 0;
+    color: var(--ink);
+    font-size: 18px;
+    font-weight: 600;
+  }
+
   /* FAQ */
   .faqs {
     display: grid;
-    gap: 12px;
+    gap: 10px;
     max-width: 760px;
     margin-inline: auto;
   }
 
   .faq {
     border: 1px solid var(--line);
-    border-radius: 18px;
+    border-radius: var(--radius-lg);
     background: var(--white);
     transition: border-color 0.2s ease;
   }
@@ -984,7 +1095,7 @@ const ext = { target: '_blank', rel: 'noopener' };
     padding: 20px 22px;
     color: var(--ink);
     font-size: 17px;
-    font-weight: 700;
+    font-weight: 600;
     cursor: pointer;
     list-style: none;
   }
@@ -1009,19 +1120,18 @@ const ext = { target: '_blank', rel: 'noopener' };
     color: var(--muted);
   }
 
-  /* FAQ footer link */
   .faq-more {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     flex-wrap: wrap;
     gap: 8px 16px;
     margin-top: 8px;
     padding: 20px 22px;
-    border-radius: 18px;
+    border-radius: var(--radius-lg);
     background: var(--brand-50);
     color: var(--ink);
-    font-weight: 600;
+    font-weight: 500;
   }
 
   .faq-more strong {
@@ -1029,6 +1139,52 @@ const ext = { target: '_blank', rel: 'noopener' };
     align-items: center;
     gap: 8px;
     color: var(--wa);
+    font-weight: 600;
+  }
+
+  /* Book */
+  .book {
+    display: grid;
+    justify-items: center;
+    padding: clamp(40px, 6vw, 72px) clamp(20px, 4vw, 48px);
+    border-radius: var(--radius-xl);
+    background: linear-gradient(140deg, #e3f0ff 0%, #f4f9ff 55%, #e9f3ff 100%);
+    text-align: center;
+  }
+
+  .book .h2,
+  .book .lead {
+    margin-inline: auto;
+  }
+
+  .book__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 32px;
+  }
+
+  .book__points {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px 24px;
+    margin: 28px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .book__points li {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  .book__points :global(svg) {
+    color: var(--brand);
   }
 
   /* Responsive */
@@ -1059,15 +1215,11 @@ const ext = { target: '_blank', rel: 'noopener' };
     .plans {
       grid-template-columns: 1fr;
       max-width: 480px;
-    }
-
-    .steps {
       margin-inline: auto;
     }
 
-    .care-head {
-      flex-direction: column;
-      align-items: flex-start;
+    .steps::before {
+      display: none;
     }
   }
 
@@ -1081,22 +1233,7 @@ const ext = { target: '_blank', rel: 'noopener' };
     }
 
     .benefit {
-      display: flex;
-      gap: 16px;
-      padding: 20px;
-    }
-
-    .benefit__icon {
-      flex: none;
-      margin-bottom: 0;
-    }
-
-    .benefit h3 {
-      font-size: 19px;
-    }
-
-    .benefit p {
-      font-size: 15px;
+      padding: 24px 20px;
     }
 
     .services,
@@ -1107,7 +1244,7 @@ const ext = { target: '_blank', rel: 'noopener' };
 
     .service {
       padding: 6px;
-      border-radius: 10px;
+      border-radius: var(--radius);
     }
 
     .service__img {
@@ -1173,6 +1310,10 @@ const ext = { target: '_blank', rel: 'noopener' };
 
     .faq p {
       padding: 0 18px 18px;
+    }
+
+    .book__actions .btn {
+      flex: 1 1 100%;
     }
   }
 

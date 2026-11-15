@@ -1,8 +1,7 @@
 ---
 import Icon from './Icon.astro';
-import { finderItems, finderPresets, plans } from '../data';
-import { wa, msg } from '../lib/wa';
-const premium = plans.find((p) => p.id === 'premium')!;
+import { finderItems, finderPresets } from '../data';
+import { wa } from '../lib/wa';
 ---
 
 <div class="finder" id="plan-finder" data-finder>
@@ -10,8 +9,8 @@ const premium = plans.find((p) => p.id === 'premium')!;
     <div class="finder__head">
       <span class="finder__badge"><Icon name="scale" size={18} /></span>
       <div>
-        <h3>Not sure which plan fits?</h3>
-        <p>Tell us what you wash in a typical week. We'll estimate the weight and suggest a plan.</p>
+        <h3>How much would you pay?</h3>
+        <p>Tell us what you wash in a typical week. We'll estimate the weight and your monthly cost.</p>
       </div>
     </div>
 
@@ -45,20 +44,21 @@ const premium = plans.find((p) => p.id === 'premium')!;
   <div class="finder__result">
     <span class="finder__label">Your estimate</span>
     <p class="finder__kg"><span data-kg-total>0.0</span> kg<small>/week</small></p>
-    <div class="meter" aria-hidden="true">
-      <div class="meter__fill" data-meter></div>
-      <span class="meter__mark" style="left:25%"><i></i>5 kg</span>
-      <span class="meter__mark" style="left:75%"><i></i>15 kg</span>
+    <p class="finder__month">About <strong data-kg-month>0</strong> kg a month</p>
+    <div class="finder__rows">
+      <div class="finder__row">
+        <span>Pay per pickup</span>
+        <strong data-cost-payg>₹0</strong>
+      </div>
+      <div class="finder__row finder__row--best">
+        <span>Monthly pack <em data-finder-save>save ₹0</em></span>
+        <strong data-cost-pack>₹0</strong>
+      </div>
     </div>
-    <div class="finder__plan">
-      <span>Suggested plan</span>
-      <strong data-plan-name>{premium.name}</strong>
-      <em data-plan-meta>{premium.price}/month · {premium.tagline}</em>
-    </div>
-    <a class="btn btn--white btn--block" href={wa(msg.plan(premium.name, premium.price))} target="_blank" rel="noopener" data-plan-cta>
-      <Icon name="whatsapp" size={20} /> Get started on WhatsApp
+    <a class="btn btn--white btn--block" href={wa()} target="_blank" rel="noopener" data-plan-cta data-flow="plan" data-flow-plan="monthly-40">
+      Start a monthly pack
     </a>
-    <p class="finder__note">Estimate based on typical dry weights. Actual loads vary.</p>
+    <p class="finder__note">Estimate based on typical dry weights at ₹100/kg, or ₹90/kg with a monthly pack. Actual loads vary.</p>
   </div>
 </div>
 
@@ -67,7 +67,6 @@ const premium = plans.find((p) => p.id === 'premium')!;
     display: grid;
     grid-template-columns: 1.4fr 1fr;
     overflow: hidden;
-    max-width: 1080px;
     margin: 32px auto 0;
     border: 1px solid var(--line);
     border-radius: var(--radius-lg);
@@ -89,7 +88,7 @@ const premium = plans.find((p) => p.id === 'premium')!;
     place-items: center;
     width: 44px;
     height: 44px;
-    border-radius: 14px;
+    border-radius: var(--radius-lg);
     background: var(--brand-50);
     color: var(--brand);
   }
@@ -115,7 +114,7 @@ const premium = plans.find((p) => p.id === 'premium')!;
     min-height: 40px;
     padding: 0 16px;
     border: 1px solid var(--line);
-    border-radius: 999px;
+    border-radius: var(--radius-btn);
     background: var(--surface);
     font-size: 14px;
     font-weight: 700;
@@ -173,7 +172,7 @@ const premium = plans.find((p) => p.id === 'premium')!;
     gap: 4px;
     padding: 4px;
     border: 1px solid var(--line);
-    border-radius: 999px;
+    border-radius: var(--radius-btn);
     background: var(--surface);
   }
 
@@ -233,62 +232,46 @@ const premium = plans.find((p) => p.id === 'premium')!;
     letter-spacing: var(--tracking);
   }
 
-  .meter {
-    position: relative;
-    height: 10px;
-    margin-bottom: 22px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.2);
+  .finder__month {
+    margin-top: -6px;
+    color: rgba(255, 255, 255, 0.8);
   }
 
-  .meter__fill {
-    width: 0;
-    height: 100%;
-    border-radius: inherit;
-    background: var(--white);
-    transition: width 0.4s ease;
-  }
-
-  .meter__mark {
-    position: absolute;
-    top: 14px;
-    font-size: 12px;
-    font-weight: 700;
-    transform: translateX(-50%);
-  }
-
-  .meter__mark i {
-    position: absolute;
-    top: -18px;
-    left: 50%;
-    width: 2px;
-    height: 14px;
-    background: rgba(255, 255, 255, 0.6);
-  }
-
-  .finder__plan {
-    display: flex;
-    flex-direction: column;
-    padding: 16px;
-    border-radius: 18px;
-    background: rgba(255, 255, 255, 0.12);
-  }
-
-  .finder__plan span {
-    font-size: 13px;
-    font-weight: 600;
-  }
-
-  .finder__plan strong {
+  .finder__month strong {
     color: var(--white);
-    font-family: var(--font-display);
-    font-size: 28px;
-    letter-spacing: var(--tracking);
   }
 
-  .finder__plan em {
-    font-size: 14px;
+  .finder__rows {
+    display: grid;
+    gap: 8px;
+  }
+
+  .finder__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: var(--radius);
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .finder__row strong {
+    color: var(--white);
+    font-size: 20px;
+  }
+
+  .finder__row--best {
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+  }
+
+  .finder__row em {
+    display: block;
+    color: var(--white);
+    font-size: 13px;
     font-style: normal;
+    font-weight: 600;
   }
 
   .finder__note {
@@ -305,8 +288,10 @@ const premium = plans.find((p) => p.id === 'premium')!;
 </style>
 
 <script>
-  import { finderPresets, plans } from '../data';
-  import { wa, msg } from '../lib/wa';
+  import { finderPresets, packPrice, fullPrice } from '../data';
+  import { rupees } from '../lib/store';
+
+  const WEEKS_PER_MONTH = 52 / 12;
 
   const init = () => {
     const root = document.querySelector<HTMLElement>('[data-finder]');
@@ -315,9 +300,10 @@ const premium = plans.find((p) => p.id === 'premium')!;
 
     const outputs = [...root.querySelectorAll<HTMLOutputElement>('[data-count]')];
     const total = root.querySelector<HTMLElement>('[data-kg-total]')!;
-    const meter = root.querySelector<HTMLElement>('[data-meter]')!;
-    const planName = root.querySelector<HTMLElement>('[data-plan-name]')!;
-    const planMeta = root.querySelector<HTMLElement>('[data-plan-meta]')!;
+    const month = root.querySelector<HTMLElement>('[data-kg-month]')!;
+    const payg = root.querySelector<HTMLElement>('[data-cost-payg]')!;
+    const pack = root.querySelector<HTMLElement>('[data-cost-pack]')!;
+    const save = root.querySelector<HTMLElement>('[data-finder-save]')!;
     const cta = root.querySelector<HTMLAnchorElement>('[data-plan-cta]')!;
     const presetBtns = [...root.querySelectorAll<HTMLButtonElement>('[data-preset]')];
 
@@ -332,12 +318,13 @@ const premium = plans.find((p) => p.id === 'premium')!;
         kg += (counts[id] ?? 0) * Number(o.dataset.kg);
       });
       total.textContent = kg.toFixed(1);
-      meter.style.width = `${Math.min(100, (kg / 20) * 100)}%`;
-      const plan = kg <= 5 ? plans[0] : kg <= 15 ? plans[1] : plans[2];
-      planName.textContent = plan.name;
-      planMeta.textContent = `${plan.price}/month · ${plan.tagline}`;
-      const text = `Hi dhobermans, your plan finder estimated about ${kg.toFixed(1)} kg of laundry a week and suggested the ${plan.name} plan (${plan.price}/month). Could you help me get started?`;
-      cta.href = kg > 0 ? wa(text) : wa(msg.plan(plan.name, plan.price));
+      // Monthly estimate, rounded up to the nearest 5 kg (minimum 10 kg).
+      const monthly = Math.max(10, Math.ceil((kg * WEEKS_PER_MONTH) / 5) * 5);
+      month.textContent = String(monthly);
+      payg.textContent = `${rupees(fullPrice(monthly))}/month`;
+      pack.textContent = `${rupees(packPrice(monthly))}/month`;
+      save.textContent = `save ${rupees(fullPrice(monthly) - packPrice(monthly))}`;
+      cta.dataset.flowPlan = `monthly-${monthly}`;
     };
 
     const applyPreset = (id: string) => {

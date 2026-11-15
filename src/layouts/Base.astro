@@ -5,11 +5,12 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import WhatsAppDock from '../components/WhatsAppDock.astro';
 import InstallPrompt from '../components/InstallPrompt.astro';
+import BookingSheet from '../components/BookingSheet.astro';
 import { site } from '../config';
 import heroImage from '../assets/hero-laundry.jpg';
 import { getImage } from 'astro:assets';
 import interFont from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
-import { services, plans } from '../data';
+import { services, pricing, packRate } from '../data';
 
 interface Props {
   title?: string;
@@ -39,13 +40,16 @@ const business: Record<string, unknown> = {
     name: 'Laundry services',
     itemListElement: [
       ...services.map((s) => ({ '@type': 'Offer', itemOffered: { '@type': 'Service', name: s.name, areaServed: 'Bengaluru' } })),
-      ...plans.map((p) => ({
+      {
         '@type': 'Offer',
-        name: `${p.name} plan`,
-        price: Number(p.price.replace(/[^\d]/g, '')),
-        priceCurrency: 'INR',
-        description: p.features.join(', '),
-      })),
+        name: 'Wash, fold and iron (pay per pickup)',
+        priceSpecification: { '@type': 'UnitPriceSpecification', price: pricing.perKg, priceCurrency: 'INR', unitCode: 'KGM', referenceQuantity: { '@type': 'QuantitativeValue', value: 1, unitCode: 'KGM' } },
+      },
+      {
+        '@type': 'Offer',
+        name: 'Wash, fold and iron (monthly pack, 10% off)',
+        priceSpecification: { '@type': 'UnitPriceSpecification', price: packRate, priceCurrency: 'INR', unitCode: 'KGM', referenceQuantity: { '@type': 'QuantitativeValue', value: 1, unitCode: 'KGM' } },
+      },
     ],
   },
 };
@@ -117,6 +121,7 @@ const jsonLd = {
     <Footer />
     <WhatsAppDock />
     <InstallPrompt />
+    <BookingSheet />
 
     <script>
       let io: IntersectionObserver | undefined;

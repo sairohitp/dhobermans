@@ -26,29 +26,13 @@ import Icon from './Icon.astro';
 
       <ul class="cart__lines" data-cart-lines aria-live="polite"></ul>
 
-      <div class="cart__details" data-cart-details>
-        <h3>Delivery details <em>(optional)</em></h3>
-        <div class="cart__grid">
-          <label><span>Name</span><input class="input" type="text" autocomplete="name" data-c-name /></label>
-          <label><span>Pincode</span><input class="input" type="text" inputmode="numeric" autocomplete="postal-code" data-c-pin /></label>
-          <label class="full"><span>Delivery address</span><textarea class="input" rows="2" autocomplete="street-address" data-c-address></textarea></label>
-          <label class="full"><span>Notes</span><input class="input" type="text" data-c-notes /></label>
-        </div>
-      </div>
     </div>
 
     <footer class="cart__foot" data-cart-foot>
       <div class="cart__sum"><span>Total</span><strong data-cart-sum>₹0</strong></div>
-      <a class="btn btn--wa btn--block" href="#" target="_blank" rel="noopener" data-cart-order>
-        <Icon name="whatsapp" size={20} /> Order on WhatsApp
-      </a>
-      <div class="cart__after" data-cart-after hidden>
-        <p>Sent your order on WhatsApp?</p>
-        <div>
-          <button type="button" class="btn btn--primary btn--sm" data-cart-done>Yes, clear my cart</button>
-          <button type="button" class="btn btn--ghost btn--sm" data-cart-keep>Not yet</button>
-        </div>
-      </div>
+      <button type="button" class="btn btn--wa btn--block" data-cart-checkout>
+        <Icon name="whatsapp" size={20} /> Continue to order
+      </button>
       <div class="cart__meta">
         <p>We confirm availability and delivery on WhatsApp.</p>
         <button type="button" class="cart__clear" data-cart-clear>Clear cart</button>
@@ -73,7 +57,7 @@ import Icon from './Icon.astro';
     min-height: 60px;
     padding: 8px 10px 8px 8px;
     border: 0;
-    border-radius: 999px;
+    border-radius: var(--radius-btn);
     background: var(--ink);
     color: var(--white);
     box-shadow: var(--shadow-lg);
@@ -109,7 +93,7 @@ import Icon from './Icon.astro';
     min-height: 44px;
     margin-left: 8px;
     padding: 0 18px;
-    border-radius: 999px;
+    border-radius: var(--radius-btn);
     background: var(--white);
     color: var(--ink);
     font-weight: 600;
@@ -196,7 +180,7 @@ import Icon from './Icon.astro';
     place-items: center;
     width: 64px;
     height: 64px;
-    border-radius: 18px;
+    border-radius: var(--radius-lg);
     background: var(--brand-50);
     color: var(--brand);
   }
@@ -254,37 +238,11 @@ import Icon from './Icon.astro';
     color: #c62828;
   }
 
-  .cart__details {
-    margin-top: 20px;
-  }
 
-  .cart__details h3 {
-    margin-bottom: 12px;
-    font-size: 16px;
-  }
 
-  .cart__details em {
-    color: var(--subtle);
-    font-style: normal;
-    font-weight: 500;
-  }
 
-  .cart__grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
 
-  .cart__grid label {
-    display: grid;
-    gap: 6px;
-    font-size: 14px;
-    font-weight: 600;
-  }
 
-  .cart__grid .full {
-    grid-column: 1 / -1;
-  }
 
   .cart__foot {
     display: grid;
@@ -305,23 +263,8 @@ import Icon from './Icon.astro';
     font-size: 24px;
   }
 
-  .cart__after {
-    padding: 12px;
-    border-radius: 12px;
-    background: var(--surface);
-  }
 
-  .cart__after p {
-    margin-bottom: 10px;
-    color: var(--ink);
-    font-weight: 600;
-  }
 
-  .cart__after div {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
 
   .cart__meta {
     display: flex;
@@ -350,7 +293,7 @@ import Icon from './Icon.astro';
     gap: 2px;
     padding: 3px;
     border: 1px solid var(--line);
-    border-radius: 999px;
+    border-radius: var(--radius-btn);
     background: var(--surface);
   }
 
@@ -400,7 +343,7 @@ import Icon from './Icon.astro';
 
     .cartbar__btn {
       width: 100%;
-      border-radius: 16px;
+      border-radius: var(--radius-lg);
     }
 
     .cartbar__cta {
@@ -412,7 +355,7 @@ import Icon from './Icon.astro';
       height: auto;
       max-height: 90dvh;
       margin: auto 0 0;
-      border-radius: 20px 20px 0 0;
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     }
 
     .cart[open] {
@@ -437,9 +380,8 @@ import Icon from './Icon.astro';
 </style>
 
 <script>
-  import { cart, rupees, profile, CART_EVENT } from '../lib/store';
+  import { cart, rupees, CART_EVENT } from '../lib/store';
   import { products } from '../data';
-  import { site } from '../config';
 
   const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
   const find = (slug: string) => products.find((p) => p.slug === slug)!;
@@ -450,26 +392,6 @@ import Icon from './Icon.astro';
       <output>${qty}</output>
       <button type="button" data-qty-inc="${slug}" aria-label="One more ${esc(name)}">+</button>
     </div>`;
-
-  const orderText = () => {
-    const root = document.querySelector<HTMLElement>('[data-cart]');
-    const val = (sel: string) => root?.querySelector<HTMLInputElement | HTMLTextAreaElement>(sel)?.value.trim() ?? '';
-    const lines = cart.lines().map((l) => {
-      const p = find(l.slug);
-      return `• ${l.qty} × ${p.name} (${p.size}) = ${rupees(l.qty * p.amount)}`;
-    });
-    return [
-      "Hi dhobermans, I'd like to order:",
-      ...lines,
-      `Total: ${rupees(cart.total())}`,
-      val('[data-c-name]') ? `Name: ${val('[data-c-name]')}` : '',
-      val('[data-c-pin]') ? `Pincode: ${val('[data-c-pin]')}` : '',
-      val('[data-c-address]') ? `Delivery address: ${val('[data-c-address]')}` : '',
-      val('[data-c-notes]') ? `Notes: ${val('[data-c-notes]')}` : '',
-    ]
-      .filter(Boolean)
-      .join('\n');
-  };
 
   const render = () => {
     const count = cart.count();
@@ -520,25 +442,13 @@ import Icon from './Icon.astro';
       })
       .join('');
     dlg.querySelector<HTMLElement>('[data-cart-empty]')!.hidden = count > 0;
-    dlg.querySelector<HTMLElement>('[data-cart-details]')!.hidden = count === 0;
     dlg.querySelector<HTMLElement>('[data-cart-foot]')!.hidden = count === 0;
     dlg.querySelector('[data-cart-sum]')!.textContent = rupees(total);
-    dlg.querySelector<HTMLAnchorElement>('[data-cart-order]')!.href =
-      `https://wa.me/${site.whatsapp}?text=${encodeURIComponent(orderText())}`;
   };
 
   const openCart = () => {
     const dlg = document.querySelector<HTMLDialogElement>('[data-cart]');
     if (!dlg || dlg.open) return;
-    const saved = profile.get();
-    const fill = (sel: string, v?: string) => {
-      const el = dlg.querySelector<HTMLInputElement | HTMLTextAreaElement>(sel);
-      if (el && !el.value && v) el.value = v;
-    };
-    fill('[data-c-name]', saved.name);
-    fill('[data-c-pin]', saved.pincode);
-    fill('[data-c-address]', saved.address);
-    dlg.querySelector<HTMLElement>('[data-cart-after]')!.hidden = true;
     render();
     dlg.showModal();
   };
@@ -555,23 +465,9 @@ import Icon from './Icon.astro';
     else if ('cartClose' in d) document.querySelector<HTMLDialogElement>('[data-cart]')?.close();
     else if ('cartClear' in d) {
       if (window.confirm('Remove all items from your cart?')) cart.clear();
-    } else if ('cartOrder' in d) {
-      const dlg = document.querySelector<HTMLElement>('[data-cart]')!;
-      const v = (sel: string) => dlg.querySelector<HTMLInputElement | HTMLTextAreaElement>(sel)?.value ?? '';
-      profile.save({ name: v('[data-c-name]'), pincode: v('[data-c-pin]').replace(/\D/g, ''), address: v('[data-c-address]') });
-      dlg.querySelector<HTMLElement>('[data-cart-after]')!.hidden = false;
-    } else if ('cartDone' in d) {
-      cart.clear();
+    } else if ('cartCheckout' in d) {
       document.querySelector<HTMLDialogElement>('[data-cart]')?.close();
-    } else if ('cartKeep' in d) {
-      document.querySelector<HTMLElement>('[data-cart-after]')!.hidden = true;
-    }
-  });
-
-  document.addEventListener('input', (e) => {
-    if ((e.target as HTMLElement).closest('[data-cart]')) {
-      const a = document.querySelector<HTMLAnchorElement>('[data-cart-order]');
-      if (a) a.href = `https://wa.me/${site.whatsapp}?text=${encodeURIComponent(orderText())}`;
+      document.dispatchEvent(new CustomEvent('dhb:flow', { detail: { intent: 'order' } }));
     }
   });
 

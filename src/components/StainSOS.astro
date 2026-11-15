@@ -1,7 +1,5 @@
 ---
-import Icon from './Icon.astro';
 import { stains } from '../data';
-import { wa, msg } from '../lib/wa';
 ---
 
 <div class="sos" data-sos>
@@ -31,12 +29,6 @@ import { wa, msg } from '../lib/wa';
             <li>{step}</li>
           ))}
         </ol>
-        <div class="sos__cta">
-          <p>Stain still there, or the fabric is delicate?</p>
-          <a class="btn btn--primary" href={wa(msg.stain(s.name))} target="_blank" rel="noopener">
-            <Icon name="whatsapp" size={18} /> Send it to the experts
-          </a>
-        </div>
       </div>
     ))
   }
@@ -49,6 +41,8 @@ import { wa, msg } from '../lib/wa';
 
 <style>
   .sos {
+    max-width: 820px;
+    margin-inline: auto;
     padding: clamp(16px, 3vw, 32px);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: var(--radius-lg);
@@ -57,6 +51,7 @@ import { wa, msg } from '../lib/wa';
 
   .sos__tabs {
     display: flex;
+    justify-content: safe center;
     gap: 8px;
     padding-bottom: 4px;
     overflow-x: auto;
@@ -73,7 +68,7 @@ import { wa, msg } from '../lib/wa';
     min-height: 44px;
     padding: 0 18px;
     border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 999px;
+    border-radius: var(--radius-btn);
     background: transparent;
     color: rgba(255, 255, 255, 0.85);
     font-size: 15px;
@@ -93,11 +88,8 @@ import { wa, msg } from '../lib/wa';
   }
 
   .sos__panel {
-    display: grid;
-    grid-template-columns: 1.4fr 1fr;
-    gap: 28px;
-    align-items: center;
-    margin-top: 24px;
+    max-width: 620px;
+    margin: 28px auto 0;
   }
 
   .sos__panel[hidden] {
@@ -137,30 +129,15 @@ import { wa, msg } from '../lib/wa';
     font-weight: 700;
   }
 
-  .sos__cta {
-    display: grid;
-    gap: 14px;
-    padding: 22px;
-    border-radius: var(--radius);
-    background: rgba(0, 123, 255, 0.16);
-  }
 
-  .sos__cta p {
-    color: var(--white);
-    font-weight: 700;
-  }
 
   .sos__note {
     margin-top: 24px;
+    text-align: center;
     color: rgba(255, 255, 255, 0.5);
     font-size: 13px;
   }
 
-  @media (max-width: 860px) {
-    .sos__panel {
-      grid-template-columns: 1fr;
-    }
-  }
 </style>
 
 <script>
