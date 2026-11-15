@@ -154,17 +154,19 @@ p {
 }
 
 .h1 {
-  font-size: clamp(2.6rem, 6.2vw, 4.25rem);
+  font-size: clamp(2.4rem, 4.6vw, 3.5rem);
+  text-wrap: balance;
 }
 
 .h2 {
-  font-size: clamp(2.2rem, 5vw, 4rem);
-  max-width: 14ch;
+  font-size: clamp(1.9rem, 4vw, 3.25rem);
+  text-wrap: balance;
 }
 
 .lead {
   margin-top: 20px;
-  max-width: 560px;
+  max-width: 640px;
+  text-wrap: pretty;
   color: var(--muted);
   font-size: clamp(1.05rem, 1.4vw, 1.2rem);
 }
@@ -181,10 +183,6 @@ p {
 .section-head .h2,
 .section-head .lead {
   margin-inline: auto;
-}
-
-.section-head .h2 {
-  max-width: 20ch;
 }
 
 .section-cta {
