@@ -368,8 +368,25 @@ const sub: Record<string, string> = {
 
   .wz[data-mode='page'] {
     max-width: 640px;
+    min-height: 100vh;
     min-height: 100dvh;
     margin: 0 auto;
+  }
+
+  /*
+    App screen: the page itself scrolls, so the list must not be a scroll container. Chrome (Android)
+    applies overscroll-behavior to containers that have nothing to scroll, which stopped touches that
+    started on the list from scrolling the page. The footer stays pinned so Continue is always in reach.
+  */
+  .wz[data-mode='page'] .wz__body {
+    overflow: visible;
+    overscroll-behavior: auto;
+  }
+
+  .wz[data-mode='page'] .wz__foot {
+    position: sticky;
+    bottom: 0;
+    z-index: 3;
   }
 
   /* Header */
@@ -1784,6 +1801,7 @@ const sub: Record<string, string> = {
         $<HTMLAnchorElement>('[data-wz-send]').href = waLink(site.whatsapp, text);
       }
       $('[data-wz-body]').scrollTop = 0;
+      if (mode === 'page') window.scrollTo(0, 0);
       if (panel === 'where' && map) window.setTimeout(() => map.invalidateSize(), 60);
     };
 
