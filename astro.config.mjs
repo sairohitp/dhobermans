@@ -49,4 +49,6 @@ export default defineConfig({
   site: 'https://dhobermans.com',
   trailingSlash: 'ignore',
   integrations: [serviceWorker()],
+  // Keep every script as an external file (no inline module scripts), which suits the Content-Security-Policy.
+  vite: { build: { assetsInlineLimit: 0 } },
 });

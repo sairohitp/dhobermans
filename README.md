@@ -1,53 +1,52 @@
 # dhobermans.com
 
-Marketing website for dhobermans, a laundry pickup and delivery service in Bangalore.
-Built with [Astro](https://astro.build) as a static site with app-like (single-page style) navigation between `/` and `/care`.
+Website and installable web app for dhobermans, a laundry pickup and delivery service in Bangalore.
+Built with [Astro](https://astro.build) as a static site, hosted on Cloudflare Workers.
 
 ## Pages
 
-| Route   | Contents                                                                                                        |
-| ------- | --------------------------------------------------------------------------------------------------------------- |
-| `/`     | Hero, why us, services, how it works, pricing + plan finder, locations, care preview, Stain SOS, FAQs, pickup planner |
-| `/care` | dhobermans' care product catalogue with category filters                                                        |
-| `/404`  | Not-found page                                                                                                  |
+| Route      | Contents                                                                                                   |
+| ---------- | ---------------------------------------------------------------------------------------------------------- |
+| `/`        | Single-page site: hero, why us, services, how it works, pricing and plan finder, locations, care, Stain SOS, FAQs, pickup planner |
+| `/care/`   | dhobermans' care shop with category filters and a cart                                                     |
+| `/app/`    | The installed app: a four-step booking survey sent to WhatsApp (not indexed by search engines)             |
+| `/offline/`, `/404` | Offline and not-found pages                                                                       |
 
 ## WhatsApp touchpoints
 
-Every booking action opens WhatsApp chat with **+91 88617 61718**, with a pre-filled message for its context
-(service, plan, product, location, stain, question). The number and messages live in:
+Every booking action opens WhatsApp chat with **+91 88617 61718** with a pre-filled message for its context
+(service, plan, product order, location, stain, question, app booking). Number: `src/config.ts`. Message wording:
+`src/lib/wa.ts`, `src/components/Cart.astro` (orders) and `src/pages/app/index.astro` (app bookings).
 
-- `src/config.ts` (`whatsapp`, `whatsappDisplay`)
-- `src/lib/wa.ts` (message templates)
-
-## Interactive features
+## Features
 
 | Feature            | What it does                                                                                              |
 | ------------------ | --------------------------------------------------------------------------------------------------------- |
-| Pickup planner     | Pincode coverage check, next four pickup slots (IST), service picker, live WhatsApp message preview      |
-| Weekly reminder    | Downloads a recurring calendar event (.ics) for the chosen slot, with a two-hour alert                    |
-| Plan finder        | Estimates weekly laundry weight from item counts and suggests Basic, Premium or Business                  |
-| Stain SOS          | First-aid steps for six common stains, with a hand-off to professional stain removal                       |
-| Mobile action bar  | Fixed "Book on WhatsApp" bar on phones; floating WhatsApp button on desktop                                |
-| Share              | Native share sheet on phones, WhatsApp share elsewhere                                                     |
-| Progressive web app | Installable app with offline support; see below                                                         |
+| Care cart          | Add, change quantity, remove and clear products; saved on the device; one itemised WhatsApp order with total |
+| App booking survey | Services, slot, address, name, review, send to WhatsApp; remembers details for repeat bookings           |
+| Pickup planner     | Pincode coverage check, next pickup slots (IST), live WhatsApp message preview                           |
+| Weekly reminder    | Downloads a recurring calendar event (.ics) for the chosen slot                                            |
+| Plan finder        | Estimates weekly laundry weight from item counts and suggests a plan                                       |
+| Stain SOS          | First-aid steps for six common stains                                                                      |
+| Install prompt     | Once per device; QR code hand-off from laptop to phone; see below                                          |
+
+Saved cart and details stay in the visitor's browser (`localStorage`) and are only sent when they tap a WhatsApp button.
+The app menu has "Forget my saved details".
 
 ## Progressive web app
 
-- **Install prompt, once per visitor.** A custom install sheet opens automatically after 10 seconds or once the visitor
-  scrolls past the first screen. It is recorded in the browser (`localStorage` key `dhobermans:pwa-prompt`) and never
-  opens automatically again for that browser. It never interrupts someone typing in a field, and never shows inside the
-  installed app, in private browsing, or in in-app browsers such as WhatsApp's or Instagram's.
-- **Android and desktop Chrome/Edge:** one-tap "Install app" through the browser's native install dialog.
-- **iPhone and iPad (Safari):** step-by-step "Add to Home Screen" instructions, since iOS has no install API.
-- **Install any time:** the "Install web app" button in the hero opens the same sheet whenever installation is available.
-- **Offline:** `src/pwa/sw.js` is a service worker template. Each build writes `dist/sw.js` with a content-based version
-  and precaches the pages, styles, scripts, fonts and icons. Pages load network-first and fall back to the cached copy,
-  or to `/offline/` for pages never visited.
-- **App extras:** home-screen shortcuts (Plan a pickup, Find my plan, Care) and store-style screenshots in
-  `public/manifest.webmanifest`. Regenerate `public/screenshots/` if the hero changes.
+- **Once per device.** The install sheet opens automatically after 10 seconds or after scrolling past the first screen,
+  then never again on that browser (`localStorage` key `dhobermans:pwa-prompt`). It waits if the visitor is typing.
+- **Laptop to phone.** On desktop the sheet shows a QR code for `https://dhobermans.com/?install=1`. Opening that link
+  shows the install sheet immediately on the phone, even if that phone saw it before.
+- **Every phone gets a path:** one-tap install where Chrome/Edge allow it; menu steps on other Android browsers;
+  Add to Home Screen steps on iPhone/iPad; "Open in browser" steps inside WhatsApp, Instagram and Facebook.
+- **Feels like an app.** The manifest opens `/app/` full-screen. If a phone added the home page instead, the first launch
+  in a session is redirected from `/` to `/app/`.
+- **Offline.** `src/pwa/sw.js` is the service worker template; each build writes `dist/sw.js` with a content-based version
+  and precaches pages, styles, scripts, fonts and icons.
 
-To test the install prompt again in your own browser, clear site data for dhobermans.com, or run
-`localStorage.removeItem('dhobermans:pwa-prompt')` in the browser console.
+To see the prompt again on your own device, clear site data for dhobermans.com.
 
 ## Run locally
 
@@ -58,48 +57,42 @@ npm install
 npm run dev
 ```
 
-The site runs at http://localhost:4321. `npm run build` writes the production site to `dist/`.
+To run the production build exactly as Cloudflare serves it (headers, 404 handling):
+
+```bash
+npm run build && npx wrangler dev
+```
+
+## Hosting and deploys (Cloudflare Workers)
+
+- `wrangler.jsonc` deploys `dist/` as static assets to the Worker `dhobermans`, attached to `dhobermans.com`.
+- **Production:** every push to `main` builds and deploys to dhobermans.com.
+- **Previews:** pushes to any other branch build a preview version on `*.sssairohit.workers.dev` without touching the live site.
+- `public/_headers` sets security headers (HSTS, CSP, frame and referrer policies) and long-term caching for hashed files.
+  If you add third-party scripts (for example analytics), add their hosts to the Content-Security-Policy there.
+- DNS is on Cloudflare; the domain stays registered at GoDaddy. `www.dhobermans.com` redirects to `dhobermans.com`
+  with a Cloudflare redirect rule. Email (MX, SPF, DMARC) records are unchanged.
 
 ## Where to edit
 
 | What                                          | File                    |
 | --------------------------------------------- | ----------------------- |
 | WhatsApp number, email, app links, socials    | `src/config.ts`         |
-| WhatsApp message wording                      | `src/lib/wa.ts`         |
-| Services, pricing, FAQs, locations, products, stains, plan finder weights | `src/data.ts` |
+| Services, pricing, FAQs, locations, products, stains | `src/data.ts`    |
 | Images                                        | `src/assets/`           |
-| Colours, fonts, spacing                       | `src/styles/global.css` |
+| Colours, font, spacing                        | `src/styles/global.css` |
+| Security headers and caching                  | `public/_headers`       |
 
-## Deploy to GitHub Pages with dhobermans.com (GoDaddy)
+## Search engine checklist
 
-The workflow in `.github/workflows/deploy.yml` builds and deploys the site on every push to `main`.
-
-**1. GitHub**
-
-1. Make sure a `main` branch exists with this code, and set it as the default branch (Settings > General > Default branch).
-2. Settings > Pages > Build and deployment > Source: **GitHub Actions**.
-3. Settings > Pages > Custom domain: enter `dhobermans.com` and save.
-4. Recommended: verify the domain in your GitHub account (profile Settings > Pages > Add a domain). GitHub gives you a TXT record to add at GoDaddy.
-
-**2. GoDaddy** (Domain Portfolio > dhobermans.com > DNS)
-
-1. Remove the existing parking A record for `@` and any domain forwarding.
-2. Add four A records for `@`:
-   `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`
-3. Optional IPv6: four AAAA records for `@`:
-   `2606:50c0:8000::153`, `2606:50c0:8001::153`, `2606:50c0:8002::153`, `2606:50c0:8003::153`
-4. Set the CNAME record for `www` to `sairohitp.github.io`.
-
-**3. HTTPS**
-
-Once DNS has propagated and GitHub shows the domain check as successful, tick **Enforce HTTPS** in Settings > Pages.
-
-Note: the site is built for the root of `dhobermans.com`. Before the custom domain is set, the temporary
-`sairohitp.github.io/dhobermans/` address will show unstyled pages; that resolves once the domain is connected.
+- [ ] Google Search Console: add the domain property, verify with a DNS TXT record in Cloudflare, submit `https://dhobermans.com/sitemap.xml`
+- [ ] Google Business Profile: create a service-area business for Bangalore with the WhatsApp number and website
+- [ ] Bing Webmaster Tools: import the site from Search Console
+- [ ] Use the same name, number and website everywhere (WhatsApp Business, Instagram, directories)
+- [ ] Ask customers for Google reviews
 
 ## Pre-launch checklist
 
 - [ ] Confirm prices, plan features and product prices in `src/data.ts`
 - [ ] Confirm FAQ claims (SMS tracking, care guarantee, dry cleaning in plans)
-- [ ] Add app store links once the apps are live
 - [ ] Add Privacy Policy and Terms pages

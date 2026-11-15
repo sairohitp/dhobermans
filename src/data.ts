@@ -91,14 +91,14 @@ export const locations = [
 export const productCategories = ['Detergent', 'Comforters', 'Diffusers', 'Fragrances'] as const;
 
 export const products = [
-  { slug: 'cloud-wash-detergent', category: 'Detergent', size: '1L', name: 'Cloud Wash Detergent', short: 'Plant-based, gentle on fabrics.', body: 'Ultra-gentle liquid detergent with plant-based surfactants. Removes stains without harsh chemicals.', price: '₹349', featured: true },
-  { slug: 'fresh-breeze-detergent', category: 'Detergent', size: '1 kg', name: 'Fresh Breeze Detergent', body: 'Concentrated powder formula for everyday loads. Works brilliantly in cold water.', price: '₹299' },
-  { slug: 'silk-touch-comforter-wash', category: 'Comforters', size: '750 mL', name: 'Silk Touch Comforter Wash', short: 'For duvets & heavy bedding.', body: 'Specially formulated for duvets, comforters, and heavy bedding. Keeps fill fluffy and fresh.', price: '₹499', featured: true },
-  { slug: 'lavender-dream-diffuser', category: 'Diffusers', size: '200 mL', name: 'Lavender Dream Diffuser', short: 'Calming scent, lasts 60 days.', body: 'Reed diffuser that fills your wardrobe with calming lavender. Lasts up to 60 days.', price: '₹599', featured: true },
-  { slug: 'ocean-mist-diffuser', category: 'Diffusers', size: '200 mL', name: 'Ocean Mist Diffuser', body: 'Crisp, aquatic scent for living spaces. Natural essential oils, no artificial aerosols.', price: '₹599' },
-  { slug: 'linen-spray-cotton-fields', category: 'Fragrances', size: '100 mL', name: 'Linen Spray: Cotton Fields', short: 'Quick spritz freshness.', body: 'A quick spritz to keep clothes smelling fresh between washes. Light, airy cotton scent.', price: '₹249', featured: true },
-  { slug: 'wardrobe-sachet-set', category: 'Fragrances', size: '4 pack', name: 'Wardrobe Sachet Set', body: 'Set of 4 aromatic sachets for drawers and closets. Cedar, lavender, rose, and jasmine.', price: '₹199' },
-  { slug: 'fabric-softener-petal-soft', category: 'Detergent', size: '1L', name: 'Fabric Softener: Petal Soft', body: 'Concentrated softener that leaves clothes silky. Subtle floral fragrance that lasts all day.', price: '₹279' },
+  { slug: 'cloud-wash-detergent', category: 'Detergent', size: '1L', name: 'Cloud Wash Detergent', short: 'Plant-based, gentle on fabrics.', body: 'Ultra-gentle liquid detergent with plant-based surfactants. Removes stains without harsh chemicals.', price: '₹349', amount: 349, featured: true },
+  { slug: 'fresh-breeze-detergent', category: 'Detergent', size: '1 kg', name: 'Fresh Breeze Detergent', body: 'Concentrated powder formula for everyday loads. Works brilliantly in cold water.', price: '₹299', amount: 299 },
+  { slug: 'silk-touch-comforter-wash', category: 'Comforters', size: '750 mL', name: 'Silk Touch Comforter Wash', short: 'For duvets & heavy bedding.', body: 'Specially formulated for duvets, comforters, and heavy bedding. Keeps fill fluffy and fresh.', price: '₹499', amount: 499, featured: true },
+  { slug: 'lavender-dream-diffuser', category: 'Diffusers', size: '200 mL', name: 'Lavender Dream Diffuser', short: 'Calming scent, lasts 60 days.', body: 'Reed diffuser that fills your wardrobe with calming lavender. Lasts up to 60 days.', price: '₹599', amount: 599, featured: true },
+  { slug: 'ocean-mist-diffuser', category: 'Diffusers', size: '200 mL', name: 'Ocean Mist Diffuser', body: 'Crisp, aquatic scent for living spaces. Natural essential oils, no artificial aerosols.', price: '₹599', amount: 599 },
+  { slug: 'linen-spray-cotton-fields', category: 'Fragrances', size: '100 mL', name: 'Linen Spray: Cotton Fields', short: 'Quick spritz freshness.', body: 'A quick spritz to keep clothes smelling fresh between washes. Light, airy cotton scent.', price: '₹249', amount: 249, featured: true },
+  { slug: 'wardrobe-sachet-set', category: 'Fragrances', size: '4 pack', name: 'Wardrobe Sachet Set', body: 'Set of 4 aromatic sachets for drawers and closets. Cedar, lavender, rose, and jasmine.', price: '₹199', amount: 199 },
+  { slug: 'fabric-softener-petal-soft', category: 'Detergent', size: '1L', name: 'Fabric Softener: Petal Soft', body: 'Concentrated softener that leaves clothes silky. Subtle floral fragrance that lasts all day.', price: '₹279', amount: 279 },
 ];
 
 export const categoryIcon: Record<string, string> = {

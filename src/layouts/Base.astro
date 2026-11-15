@@ -8,6 +8,8 @@ import InstallPrompt from '../components/InstallPrompt.astro';
 import { site } from '../config';
 import heroImage from '../assets/hero-laundry.jpg';
 import { getImage } from 'astro:assets';
+import interFont from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
+import { services, plans } from '../data';
 
 interface Props {
   title?: string;
@@ -21,19 +23,41 @@ const og = await getImage({ src: heroImage, width: 1200, height: 630, fit: 'cove
 const ogUrl = new URL(og.src, site.url).href;
 
 const sameAs = [site.instagram, site.linkedin].filter(Boolean);
-const jsonLd: Record<string, unknown> = {
-  '@context': 'https://schema.org',
+const business: Record<string, unknown> = {
   '@type': 'DryCleaningOrLaundry',
+  '@id': `${site.url}/#business`,
   name: site.name,
-  url: site.url,
+  url: `${site.url}/`,
   description: site.description,
   image: ogUrl,
-  telephone: site.whatsappDisplay.replace(/\s+/g, ''),
-  areaServed: { '@type': 'City', name: 'Bengaluru' },
+  logo: `${site.url}/icon-512.png`,
+  telephone: '+91-8861761718',
+  areaServed: { '@type': 'City', name: 'Bengaluru', alternateName: 'Bangalore' },
   priceRange: '₹₹',
+  hasOfferCatalog: {
+    '@type': 'OfferCatalog',
+    name: 'Laundry services',
+    itemListElement: [
+      ...services.map((s) => ({ '@type': 'Offer', itemOffered: { '@type': 'Service', name: s.name, areaServed: 'Bengaluru' } })),
+      ...plans.map((p) => ({
+        '@type': 'Offer',
+        name: `${p.name} plan`,
+        price: Number(p.price.replace(/[^\d]/g, '')),
+        priceCurrency: 'INR',
+        description: p.features.join(', '),
+      })),
+    ],
+  },
 };
-if (site.email) jsonLd.email = site.email;
-if (sameAs.length) jsonLd.sameAs = sameAs;
+if (site.email) business.email = site.email;
+if (sameAs.length) business.sameAs = sameAs;
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    business,
+    { '@type': 'WebSite', '@id': `${site.url}/#website`, url: `${site.url}/`, name: site.name, inLanguage: 'en-IN', publisher: { '@id': `${site.url}/#business` } },
+  ],
+};
 ---
 
 <!doctype html>
@@ -44,6 +68,7 @@ if (sameAs.length) jsonLd.sameAs = sameAs;
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
+    <link rel="preload" href={interFont} as="font" type="font/woff2" crossorigin />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
@@ -60,11 +85,24 @@ if (sameAs.length) jsonLd.sameAs = sameAs;
     <meta property="og:image" content={ogUrl} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Freshly folded towels: dhobermans laundry pickup and delivery in Bangalore" />
     <meta property="og:locale" content="en_IN" />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
 
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    <slot name="head" />
     <script is:inline>
+      // Installed app: open the app screen on launch instead of the website home page.
+      (function () {
+        try {
+          var standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+          if (!standalone || sessionStorage.getItem('dhb-launched')) return;
+          sessionStorage.setItem('dhb-launched', '1');
+          if (location.pathname === '/') location.replace('/app/');
+        } catch (e) {}
+      })();
       document.documentElement.classList.remove('no-js');
       document.addEventListener('astro:after-swap', () => document.documentElement.classList.remove('no-js'));
     </script>

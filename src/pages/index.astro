@@ -13,7 +13,6 @@ import { services, benefits, steps, plans, locations, products, categoryIcon, fa
 
 const featuredProducts = products.filter((p) => p.featured);
 const marquee = ['Wash & Fold', 'Dry Cleaning', 'Steam Ironing', 'Free pickup & delivery', '48-hour turnaround', 'Eco-friendly care', 'Comforter Wash', 'Shoe Cleaning', 'Curtain Cleaning', 'Stain Removal'];
-const hasApps = Boolean(site.playStore || site.appStore);
 const ext = { target: '_blank', rel: 'noopener' };
 ---
 
@@ -22,9 +21,8 @@ const ext = { target: '_blank', rel: 'noopener' };
   <section class="hero">
     <div class="container hero__grid">
       <div class="hero__copy">
-        <span class="chip hero__pill"><span class="dot"></span>Now serving {site.city} · Free pickup &amp; delivery</span>
         <h1 class="h1">Laundry, delivered <span class="accent">like magic.</span></h1>
-        <p class="lead">Schedule a pickup. We wash, fold, and return your clothes fresh, clean, and on time. Every time.</p>
+        <p class="lead">Laundry and dry cleaning pickup and delivery across Bangalore. We wash, fold, and return your clothes fresh, clean, and on time. Every time.</p>
 
         <div class="hero__actions">
           <a href={wa()} {...ext} class="btn btn--wa"><Icon name="whatsapp" size={20} /> Book on WhatsApp</a>
@@ -32,24 +30,10 @@ const ext = { target: '_blank', rel: 'noopener' };
         </div>
 
         <div class="hero__apps">
-          {
-            hasApps ? (
-              <>
-                {site.playStore && (
-                  <a class="btn btn--dark btn--sm" href={site.playStore} {...ext}>Get it on Google Play</a>
-                )}
-                {site.appStore && (
-                  <a class="btn btn--dark btn--sm" href={site.appStore} {...ext}>Download on the App Store</a>
-                )}
-              </>
-            ) : (
-              <span class="hero__soon">
-                <Icon name="sparkle" size={16} /> The dhobermans app is coming soon
-              </span>
-            )
-          }
-          <button type="button" class="btn btn--dark btn--sm" data-install hidden>
-            <Icon name="download" size={16} /> Install web app
+          {site.playStore && <a class="btn btn--dark btn--sm" href={site.playStore} {...ext}>Get it on Google Play</a>}
+          {site.appStore && <a class="btn btn--dark btn--sm" href={site.appStore} {...ext}>Download on the App Store</a>}
+          <button type="button" class="hero__app" data-install hidden>
+            <Icon name="download" size={16} /> Get the dhobermans app
           </button>
         </div>
 
@@ -91,7 +75,6 @@ const ext = { target: '_blank', rel: 'noopener' };
   <section id="why-us" class="section section--surface">
     <div class="container">
       <div class="section-head reveal">
-        <span class="eyebrow">Why dhobermans?</span>
         <h2 class="h2">Fresh clothes, zero effort.</h2>
         <p class="lead">We come to you, clean with care, and bring everything back folded and on time.</p>
       </div>
@@ -115,7 +98,6 @@ const ext = { target: '_blank', rel: 'noopener' };
   <section id="services" class="section">
     <div class="container">
       <div class="section-head reveal">
-        <span class="eyebrow">Our services</span>
         <h2 class="h2">Book trusted laundry care.</h2>
         <p class="lead">From everyday wash &amp; fold to delicate dry cleaning, dhobermans handles it all. Tap a service to book it on WhatsApp.</p>
       </div>
@@ -124,7 +106,7 @@ const ext = { target: '_blank', rel: 'noopener' };
           services.map((s) => (
             <a class="service reveal" href={wa(msg.service(s.name))} {...ext} aria-label={`Book ${s.name} on WhatsApp`}>
               <div class="service__img">
-                <Image src={s.image} alt="" widths={[320, 480]} sizes="(max-width: 640px) 46vw, 280px" />
+                <Image src={s.image} alt={`${s.name} by dhobermans in Bangalore`} widths={[320, 480]} sizes="(max-width: 640px) 46vw, 280px" />
               </div>
               <div class="service__foot">
                 <h3>{s.name}</h3>
@@ -141,7 +123,6 @@ const ext = { target: '_blank', rel: 'noopener' };
   <section id="how-it-works" class="section section--dark">
     <div class="container">
       <div class="section-head reveal">
-        <span class="eyebrow">How it works</span>
         <h2 class="h2">Simple steps to fresher laundry.</h2>
         <p class="lead">Three taps. Zero hassle. Your laundry, handled end-to-end.</p>
       </div>
@@ -152,8 +133,7 @@ const ext = { target: '_blank', rel: 'noopener' };
               <div class="step__card dots-bg">
                 <PhoneMock {...s.screen} />
               </div>
-              <span class="step__label">Step {i + 1}</span>
-              <h3>{s.title}</h3>
+              <h3><span class="step__num">{i + 1}.</span> {s.title}</h3>
               <p>{s.body}</p>
             </article>
           ))
@@ -167,7 +147,6 @@ const ext = { target: '_blank', rel: 'noopener' };
   <section id="pricing" class="section section--surface">
     <div class="container">
       <div class="section-head section-head--center reveal">
-        <span class="eyebrow">Pricing</span>
         <h2 class="h2">Simple, transparent pricing.</h2>
         <p class="lead">No hidden fees. Cancel anytime.</p>
       </div>
@@ -205,8 +184,7 @@ const ext = { target: '_blank', rel: 'noopener' };
   <section id="locations" class="section">
     <div class="container">
       <div class="section-head reveal">
-        <span class="eyebrow">Self-service · Coming soon</span>
-        <h2 class="h2">Self-laundry locations.</h2>
+        <h2 class="h2">Self-laundry spots, coming soon.</h2>
         <p class="lead">Prefer doing it yourself? These are the neighbourhoods planned for future dhobermans self-service spots. Tap one to get notified when it opens.</p>
       </div>
       <div class="locations">
@@ -232,7 +210,7 @@ const ext = { target: '_blank', rel: 'noopener' };
                     <h3>{l.name}</h3>
                     <p>{l.address}</p>
                   </div>
-                  <span class="loc__notify"><Icon name="bell" size={14} /> Notify me</span>
+                  <span class="loc__notify">Notify me <Icon name="arrow-right" size={14} /></span>
                 </a>
               </li>
             ))
@@ -247,7 +225,6 @@ const ext = { target: '_blank', rel: 'noopener' };
     <div class="container">
       <div class="section-head care-head reveal">
         <div>
-          <span class="eyebrow">dhobermans' care</span>
           <h2 class="h2">Care for what you wear.</h2>
           <p class="lead">Our own line of detergents, comforter washes, diffusers, and fragrances, crafted to keep your fabrics and spaces feeling brand new.</p>
         </div>
@@ -260,7 +237,7 @@ const ext = { target: '_blank', rel: 'noopener' };
               <div class="product__art">
                 <Icon name={categoryIcon[p.category]} size={40} stroke={1.5} />
               </div>
-              <span class="tag">{p.category}</span>
+              <span class="product__cat">{p.category}</span>
               <h3>{p.name}</h3>
               <p>{p.short}</p>
             </a>
@@ -274,7 +251,6 @@ const ext = { target: '_blank', rel: 'noopener' };
   <section id="stain-sos" class="section section--dark">
     <div class="container">
       <div class="section-head reveal">
-        <span class="eyebrow">Stain SOS</span>
         <h2 class="h2">Spilled something? Act fast.</h2>
         <p class="lead">Quick first aid for the most common stains, until we can take over.</p>
       </div>
@@ -286,7 +262,6 @@ const ext = { target: '_blank', rel: 'noopener' };
   <section id="faq" class="section">
     <div class="container">
       <div class="section-head section-head--center reveal">
-        <span class="eyebrow">FAQs</span>
         <h2 class="h2">Frequently asked questions.</h2>
       </div>
       <div class="faqs">
@@ -313,7 +288,6 @@ const ext = { target: '_blank', rel: 'noopener' };
   <section id="book" class="section section--surface">
     <div class="container" id="contact">
       <div class="section-head reveal">
-        <span class="eyebrow">Pickup planner</span>
         <h2 class="h2">Ready to simplify laundry?</h2>
         <p class="lead">Check your area, pick a slot and services, and send it to us on WhatsApp in one tap.</p>
       </div>
@@ -373,11 +347,6 @@ const ext = { target: '_blank', rel: 'noopener' };
     gap: clamp(32px, 5vw, 72px);
   }
 
-  .hero__pill {
-    margin-bottom: 24px;
-    font-size: 13px;
-  }
-
   .hero__actions {
     display: flex;
     flex-wrap: wrap;
@@ -392,17 +361,24 @@ const ext = { target: '_blank', rel: 'noopener' };
     margin-top: 20px;
   }
 
-  .hero__soon {
+  .hero__app {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    color: var(--muted);
+    min-height: 44px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--brand);
     font-size: 15px;
     font-weight: 600;
+    cursor: pointer;
   }
 
-  .hero__soon :global(svg) {
-    color: var(--brand);
+  .hero__app:hover {
+    color: var(--brand-600);
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 
   .hero__promises {
@@ -546,7 +522,7 @@ const ext = { target: '_blank', rel: 'noopener' };
     font-family: var(--font-display);
     font-size: clamp(1.25rem, 2vw, 1.6rem);
     font-weight: 600;
-    letter-spacing: -0.02em;
+    letter-spacing: var(--tracking);
     white-space: nowrap;
   }
 
@@ -609,9 +585,9 @@ const ext = { target: '_blank', rel: 'noopener' };
   .service {
     display: flex;
     flex-direction: column;
-    padding: 10px;
+    padding: 8px;
     border: 1px solid var(--line);
-    border-radius: var(--radius-lg);
+    border-radius: 12px;
     background: var(--white);
     transition:
       border-color 0.2s ease,
@@ -628,7 +604,7 @@ const ext = { target: '_blank', rel: 'noopener' };
   .service__img {
     overflow: hidden;
     aspect-ratio: 1;
-    border-radius: 20px;
+    border-radius: 6px;
     background: var(--surface-2);
   }
 
@@ -654,8 +630,8 @@ const ext = { target: '_blank', rel: 'noopener' };
   .service h3 {
     font-family: var(--font-body);
     font-size: 17px;
-    font-weight: 700;
-    letter-spacing: -0.01em;
+    font-weight: 600;
+    letter-spacing: var(--tracking);
   }
 
   .service__arrow {
@@ -693,21 +669,15 @@ const ext = { target: '_blank', rel: 'noopener' };
     background-color: var(--brand);
   }
 
-  .step__label {
-    display: block;
-    margin-top: 24px;
+  .step__num {
     color: #5aa8ff;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
   }
 
   .step h3 {
-    margin-top: 8px;
+    margin-top: 24px;
     font-family: var(--font-body);
     font-size: 24px;
-    letter-spacing: -0.01em;
+    letter-spacing: var(--tracking);
   }
 
   .step p {
@@ -749,7 +719,7 @@ const ext = { target: '_blank', rel: 'noopener' };
     font-family: var(--font-display);
     font-size: 48px;
     font-weight: 700;
-    letter-spacing: -0.03em;
+    letter-spacing: var(--tracking);
     line-height: 1;
   }
 
@@ -758,7 +728,7 @@ const ext = { target: '_blank', rel: 'noopener' };
     font-family: var(--font-body);
     font-size: 16px;
     font-weight: 600;
-    letter-spacing: 0;
+    letter-spacing: var(--tracking);
   }
 
   .plan ul {
@@ -891,13 +861,10 @@ const ext = { target: '_blank', rel: 'noopener' };
     display: inline-flex;
     flex: none;
     align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    border-radius: 999px;
-    background: var(--brand-50);
-    color: var(--brand-600);
-    font-size: 13px;
-    font-weight: 700;
+    gap: 4px;
+    color: var(--brand);
+    font-size: 14px;
+    font-weight: 600;
   }
 
   .loc > div {
@@ -919,7 +886,7 @@ const ext = { target: '_blank', rel: 'noopener' };
   .loc h3 {
     font-family: var(--font-body);
     font-size: 17px;
-    letter-spacing: -0.01em;
+    letter-spacing: var(--tracking);
   }
 
   .loc p {
@@ -970,15 +937,18 @@ const ext = { target: '_blank', rel: 'noopener' };
     color: var(--brand);
   }
 
-  .product .tag {
+  .product__cat {
     margin-inline: 10px;
+    color: var(--subtle);
+    font-size: 14px;
+    font-weight: 500;
   }
 
   .product h3 {
-    margin: 12px 10px 0;
+    margin: 4px 10px 0;
     font-family: var(--font-body);
     font-size: 19px;
-    letter-spacing: -0.01em;
+    letter-spacing: var(--tracking);
   }
 
   .product p {
@@ -1136,12 +1106,12 @@ const ext = { target: '_blank', rel: 'noopener' };
     }
 
     .service {
-      padding: 8px;
-      border-radius: 22px;
+      padding: 6px;
+      border-radius: 10px;
     }
 
     .service__img {
-      border-radius: 16px;
+      border-radius: 5px;
     }
 
     .service__foot {
@@ -1196,10 +1166,6 @@ const ext = { target: '_blank', rel: 'noopener' };
       padding: 14px;
     }
 
-    .loc__notify {
-      padding: 6px 10px;
-    }
-
     .faq summary {
       padding: 18px;
       font-size: 16px;
@@ -1248,9 +1214,8 @@ const ext = { target: '_blank', rel: 'noopener' };
       font-size: 14px;
     }
 
-    .loc__notify span,
     .loc__notify {
-      font-size: 12px;
+      font-size: 13px;
     }
   }
 </style>

@@ -43,7 +43,7 @@ const premium = plans.find((p) => p.id === 'premium')!;
   </div>
 
   <div class="finder__result">
-    <span class="finder__eyebrow">Your estimate</span>
+    <span class="finder__label">Your estimate</span>
     <p class="finder__kg"><span data-kg-total>0.0</span> kg<small>/week</small></p>
     <div class="meter" aria-hidden="true">
       <div class="meter__fill" data-meter></div>
@@ -211,11 +211,9 @@ const premium = plans.find((p) => p.id === 'premium')!;
     color: rgba(255, 255, 255, 0.85);
   }
 
-  .finder__eyebrow {
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
+  .finder__label {
+    font-size: 15px;
+    font-weight: 600;
   }
 
   .finder__kg {
@@ -223,7 +221,7 @@ const premium = plans.find((p) => p.id === 'premium')!;
     font-family: var(--font-display);
     font-size: clamp(48px, 6vw, 64px);
     font-weight: 700;
-    letter-spacing: -0.03em;
+    letter-spacing: var(--tracking);
     line-height: 1;
   }
 
@@ -232,7 +230,7 @@ const premium = plans.find((p) => p.id === 'premium')!;
     color: rgba(255, 255, 255, 0.7);
     font-family: var(--font-body);
     font-size: 16px;
-    letter-spacing: 0;
+    letter-spacing: var(--tracking);
   }
 
   .meter {
@@ -285,7 +283,7 @@ const premium = plans.find((p) => p.id === 'premium')!;
     color: var(--white);
     font-family: var(--font-display);
     font-size: 28px;
-    letter-spacing: -0.02em;
+    letter-spacing: var(--tracking);
   }
 
   .finder__plan em {

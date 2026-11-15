@@ -1,0 +1,45 @@
+---
+import '../styles/global.css';
+import interFont from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
+import { site } from '../config';
+
+interface Props {
+  title?: string;
+}
+const { title = 'dhobermans: Book a pickup' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en-IN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content="Book a dhobermans laundry pickup in a few taps. Your request is sent to us on WhatsApp." />
+    <meta name="robots" content="noindex" />
+    <link rel="canonical" href={`${site.url}/app/`} />
+    <link rel="preload" href={interFont} as="font" type="font/woff2" crossorigin />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="apple-mobile-web-app-title" content="dhobermans" />
+    <meta name="format-detection" content="telephone=no" />
+  </head>
+  <body class="app-body">
+    <slot />
+    <script>
+      if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+        const register = () => navigator.serviceWorker.register('/sw.js').catch(() => {});
+        if (document.readyState === 'complete') register();
+        else window.addEventListener('load', register, { once: true });
+      }
+    </script>
+  </body>
+</html>
+
+<style is:global>
+  .app-body {
+    background: var(--surface);
+  }
+</style>

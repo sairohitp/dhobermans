@@ -1,0 +1,668 @@
+---
+import { Image } from 'astro:assets';
+import AppLayout from '../../layouts/AppLayout.astro';
+import Icon from '../../components/Icon.astro';
+import { services, plans } from '../../data';
+import { wa, msg } from '../../lib/wa';
+---
+
+<AppLayout>
+  <div class="app" data-app>
+    <header class="bar">
+      <button type="button" class="bar__btn" data-back aria-label="Back" hidden><Icon name="arrow-left" size={22} /></button>
+      <span class="bar__brand">dhobermans</span>
+      <details class="menu">
+        <summary class="bar__btn" aria-label="Menu"><Icon name="more" size={22} /></summary>
+        <nav class="menu__list">
+          <a href="/care/"><Icon name="bag" size={18} /> Shop care products</a>
+          <a href={wa(msg.question)} target="_blank" rel="noopener"><Icon name="whatsapp" size={18} /> Chat with us</a>
+          <a href="/"><Icon name="arrow-up-right" size={18} /> Visit the website</a>
+          <button type="button" data-forget><Icon name="trash" size={18} /> Forget my saved details</button>
+        </nav>
+      </details>
+    </header>
+    <div class="progress" aria-hidden="true"><div class="progress__fill" data-progress></div></div>
+
+    <main class="screens">
+      <!-- 1. Services -->
+      <section class="screen" data-step="1">
+        <p class="screen__count">Step 1 of 4</p>
+        <h1>What needs care?</h1>
+        <p class="screen__sub" data-welcome>Choose one or more services.</p>
+        <div class="tiles">
+          {
+            services.map((s) => (
+              <label class="tile">
+                <input type="checkbox" name="services" value={s.name} />
+                <span class="tile__img">
+                  <Image src={s.image} alt="" widths={[160, 240]} sizes="160px" loading="lazy" />
+                </span>
+                <span class="tile__name">{s.name}</span>
+                <span class="tile__check"><Icon name="check" size={14} /></span>
+              </label>
+            ))
+          }
+        </div>
+      </section>
+
+      <!-- 2. Slot -->
+      <section class="screen" data-step="2" hidden>
+        <p class="screen__count">Step 2 of 4</p>
+        <h1>When should we pick up?</h1>
+        <p class="screen__sub">Pick a time that suits you. We'll confirm it on WhatsApp.</p>
+        <div class="options" role="radiogroup" aria-label="Pickup slot" data-app-slots></div>
+      </section>
+
+      <!-- 3. Address -->
+      <section class="screen" data-step="3" hidden>
+        <p class="screen__count">Step 3 of 4</p>
+        <h1>Where should we pick up?</h1>
+        <label class="field">
+          <span>Pincode</span>
+          <input class="input" type="text" inputmode="numeric" autocomplete="postal-code" placeholder="6-digit pincode" data-f="pincode" />
+          <small class="pin" data-pin-status aria-live="polite">We serve all of Bangalore.</small>
+        </label>
+        <label class="field">
+          <span>Pickup address</span>
+          <textarea class="input" rows="3" autocomplete="street-address" placeholder="Flat, building, street, area" data-f="address"></textarea>
+        </label>
+      </section>
+
+      <!-- 4. Contact -->
+      <section class="screen" data-step="4" hidden>
+        <p class="screen__count">Step 4 of 4</p>
+        <h1>Almost done</h1>
+        <label class="field">
+          <span>Your name</span>
+          <input class="input" type="text" autocomplete="name" placeholder="Name" data-f="name" />
+        </label>
+        <label class="field">
+          <span>Plan <em>(optional)</em></span>
+          <select class="input" data-f="plan">
+            <option value="">Pay per pickup / not sure</option>
+            {plans.map((p) => <option value={`${p.name} (${p.price}/month)`}>{p.name} · {p.price}/month</option>)}
+          </select>
+        </label>
+        <label class="field">
+          <span>Notes <em>(optional)</em></span>
+          <input class="input" type="text" placeholder="Gate code, delicate items..." data-f="notes" />
+        </label>
+      </section>
+
+      <!-- 5. Review -->
+      <section class="screen" data-step="5" hidden>
+        <p class="screen__count">Review</p>
+        <h1>Check your request</h1>
+        <dl class="review" data-review></dl>
+      </section>
+
+      <!-- Done -->
+      <section class="screen screen--done" data-step="6" hidden>
+        <span class="done__icon"><Icon name="check" size={30} /></span>
+        <h1>Almost there</h1>
+        <p class="screen__sub">Your request is ready in WhatsApp. Tap <strong>send</strong> there and we'll confirm your pickup shortly.</p>
+        <div class="done__actions">
+          <button type="button" class="btn btn--ghost btn--block" data-ics><Icon name="bell" size={18} /> Remind me weekly</button>
+          <a href="/care/" class="btn btn--ghost btn--block"><Icon name="bag" size={18} /> Shop care products</a>
+          <button type="button" class="btn btn--primary btn--block" data-restart>Book another pickup</button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="actions" data-actions>
+      <p class="actions__hint" data-hint aria-live="polite"></p>
+      <button type="button" class="btn btn--primary btn--block" data-next>Continue</button>
+      <a class="btn btn--wa btn--block" href={wa()} target="_blank" rel="noopener" data-send hidden>
+        <Icon name="whatsapp" size={20} /> Send on WhatsApp
+      </a>
+    </footer>
+  </div>
+</AppLayout>
+
+<style>
+  .app {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+    max-width: 560px;
+    margin: 0 auto;
+    background: var(--white);
+  }
+
+  .bar {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    display: grid;
+    grid-template-columns: 48px 1fr 48px;
+    align-items: center;
+    padding: calc(8px + env(safe-area-inset-top)) 8px 8px;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .bar__brand {
+    grid-column: 2;
+    color: var(--brand);
+    font-size: 20px;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .bar__btn {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .bar__btn::-webkit-details-marker {
+    display: none;
+  }
+
+  [data-back] {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .menu {
+    position: relative;
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .menu__list {
+    position: absolute;
+    top: 48px;
+    right: 0;
+    display: grid;
+    min-width: 250px;
+    padding: 6px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--white);
+    box-shadow: var(--shadow);
+  }
+
+  .menu__list a,
+  .menu__list button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 46px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 10px;
+    background: none;
+    color: var(--ink);
+    font-size: 15px;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .menu__list a:hover,
+  .menu__list button:hover {
+    background: var(--surface);
+  }
+
+  .progress {
+    height: 4px;
+    margin: 0 20px;
+    border-radius: 999px;
+    background: var(--surface-2);
+  }
+
+  .progress__fill {
+    width: 25%;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--brand);
+    transition: width 0.3s ease;
+  }
+
+  .screens {
+    flex: 1;
+    padding: 24px 20px 24px;
+  }
+
+  .screen h1 {
+    font-size: 28px;
+    line-height: 1.15;
+  }
+
+  .screen__count {
+    margin-bottom: 6px;
+    color: var(--subtle);
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .screen__sub {
+    margin-top: 8px;
+    color: var(--muted);
+  }
+
+  .tiles {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .tile {
+    position: relative;
+    display: grid;
+    gap: 8px;
+    padding: 8px;
+    border: 1.5px solid var(--line);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+  }
+
+  .tile input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .tile__img {
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+    border-radius: 6px;
+    background: var(--surface-2);
+  }
+
+  .tile__img :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .tile__name {
+    padding: 0 4px 4px;
+    color: var(--ink);
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .tile__check {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--white);
+    color: transparent;
+    box-shadow: 0 0 0 1.5px var(--line);
+  }
+
+  .tile:has(input:checked) {
+    border-color: var(--brand);
+    background: var(--brand-50);
+  }
+
+  .tile:has(input:checked) .tile__check {
+    background: var(--brand);
+    color: var(--white);
+    box-shadow: none;
+  }
+
+  .tile:has(input:focus-visible) {
+    outline: 3px solid var(--brand-200);
+  }
+
+  .options {
+    display: grid;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .options :global(.opt) {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 56px;
+    padding: 0 16px;
+    border: 1.5px solid var(--line);
+    border-radius: 12px;
+    color: var(--ink);
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .options :global(.opt input) {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .options :global(.opt:has(input:checked)) {
+    border-color: var(--brand);
+    background: var(--brand-50);
+    font-weight: 600;
+  }
+
+  .options :global(.opt:has(input:focus-visible)) {
+    outline: 3px solid var(--brand-200);
+  }
+
+  .field {
+    display: grid;
+    gap: 8px;
+    margin-top: 20px;
+    font-weight: 600;
+  }
+
+  .field em {
+    color: var(--subtle);
+    font-style: normal;
+    font-weight: 500;
+  }
+
+  .field :global(.input) {
+    min-height: 52px;
+    font-weight: 400;
+  }
+
+  .pin {
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .pin.is-ok {
+    color: #0f7b46;
+  }
+
+  .pin.is-maybe {
+    color: #a15c00;
+  }
+
+  .review {
+    display: grid;
+    margin: 20px 0 0;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+  }
+
+  .review :global(.row) {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 2px 12px;
+    padding: 14px 16px;
+  }
+
+  .review :global(.row + .row) {
+    border-top: 1px solid var(--line);
+  }
+
+  .review :global(dt) {
+    color: var(--subtle);
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .review :global(dd) {
+    grid-column: 1;
+    margin: 0;
+    color: var(--ink);
+    font-weight: 500;
+    white-space: pre-line;
+  }
+
+  .review :global(.edit) {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: center;
+    min-height: 40px;
+    padding: 0 4px;
+    border: 0;
+    background: none;
+    color: var(--brand);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .screen--done {
+    padding-top: 24px;
+    text-align: center;
+  }
+
+  .done__icon {
+    display: grid;
+    place-items: center;
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 20px;
+    border-radius: 50%;
+    background: var(--wa);
+    color: var(--white);
+  }
+
+  .done__actions {
+    display: grid;
+    gap: 10px;
+    margin-top: 28px;
+  }
+
+  .actions {
+    position: sticky;
+    bottom: 0;
+    display: grid;
+    gap: 8px;
+    padding: 12px 20px calc(12px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .actions__hint {
+    min-height: 0;
+    color: #c62828;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+  }
+
+  .actions__hint:empty {
+    display: none;
+  }
+
+  .actions .btn {
+    min-height: 54px;
+  }
+</style>
+
+<script>
+  import { nextSlots, pincodeStatus, buildIcs, type Slot } from '../../lib/slots';
+  import { profile } from '../../lib/store';
+  import { site } from '../../config';
+
+  const root = document.querySelector<HTMLElement>('[data-app]')!;
+  const $ = <T extends Element = HTMLElement>(sel: string) => root.querySelector<T>(sel)!;
+  const field = (name: string) => $<HTMLInputElement>(`[data-f="${name}"]`);
+
+  const LAST_INPUT = 4;
+  const REVIEW = 5;
+  const DONE = 6;
+  let step = 1;
+
+  // Slots
+  const slotOptions: Slot[] = nextSlots(6);
+  $('[data-app-slots]').innerHTML = slotOptions
+    .map((s) => `<label class="opt"><input type="radio" name="slot" value="${s.id}" /><span>${s.label}</span></label>`)
+    .join('');
+  const chosenSlot = () => slotOptions.find((s) => s.id === root.querySelector<HTMLInputElement>('input[name="slot"]:checked')?.value);
+
+  // Saved details
+  const saved = profile.get();
+  if (saved.name) {
+    field('name').value = saved.name;
+    $('[data-welcome]').textContent = `Welcome back, ${saved.name}. Choose one or more services.`;
+  }
+  if (saved.pincode) field('pincode').value = saved.pincode;
+  if (saved.address) field('address').value = saved.address;
+
+  const chosenServices = () => [...root.querySelectorAll<HTMLInputElement>('input[name="services"]:checked')].map((i) => i.value);
+
+  const problem = (s: number): string => {
+    if (s === 1 && chosenServices().length === 0) return 'Choose at least one service.';
+    if (s === 2 && !chosenSlot()) return 'Choose a pickup slot.';
+    if (s === 3) {
+      if (!/^\d{6}$/.test(field('pincode').value)) return 'Enter your 6-digit pincode.';
+      if (field('address').value.trim().length < 8) return 'Enter your pickup address.';
+    }
+    if (s === 4 && field('name').value.trim().length < 2) return 'Enter your name.';
+    return '';
+  };
+
+  const message = () => {
+    const slot = chosenSlot();
+    return [
+      "Hi dhobermans, I'd like to schedule a pickup.",
+      `Services: ${chosenServices().join(', ')}`,
+      slot ? `Slot: ${slot.long}` : '',
+      `Pincode: ${field('pincode').value}`,
+      `Address: ${field('address').value.trim()}`,
+      `Name: ${field('name').value.trim()}`,
+      field('plan').value ? `Plan: ${field('plan').value}` : '',
+      field('notes').value.trim() ? `Notes: ${field('notes').value.trim()}` : '',
+    ]
+      .filter(Boolean)
+      .join('\n');
+  };
+
+  const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
+
+  const renderReview = () => {
+    const rows: [string, string, number][] = [
+      ['Services', chosenServices().join(', '), 1],
+      ['Pickup slot', chosenSlot()?.long ?? '', 2],
+      ['Address', `${field('address').value.trim()}\n${field('pincode').value}`, 3],
+      ['Name', field('name').value.trim(), 4],
+    ];
+    if (field('plan').value) rows.push(['Plan', field('plan').value, 4]);
+    if (field('notes').value.trim()) rows.push(['Notes', field('notes').value.trim(), 4]);
+    $('[data-review]').innerHTML = rows
+      .map(([k, v, s]) => `<div class="row"><dt>${k}</dt><dd>${esc(v)}</dd><button type="button" class="edit" data-edit="${s}">Edit</button></div>`)
+      .join('');
+    $<HTMLAnchorElement>('[data-send]').href = `https://wa.me/${site.whatsapp}?text=${encodeURIComponent(message())}`;
+  };
+
+  const show = (s: number, push = true) => {
+    step = s;
+    root.querySelectorAll<HTMLElement>('[data-step]').forEach((el) => (el.hidden = Number(el.dataset.step) !== s));
+    $('[data-back]').hidden = s === 1 || s === DONE;
+    $<HTMLElement>('[data-progress]').style.width = `${Math.min(100, (Math.min(s, REVIEW) / REVIEW) * 100)}%`;
+    $('[data-hint]').textContent = '';
+    $('[data-next]').hidden = s >= REVIEW;
+    $('[data-send]').hidden = s !== REVIEW;
+    $('[data-actions]').hidden = s === DONE;
+    if (s === REVIEW) renderReview();
+    if (push) history.pushState({ step: s }, '');
+    window.scrollTo({ top: 0 });
+  };
+
+  const next = () => {
+    const issue = problem(step);
+    if (issue) {
+      $('[data-hint]').textContent = issue;
+      navigator.vibrate?.(30);
+      return;
+    }
+    show(step === LAST_INPUT ? REVIEW : step + 1);
+  };
+
+  $('[data-next]').addEventListener('click', next);
+  $('[data-back]').addEventListener('click', () => history.back());
+  window.addEventListener('popstate', (e) => show((e.state && e.state.step) || 1, false));
+  history.replaceState({ step: 1 }, '');
+
+  root.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && (e.target as HTMLElement).matches('input')) {
+      e.preventDefault();
+      next();
+    }
+  });
+
+  root.addEventListener('change', (e) => {
+    const t = e.target as HTMLInputElement;
+    if (t.matches('input[type="checkbox"], input[type="radio"]')) {
+      $('[data-hint]').textContent = '';
+      navigator.vibrate?.(8);
+    }
+    if (t.name === 'slot') window.setTimeout(next, 250); // one tap moves on
+  });
+
+  root.addEventListener('input', (e) => {
+    const t = e.target as HTMLInputElement;
+    if (t.dataset.f === 'pincode') {
+      t.value = t.value.replace(/\D/g, '').slice(0, 6);
+      const st = pincodeStatus(t.value);
+      const el = $('[data-pin-status]');
+      el.textContent = st.text;
+      el.className = `pin ${st.cls}`;
+    }
+    $('[data-hint]').textContent = '';
+  });
+
+  root.addEventListener('click', (e) => {
+    const t = (e.target as HTMLElement).closest<HTMLElement>('[data-edit]');
+    if (t) show(Number(t.dataset.edit));
+  });
+
+  $('[data-send]').addEventListener('click', () => {
+    profile.save({ name: field('name').value, pincode: field('pincode').value, address: field('address').value });
+    window.setTimeout(() => show(DONE), 400);
+  });
+
+  $('[data-restart]').addEventListener('click', () => {
+    root.querySelectorAll<HTMLInputElement>('input[name="services"], input[name="slot"]').forEach((i) => (i.checked = false));
+    field('notes').value = '';
+    show(1);
+  });
+
+  $('[data-ics]').addEventListener('click', () => {
+    const slot = chosenSlot();
+    if (!slot) return;
+    const blob = new Blob([buildIcs(slot, site.whatsapp)], { type: 'text/calendar;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'dhobermans-weekly-pickup.ics';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  });
+
+  root.querySelector('[data-forget]')?.addEventListener('click', () => {
+    profile.clear();
+    ['name', 'pincode', 'address'].forEach((f) => (field(f).value = ''));
+    $('[data-welcome]').textContent = 'Choose one or more services.';
+    root.querySelector('details')?.removeAttribute('open');
+  });
+
+  // Close the menu when tapping outside it.
+  document.addEventListener('click', (e) => {
+    const menu = root.querySelector('details');
+    if (menu?.open && !menu.contains(e.target as Node)) menu.removeAttribute('open');
+  });
+
+  // Initial pincode state for saved details.
+  field('pincode').dispatchEvent(new Event('input', { bubbles: true }));
+  show(1, false);
+</script>

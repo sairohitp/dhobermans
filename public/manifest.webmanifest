@@ -2,12 +2,12 @@
   "id": "/",
   "name": "dhobermans: Laundry pickup and delivery",
   "short_name": "dhobermans",
-  "description": "Laundry pickup and delivery in Bangalore. Book on WhatsApp in one tap.",
-  "start_url": "/",
+  "description": "Book a laundry pickup in Bangalore in a few taps. Your request goes straight to dhobermans on WhatsApp.",
+  "start_url": "/app/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#007bff",
+  "theme_color": "#ffffff",
   "lang": "en-IN",
   "categories": ["lifestyle", "shopping"],
   "icons": [
@@ -16,17 +16,16 @@
     { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
   "shortcuts": [
-    { "name": "Plan a pickup", "short_name": "Pickup", "url": "/#book" },
-    { "name": "Find my plan", "short_name": "Plans", "url": "/#plan-finder" },
-    { "name": "dhobermans' care", "short_name": "Care", "url": "/care/" }
+    { "name": "Book a pickup", "short_name": "Pickup", "url": "/app/" },
+    { "name": "Shop care products", "short_name": "Shop", "url": "/care/" }
   ],
   "screenshots": [
     {
-      "src": "/screenshots/mobile-home.jpg",
+      "src": "/screenshots/mobile-app.jpg",
       "sizes": "780x1688",
       "type": "image/jpeg",
       "form_factor": "narrow",
-      "label": "Book laundry pickup and delivery on your phone"
+      "label": "Book a laundry pickup in a few taps"
     },
     {
       "src": "/screenshots/desktop-home.jpg",

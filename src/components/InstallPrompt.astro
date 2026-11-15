@@ -1,5 +1,17 @@
 ---
+import QRCode from 'qrcode';
 import Icon from './Icon.astro';
+import { site } from '../config';
+
+// Scanned on a phone, this opens the site with the install sheet already showing.
+const installUrl = `${site.url}/?install=1`;
+const qrSvg = await QRCode.toString(installUrl, {
+  type: 'svg',
+  margin: 1,
+  errorCorrectionLevel: 'M',
+  color: { dark: '#0c0c0c', light: '#ffffff' },
+});
+const sendToPhone = `https://wa.me/?text=${encodeURIComponent(`dhobermans app: ${installUrl}`)}`;
 ---
 
 <dialog class="pwa" data-pwa aria-labelledby="pwa-title" transition:persist="pwa-prompt">
@@ -9,34 +21,65 @@ import Icon from './Icon.astro';
     </button>
 
     <div class="pwa__head">
-      <img src="/icon-192.png" alt="" width="60" height="60" class="pwa__icon" />
+      <img src="/icon-192.png" alt="" width="56" height="56" class="pwa__icon" />
       <div>
-        <h2 id="pwa-title">Get the dhobermans app</h2>
-        <p>Install our web app. No app store, no big download.</p>
+        <h2 id="pwa-title" data-pwa-title>Get the dhobermans app</h2>
+        <p data-pwa-sub>Book a pickup in a few taps. No app store, no big download.</p>
       </div>
     </div>
 
-    <ul class="pwa__perks">
-      <li><span><Icon name="sparkle" size={16} /></span>Opens from your home screen, full-screen like any app</li>
-      <li><span><Icon name="whatsapp" size={16} /></span>One tap to book a pickup on WhatsApp</li>
-      <li><span><Icon name="wifi" size={16} /></span>Loads fast, with key pages available offline</li>
+    <!-- Desktop: continue on your phone -->
+    <div class="pwa__mode pwa__desktop" data-mode="desktop" hidden>
+      <div class="pwa__qr" set:html={qrSvg} role="img" aria-label="QR code that opens dhobermans.com on your phone"></div>
+      <div class="pwa__qrtext">
+        <p><strong>Scan with your phone camera.</strong> The site opens with the app ready to install.</p>
+        <a class="pwa__link" href={sendToPhone} target="_blank" rel="noopener">
+          <Icon name="whatsapp" size={16} /> Or send the link to yourself on WhatsApp
+        </a>
+      </div>
+    </div>
+
+    <ul class="pwa__perks" data-perks>
+      <li><span><Icon name="calendar" size={16} /></span>Book a pickup in under a minute</li>
+      <li><span><Icon name="whatsapp" size={16} /></span>Your request arrives on our WhatsApp instantly</li>
+      <li><span><Icon name="wifi" size={16} /></span>Opens from your home screen, even on a slow connection</li>
     </ul>
 
-    <div class="pwa__ios" data-pwa-ios hidden>
+    <!-- iPhone and iPad -->
+    <div class="pwa__mode pwa__steps" data-mode="ios" hidden>
       <p>To install on iPhone or iPad:</p>
       <ol>
         <li>
-          Tap the <strong>Share</strong> button <span class="pwa__share"><Icon name="share-ios" size={16} /></span> in Safari. In some
-          layouts it sits under the <strong>•••</strong> menu.
+          Tap the <strong>Share</strong> button <span class="pwa__glyph"><Icon name="share-ios" size={15} /></span>. In Safari it is in the toolbar
+          (sometimes under <strong>•••</strong>); in Chrome it is in the address bar.
         </li>
-        <li>Scroll down and choose <strong>Add to Home Screen</strong>.</li>
-        <li>Tap <strong>Add</strong>.</li>
+        <li>Choose <strong>Add to Home Screen</strong>, then tap <strong>Add</strong>.</li>
+      </ol>
+      <p class="pwa__hint">Don't see it? Open dhobermans.com in Safari and try again.</p>
+    </div>
+
+    <!-- Android without the browser's install event -->
+    <div class="pwa__mode pwa__steps" data-mode="android" hidden>
+      <p>To install on Android:</p>
+      <ol>
+        <li>Tap the <strong>⋮</strong> menu at the top right of your browser.</li>
+        <li>Choose <strong>Install app</strong> or <strong>Add to Home screen</strong>, then confirm.</li>
       </ol>
     </div>
 
+    <!-- In-app browsers (WhatsApp, Instagram, Facebook) cannot install -->
+    <div class="pwa__mode pwa__steps" data-mode="inapp" hidden>
+      <p>You're viewing this inside another app.</p>
+      <ol>
+        <li>Tap <strong>⋮</strong> or <strong>•••</strong> and choose <strong>Open in browser</strong>.</li>
+        <li>Then install dhobermans from your browser.</li>
+      </ol>
+      <button type="button" class="btn btn--ghost btn--sm" data-pwa-copy>Copy link</button>
+    </div>
+
     <div class="pwa__actions">
-      <button type="button" class="btn btn--primary btn--block" data-pwa-install>
-        <Icon name="download" size={18} /> Install app
+      <button type="button" class="btn btn--primary btn--block" data-pwa-install hidden>
+        <Icon name="download" size={18} /> <span data-install-label>Install app</span>
       </button>
       <button type="button" class="btn btn--ghost btn--block" data-pwa-later>Not now</button>
     </div>
@@ -46,7 +89,7 @@ import Icon from './Icon.astro';
 <style>
   .pwa {
     width: calc(100% - 32px);
-    max-width: 440px;
+    max-width: 460px;
     padding: 0;
     border: 0;
     background: transparent;
@@ -66,11 +109,13 @@ import Icon from './Icon.astro';
 
   .pwa__sheet {
     position: relative;
-    outline: none;
+    max-height: calc(100dvh - 32px);
+    overflow-y: auto;
     padding: 28px 24px 24px;
-    border-radius: var(--radius-lg);
+    border-radius: 20px;
     background: var(--white);
     box-shadow: var(--shadow-lg);
+    outline: none;
   }
 
   .pwa__close {
@@ -97,12 +142,11 @@ import Icon from './Icon.astro';
 
   .pwa__icon {
     flex: none;
-    border-radius: 16px;
-    box-shadow: 0 8px 20px -8px rgba(0, 123, 255, 0.6);
+    border-radius: 14px;
   }
 
   .pwa__head h2 {
-    font-size: 22px;
+    font-size: 21px;
   }
 
   .pwa__head p {
@@ -112,10 +156,50 @@ import Icon from './Icon.astro';
     line-height: 1.4;
   }
 
+  .pwa__desktop {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-top: 22px;
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+  }
+
+  .pwa__qr {
+    flex: none;
+    width: 132px;
+    height: 132px;
+  }
+
+  .pwa__qr :global(svg) {
+    width: 100%;
+    height: 100%;
+  }
+
+  .pwa__qrtext {
+    display: grid;
+    gap: 10px;
+    font-size: 15px;
+  }
+
+  .pwa__qrtext strong {
+    color: var(--ink);
+  }
+
+  .pwa__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--wa);
+    font-size: 14px;
+    font-weight: 600;
+  }
+
   .pwa__perks {
     display: grid;
     gap: 10px;
-    margin: 22px 0 0;
+    margin: 20px 0 0;
     padding: 0;
     list-style: none;
   }
@@ -126,7 +210,7 @@ import Icon from './Icon.astro';
     gap: 12px;
     color: var(--ink);
     font-size: 15px;
-    font-weight: 600;
+    font-weight: 500;
     line-height: 1.35;
   }
 
@@ -136,41 +220,47 @@ import Icon from './Icon.astro';
     place-items: center;
     width: 32px;
     height: 32px;
-    border-radius: 10px;
+    border-radius: 9px;
     background: var(--brand-50);
     color: var(--brand);
   }
 
-  .pwa__ios {
-    margin-top: 20px;
+  .pwa__steps {
+    margin-top: 18px;
     padding: 16px;
-    border-radius: 16px;
+    border-radius: 14px;
     background: var(--surface);
     font-size: 15px;
   }
 
-  .pwa__ios[hidden] {
-    display: none;
-  }
-
-  .pwa__ios > p {
+  .pwa__steps > p:first-child {
     color: var(--ink);
-    font-weight: 700;
+    font-weight: 600;
   }
 
-  .pwa__ios ol {
+  .pwa__steps ol {
     display: grid;
     gap: 8px;
     margin: 10px 0 0;
     padding-left: 20px;
   }
 
-  .pwa__share {
+  .pwa__steps .btn {
+    margin-top: 12px;
+  }
+
+  .pwa__hint {
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .pwa__glyph {
     display: inline-grid;
     place-items: center;
-    width: 26px;
-    height: 26px;
-    border-radius: 8px;
+    width: 24px;
+    height: 24px;
+    border-radius: 7px;
     background: var(--white);
     color: var(--brand);
     vertical-align: middle;
@@ -180,11 +270,7 @@ import Icon from './Icon.astro';
   .pwa__actions {
     display: grid;
     gap: 10px;
-    margin-top: 22px;
-  }
-
-  .pwa__actions [hidden] {
-    display: none;
+    margin-top: 20px;
   }
 
   @keyframes pwa-in {
@@ -207,20 +293,21 @@ import Icon from './Icon.astro';
     }
 
     .pwa__sheet {
+      max-height: 92dvh;
       padding-bottom: calc(24px + env(safe-area-inset-bottom));
-      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      border-radius: 20px 20px 0 0;
     }
   }
 </style>
 
 <script>
   type InstallEvent = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }> };
+  type Mode = 'native' | 'ios' | 'android' | 'inapp' | 'desktop';
 
   const STORAGE_KEY = 'dhobermans:pwa-prompt';
   const ENGAGE_DELAY_MS = 10000;
 
-  // Remember the prompt per browser. If storage is unavailable (for example private mode), never auto-show,
-  // so nobody sees it more than once.
+  // Remembered per browser. If storage is unavailable (private mode), never auto-show.
   const store = {
     seen(): boolean {
       try {
@@ -240,19 +327,25 @@ import Icon from './Icon.astro';
 
   const ua = navigator.userAgent;
   const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  const inAppBrowser = /FBAN|FBAV|Instagram|Line\/|WhatsApp|GSA\//i.test(ua);
-  const isIOSSafari = isIOS && /Safari/i.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS/i.test(ua) && !inAppBrowser;
+  const isAndroid = /Android/i.test(ua);
+  const inAppBrowser = /FBAN|FBAV|FB_IAB|Instagram|Line\/|WhatsApp|Snapchat|; wv\)/i.test(ua);
   const isStandalone = () =>
     window.matchMedia('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;
 
   let installEvent: InstallEvent | null = null;
   let engaged = false;
 
-  const canInstall = () => !isStandalone() && (installEvent !== null || isIOSSafari);
+  const mode = (): Mode => {
+    if (isIOS) return inAppBrowser ? 'inapp' : 'ios';
+    if (isAndroid) return installEvent ? 'native' : inAppBrowser ? 'inapp' : 'android';
+    return 'desktop';
+  };
+
+  const canShow = () => !isStandalone() && !window.location.pathname.startsWith('/app');
   const dialog = () => document.querySelector<HTMLDialogElement>('[data-pwa]');
 
   const syncTriggers = () => {
-    document.querySelectorAll<HTMLElement>('[data-install]').forEach((el) => (el.hidden = !canInstall()));
+    document.querySelectorAll<HTMLElement>('[data-install]').forEach((el) => (el.hidden = !canShow()));
   };
 
   const close = () => {
@@ -262,11 +355,16 @@ import Icon from './Icon.astro';
 
   const open = () => {
     const d = dialog();
-    if (!d || d.open || !canInstall()) return;
-    const ios = installEvent === null && isIOSSafari;
-    d.querySelector<HTMLElement>('[data-pwa-ios]')!.hidden = !ios;
-    d.querySelector<HTMLElement>('[data-pwa-install]')!.hidden = ios;
-    d.querySelector<HTMLElement>('[data-pwa-later]')!.textContent = ios ? 'Got it' : 'Not now';
+    if (!d || d.open || !canShow()) return;
+    const m = mode();
+    d.querySelectorAll<HTMLElement>('[data-mode]').forEach((el) => (el.hidden = el.dataset.mode !== m));
+    const install = d.querySelector<HTMLElement>('[data-pwa-install]')!;
+    install.hidden = !installEvent; // native install, also offered on desktop when the browser supports it
+    d.querySelector('[data-install-label]')!.textContent = m === 'desktop' ? 'Install on this computer' : 'Install app';
+    d.querySelector('[data-pwa-title]')!.textContent = m === 'desktop' ? 'Take dhobermans with you' : 'Get the dhobermans app';
+    d.querySelector('[data-pwa-sub]')!.textContent =
+      m === 'desktop' ? 'Install the app on your phone to book pickups in a few taps.' : 'Book a pickup in a few taps. No app store, no big download.';
+    d.querySelector<HTMLElement>('[data-pwa-later]')!.textContent = installEvent ? 'Not now' : 'Close';
     store.mark('shown');
     d.showModal();
   };
@@ -277,7 +375,7 @@ import Icon from './Icon.astro';
   };
 
   const maybeAutoOpen = () => {
-    if (!engaged || store.seen() || !canInstall()) return;
+    if (!engaged || store.seen() || !canShow()) return;
     if (window.location.pathname.startsWith('/offline')) return;
     if (document.querySelector('dialog[open]')) return;
     if (isTyping()) {
@@ -306,8 +404,12 @@ import Icon from './Icon.astro';
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault(); // use our own prompt instead of the browser's mini-infobar
     installEvent = e as InstallEvent;
-    syncTriggers();
-    maybeAutoOpen();
+    const d = dialog();
+    if (d?.open) {
+      // Upgrade an open sheet from instructions to one-tap install.
+      d.close();
+      open();
+    }
   });
 
   window.addEventListener('appinstalled', () => {
@@ -317,13 +419,12 @@ import Icon from './Icon.astro';
     syncTriggers();
   });
 
-  // Dialog controls (the dialog persists across page transitions, so bind once).
   const d = dialog();
   if (d) {
     d.querySelector('[data-pwa-close]')?.addEventListener('click', close);
     d.querySelector('[data-pwa-later]')?.addEventListener('click', close);
     d.addEventListener('click', (e) => {
-      if (e.target === d) close(); // click on the backdrop
+      if (e.target === d) close();
     });
     d.querySelector('[data-pwa-install]')?.addEventListener('click', async () => {
       if (!installEvent) return;
@@ -333,11 +434,18 @@ import Icon from './Icon.astro';
       const { outcome } = await ev.userChoice;
       store.mark(outcome === 'accepted' ? 'installed' : 'dismissed');
       close();
-      syncTriggers();
+    });
+    d.querySelector('[data-pwa-copy]')?.addEventListener('click', async (e) => {
+      const btn = e.currentTarget as HTMLButtonElement;
+      try {
+        await navigator.clipboard.writeText(window.location.origin + '/');
+        btn.textContent = 'Link copied';
+      } catch {
+        btn.textContent = window.location.origin + '/';
+      }
     });
   }
 
-  // "Install web app" buttons elsewhere on the page open the same dialog.
   document.addEventListener('astro:page-load', () => {
     syncTriggers();
     document.querySelectorAll<HTMLElement>('[data-install]').forEach((el) => {
@@ -345,6 +453,14 @@ import Icon from './Icon.astro';
       el.dataset.bound = 'true';
       el.addEventListener('click', open);
     });
+    // Arrived from the desktop QR code or a shared install link: show the sheet straight away.
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('install') === '1') {
+      params.delete('install');
+      const qs = params.toString();
+      history.replaceState(history.state, '', window.location.pathname + (qs ? `?${qs}` : '') + window.location.hash);
+      window.setTimeout(open, 600);
+    }
   });
 
   // Offline support.

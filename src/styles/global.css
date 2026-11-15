@@ -1,10 +1,4 @@
-@import '@fontsource/lexend/500.css';
-@import '@fontsource/lexend/600.css';
-@import '@fontsource/lexend/700.css';
-@import '@fontsource/urbanist/400.css';
-@import '@fontsource/urbanist/500.css';
-@import '@fontsource/urbanist/600.css';
-@import '@fontsource/urbanist/700.css';
+@import '@fontsource-variable/inter';
 
 :root {
   --brand: #007bff;
@@ -25,8 +19,9 @@
   --wa: #0e8040;
   --wa-600: #0b6b35;
 
-  --font-display: 'Lexend', system-ui, sans-serif;
-  --font-body: 'Urbanist', system-ui, sans-serif;
+  --font-display: 'Inter Variable', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-body: 'Inter Variable', 'Inter', system-ui, -apple-system, sans-serif;
+  --tracking: -0.25px;
 
   --radius-sm: 12px;
   --radius: 20px;
@@ -60,6 +55,8 @@ body {
   font-family: var(--font-body);
   font-size: 17px;
   line-height: 1.6;
+  letter-spacing: var(--tracking);
+  font-feature-settings: 'cv11', 'ss01';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
@@ -82,6 +79,7 @@ select,
 textarea {
   font: inherit;
   color: inherit;
+  letter-spacing: inherit;
 }
 
 h1,
@@ -92,8 +90,13 @@ h4 {
   color: var(--ink);
   font-family: var(--font-display);
   font-weight: 700;
-  letter-spacing: -0.025em;
-  line-height: 1.08;
+  letter-spacing: var(--tracking);
+  line-height: 1.1;
+}
+
+h3,
+h4 {
+  font-weight: 600;
 }
 
 p {
@@ -146,21 +149,6 @@ p {
 .section--dark h2,
 .section--dark h3 {
   color: var(--white);
-}
-
-.eyebrow {
-  display: inline-block;
-  margin-bottom: 16px;
-  color: var(--brand);
-  font-family: var(--font-body);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
-.section--dark .eyebrow {
-  color: #5aa8ff;
 }
 
 .h1 {
@@ -216,7 +204,7 @@ p {
   border-radius: 999px;
   font-family: var(--font-body);
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1;
   cursor: pointer;
   transition:
@@ -307,32 +295,6 @@ p {
   transform: translateX(3px);
 }
 
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 7px 14px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.85);
-  color: var(--ink);
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.2;
-}
-
-.tag {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: var(--brand-50);
-  color: var(--brand-600);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-
 .dot {
   width: 8px;
   height: 8px;
@@ -350,6 +312,28 @@ p {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--white);
+}
+
+/* Form inputs */
+.input {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  font-size: 16px;
+}
+
+.input:focus {
+  border-color: var(--brand);
+  background: var(--white);
+  box-shadow: 0 0 0 3px var(--brand-100);
+  outline: none;
+}
+
+textarea.input {
+  resize: vertical;
 }
 
 /* Reveal on scroll */

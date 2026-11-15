@@ -346,64 +346,8 @@ import { wa } from '../lib/wa';
 
 <script>
   import { site } from '../config';
-  import { slots } from '../data';
-
-  const IST_OFFSET_MIN = 330; // India Standard Time is UTC+5:30 with no daylight saving.
-
-  /** Current date and time in IST as plain numbers. */
-  const istNow = () => {
-    const d = new Date(Date.now() + IST_OFFSET_MIN * 60000);
-    return { y: d.getUTCFullYear(), m: d.getUTCMonth(), day: d.getUTCDate(), hour: d.getUTCHours() + d.getUTCMinutes() / 60 };
-  };
-
-  type Slot = { id: string; label: string; long: string; startUtc: Date; endUtc: Date };
-
-  /** Next four pickup windows, at least one hour ahead. */
-  const nextSlots = (): Slot[] => {
-    const now = istNow();
-    const out: Slot[] = [];
-    for (let offset = 0; offset < 4 && out.length < 4; offset++) {
-      for (const s of slots) {
-        if (offset === 0 && now.hour > s.startHour - 1) continue;
-        const startUtc = new Date(Date.UTC(now.y, now.m, now.day + offset, s.startHour, 0) - IST_OFFSET_MIN * 60000);
-        const endUtc = new Date(Date.UTC(now.y, now.m, now.day + offset, s.endHour, 0) - IST_OFFSET_MIN * 60000);
-        const dayName = new Intl.DateTimeFormat('en-IN', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Asia/Kolkata' }).format(startUtc);
-        const rel = offset === 0 ? 'Today' : offset === 1 ? 'Tomorrow' : dayName;
-        out.push({ id: `${offset}-${s.startHour}`, label: `${rel} · ${s.label}`, long: `${rel === dayName ? dayName : `${rel} (${dayName})`}, ${s.label}`, startUtc, endUtc });
-        if (out.length === 4) break;
-      }
-    }
-    return out;
-  };
-
-  const icsDate = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
-
-  const buildIcs = (slot: Slot) => {
-    const lines = [
-      'BEGIN:VCALENDAR',
-      'VERSION:2.0',
-      'PRODID:-//dhobermans//Pickup reminder//EN',
-      'CALSCALE:GREGORIAN',
-      'METHOD:PUBLISH',
-      'BEGIN:VEVENT',
-      `UID:${Date.now()}-${Math.random().toString(36).slice(2)}@dhobermans.com`,
-      `DTSTAMP:${icsDate(new Date())}`,
-      `DTSTART:${icsDate(slot.startUtc)}`,
-      `DTEND:${icsDate(slot.endUtc)}`,
-      'RRULE:FREQ=WEEKLY',
-      'SUMMARY:dhobermans laundry pickup',
-      `DESCRIPTION:Book this week's pickup on WhatsApp: https://wa.me/${site.whatsapp}`,
-      `URL:https://wa.me/${site.whatsapp}`,
-      'BEGIN:VALARM',
-      'ACTION:DISPLAY',
-      'DESCRIPTION:Laundry pickup reminder',
-      'TRIGGER:-PT2H',
-      'END:VALARM',
-      'END:VEVENT',
-      'END:VCALENDAR',
-    ];
-    return lines.join('\r\n');
-  };
+  import { nextSlots, buildIcs, pincodeStatus } from '../lib/slots';
+  import { profile } from '../lib/store';
 
   const init = () => {
     const root = document.querySelector<HTMLElement>('[data-builder]');
@@ -432,13 +376,7 @@ import { wa } from '../lib/wa';
       return options.find((o) => o.id === id);
     };
 
-    const pinState = () => {
-      const v = pin.value.trim();
-      if (!/^\d{6}$/.test(v)) return { text: 'We serve all of Bangalore.', cls: '' };
-      if (v.startsWith('560')) return { text: 'Great news: we pick up in your area.', cls: 'is-ok' };
-      if (/^56[12]/.test(v)) return { text: "You may be just outside our zone. Send the message and we'll confirm.", cls: 'is-maybe' };
-      return { text: "We're Bangalore-only for now. Message us and we'll let you know when we reach you.", cls: 'is-maybe' };
-    };
+    const pinState = () => pincodeStatus(pin.value);
 
     const update = () => {
       pin.value = pin.value.replace(/\D/g, '').slice(0, 6);
@@ -468,7 +406,7 @@ import { wa } from '../lib/wa';
     icsBtn.addEventListener('click', () => {
       const slot = selectedSlot();
       if (!slot) return;
-      const blob = new Blob([buildIcs(slot)], { type: 'text/calendar;charset=utf-8' });
+      const blob = new Blob([buildIcs(slot, site.whatsapp)], { type: 'text/calendar;charset=utf-8' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       a.download = 'dhobermans-weekly-pickup.ics';
@@ -479,6 +417,12 @@ import { wa } from '../lib/wa';
     });
 
     // Preselect a service from links such as /?service=dry-cleaning#book
+    // Prefill details saved on this device from an earlier request.
+    const saved = profile.get();
+    if (saved.pincode && !pin.value) pin.value = saved.pincode;
+    if (saved.name && !nameInput.value) nameInput.value = saved.name;
+    send.addEventListener('click', () => profile.save({ ...profile.get(), name: nameInput.value, pincode: pin.value }));
+
     const params = new URLSearchParams(window.location.search);
     const svc = params.get('service');
     if (svc) {

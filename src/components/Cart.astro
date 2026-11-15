@@ -1,0 +1,599 @@
+---
+import Icon from './Icon.astro';
+---
+
+<div class="cartbar" data-cartbar hidden>
+  <button type="button" class="cartbar__btn" data-cart-open>
+    <span class="cartbar__icon"><Icon name="bag" size={18} /></span>
+    <span class="cartbar__text"><strong data-cart-count>0 items</strong><span data-cart-total>₹0</span></span>
+    <span class="cartbar__cta">View cart <Icon name="arrow-right" size={16} /></span>
+  </button>
+</div>
+
+<dialog class="cart" data-cart aria-labelledby="cart-title">
+  <div class="cart__panel">
+    <header class="cart__head">
+      <h2 id="cart-title">Your cart</h2>
+      <button type="button" class="cart__close" data-cart-close aria-label="Close cart"><Icon name="x" size={20} /></button>
+    </header>
+
+    <div class="cart__body">
+      <div class="cart__empty" data-cart-empty>
+        <span><Icon name="bag" size={28} /></span>
+        <p>Your cart is empty.</p>
+        <button type="button" class="btn btn--ghost btn--sm" data-cart-close>Browse products</button>
+      </div>
+
+      <ul class="cart__lines" data-cart-lines aria-live="polite"></ul>
+
+      <div class="cart__details" data-cart-details>
+        <h3>Delivery details <em>(optional)</em></h3>
+        <div class="cart__grid">
+          <label><span>Name</span><input class="input" type="text" autocomplete="name" data-c-name /></label>
+          <label><span>Pincode</span><input class="input" type="text" inputmode="numeric" autocomplete="postal-code" data-c-pin /></label>
+          <label class="full"><span>Delivery address</span><textarea class="input" rows="2" autocomplete="street-address" data-c-address></textarea></label>
+          <label class="full"><span>Notes</span><input class="input" type="text" data-c-notes /></label>
+        </div>
+      </div>
+    </div>
+
+    <footer class="cart__foot" data-cart-foot>
+      <div class="cart__sum"><span>Total</span><strong data-cart-sum>₹0</strong></div>
+      <a class="btn btn--wa btn--block" href="#" target="_blank" rel="noopener" data-cart-order>
+        <Icon name="whatsapp" size={20} /> Order on WhatsApp
+      </a>
+      <div class="cart__after" data-cart-after hidden>
+        <p>Sent your order on WhatsApp?</p>
+        <div>
+          <button type="button" class="btn btn--primary btn--sm" data-cart-done>Yes, clear my cart</button>
+          <button type="button" class="btn btn--ghost btn--sm" data-cart-keep>Not yet</button>
+        </div>
+      </div>
+      <div class="cart__meta">
+        <p>We confirm availability and delivery on WhatsApp.</p>
+        <button type="button" class="cart__clear" data-cart-clear>Clear cart</button>
+      </div>
+    </footer>
+  </div>
+</dialog>
+
+<style>
+  .cartbar {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    z-index: 46;
+    transform: translateX(-50%);
+  }
+
+  .cartbar__btn {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-height: 60px;
+    padding: 8px 10px 8px 8px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--ink);
+    color: var(--white);
+    box-shadow: var(--shadow-lg);
+    cursor: pointer;
+  }
+
+  .cartbar__icon {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--brand);
+  }
+
+  .cartbar__text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    line-height: 1.25;
+    text-align: left;
+  }
+
+  .cartbar__text span {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+  }
+
+  .cartbar__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+    margin-left: 8px;
+    padding: 0 18px;
+    border-radius: 999px;
+    background: var(--white);
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .cart {
+    width: min(440px, 100%);
+    max-width: 100%;
+    height: 100%;
+    max-height: 100%;
+    margin: 0 0 0 auto;
+    padding: 0;
+    border: 0;
+    background: var(--white);
+    color: var(--text);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .cart::backdrop {
+    background: rgba(12, 12, 12, 0.45);
+  }
+
+  .cart[open] {
+    animation: cart-in 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  @keyframes cart-in {
+    from {
+      transform: translateX(32px);
+      opacity: 0;
+    }
+    to {
+      transform: none;
+      opacity: 1;
+    }
+  }
+
+  .cart__panel {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .cart__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .cart__head h2 {
+    font-size: 22px;
+  }
+
+  .cart__close {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--surface-2);
+    cursor: pointer;
+  }
+
+  .cart__body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 20px 20px;
+  }
+
+  .cart__empty {
+    display: grid;
+    justify-items: center;
+    gap: 12px;
+    padding: 48px 0;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  .cart__empty > span {
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    background: var(--brand-50);
+    color: var(--brand);
+  }
+
+  .cart__lines {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .cart__lines :global(.line) {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 6px 12px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .cart__lines :global(.line__name) {
+    color: var(--ink);
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  .cart__lines :global(.line__meta) {
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .cart__lines :global(.line__total) {
+    color: var(--ink);
+    font-weight: 600;
+    text-align: right;
+  }
+
+  .cart__lines :global(.line .qty) {
+    justify-self: start;
+  }
+
+  .cart__lines :global(.line__remove) {
+    display: inline-flex;
+    align-items: center;
+    justify-self: end;
+    gap: 4px;
+    min-height: 36px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--muted);
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .cart__lines :global(.line__remove:hover) {
+    color: #c62828;
+  }
+
+  .cart__details {
+    margin-top: 20px;
+  }
+
+  .cart__details h3 {
+    margin-bottom: 12px;
+    font-size: 16px;
+  }
+
+  .cart__details em {
+    color: var(--subtle);
+    font-style: normal;
+    font-weight: 500;
+  }
+
+  .cart__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .cart__grid label {
+    display: grid;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .cart__grid .full {
+    grid-column: 1 / -1;
+  }
+
+  .cart__foot {
+    display: grid;
+    gap: 12px;
+    padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--line);
+    background: var(--white);
+  }
+
+  .cart__sum {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+
+  .cart__sum strong {
+    color: var(--ink);
+    font-size: 24px;
+  }
+
+  .cart__after {
+    padding: 12px;
+    border-radius: 12px;
+    background: var(--surface);
+  }
+
+  .cart__after p {
+    margin-bottom: 10px;
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .cart__after div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .cart__meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .cart__clear {
+    flex: none;
+    min-height: 36px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--muted);
+    font-size: 13px;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  :global(.qty) {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 3px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+  }
+
+  :global(.qty button) {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--white);
+    color: var(--ink);
+    font-size: 20px;
+    line-height: 1;
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+  }
+
+  :global(.qty button:hover) {
+    color: var(--brand);
+  }
+
+  :global(.qty output) {
+    min-width: 28px;
+    color: var(--ink);
+    font-weight: 600;
+    text-align: center;
+  }
+
+  :global(body.has-cart .dock),
+  :global(body.has-cart .wa-fab) {
+    display: none !important;
+  }
+
+  @media (max-width: 720px) {
+    .cartbar {
+      left: 0;
+      right: 0;
+      bottom: 0;
+      transform: none;
+      padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+      border-top: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .cartbar__btn {
+      width: 100%;
+      border-radius: 16px;
+    }
+
+    .cartbar__cta {
+      margin-left: auto;
+    }
+
+    .cart {
+      width: 100%;
+      height: auto;
+      max-height: 90dvh;
+      margin: auto 0 0;
+      border-radius: 20px 20px 0 0;
+    }
+
+    .cart[open] {
+      animation-name: cart-up;
+    }
+
+    @keyframes cart-up {
+      from {
+        transform: translateY(40px);
+        opacity: 0;
+      }
+      to {
+        transform: none;
+        opacity: 1;
+      }
+    }
+
+    .cart__panel {
+      max-height: 90dvh;
+    }
+  }
+</style>
+
+<script>
+  import { cart, rupees, profile, CART_EVENT } from '../lib/store';
+  import { products } from '../data';
+  import { site } from '../config';
+
+  const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
+  const find = (slug: string) => products.find((p) => p.slug === slug)!;
+
+  const stepper = (slug: string, qty: number, name: string) => `
+    <div class="qty" role="group" aria-label="Quantity of ${esc(name)}">
+      <button type="button" data-qty-dec="${slug}" aria-label="One fewer ${esc(name)}">&minus;</button>
+      <output>${qty}</output>
+      <button type="button" data-qty-inc="${slug}" aria-label="One more ${esc(name)}">+</button>
+    </div>`;
+
+  const orderText = () => {
+    const root = document.querySelector<HTMLElement>('[data-cart]');
+    const val = (sel: string) => root?.querySelector<HTMLInputElement | HTMLTextAreaElement>(sel)?.value.trim() ?? '';
+    const lines = cart.lines().map((l) => {
+      const p = find(l.slug);
+      return `• ${l.qty} × ${p.name} (${p.size}) = ${rupees(l.qty * p.amount)}`;
+    });
+    return [
+      "Hi dhobermans, I'd like to order:",
+      ...lines,
+      `Total: ${rupees(cart.total())}`,
+      val('[data-c-name]') ? `Name: ${val('[data-c-name]')}` : '',
+      val('[data-c-pin]') ? `Pincode: ${val('[data-c-pin]')}` : '',
+      val('[data-c-address]') ? `Delivery address: ${val('[data-c-address]')}` : '',
+      val('[data-c-notes]') ? `Notes: ${val('[data-c-notes]')}` : '',
+    ]
+      .filter(Boolean)
+      .join('\n');
+  };
+
+  const render = () => {
+    const count = cart.count();
+    const total = cart.total();
+    const label = `${count} item${count === 1 ? '' : 's'}`;
+
+    // Product cards: "Add to cart" or a quantity stepper.
+    document.querySelectorAll<HTMLElement>('[data-cart-ctl]').forEach((ctl) => {
+      const slug = ctl.dataset.cartCtl!;
+      const qty = cart.qty(slug);
+      const name = find(slug).name;
+      ctl.innerHTML = qty
+        ? stepper(slug, qty, name)
+        : `<button type="button" class="btn btn--primary btn--sm add" data-qty-inc="${slug}" aria-label="Add ${esc(name)} to cart">Add to cart</button>`;
+    });
+
+    // Floating bar (and hide the WhatsApp dock while it shows).
+    const bar = document.querySelector<HTMLElement>('[data-cartbar]');
+    if (bar) {
+      bar.hidden = count === 0;
+      document.body.classList.toggle('has-cart', count > 0);
+      bar.querySelector('[data-cart-count]')!.textContent = label;
+      bar.querySelector('[data-cart-total]')!.textContent = rupees(total);
+    }
+
+    // Header badge on every page.
+    document.querySelectorAll<HTMLElement>('[data-hcart]').forEach((h) => {
+      h.hidden = count === 0;
+      const c = h.querySelector('[data-hcart-count]');
+      if (c) c.textContent = String(count);
+      h.setAttribute('aria-label', `Cart, ${label}`);
+    });
+
+    // Drawer.
+    const dlg = document.querySelector<HTMLElement>('[data-cart]');
+    if (!dlg) return;
+    const list = dlg.querySelector<HTMLElement>('[data-cart-lines]')!;
+    list.innerHTML = cart
+      .lines()
+      .map((l) => {
+        const p = find(l.slug);
+        return `<li class="line">
+          <div><div class="line__name">${esc(p.name)}</div><div class="line__meta">${esc(p.size)} · ${rupees(p.amount)} each</div></div>
+          <div class="line__total">${rupees(l.qty * p.amount)}</div>
+          ${stepper(l.slug, l.qty, p.name)}
+          <button type="button" class="line__remove" data-remove="${l.slug}" aria-label="Remove ${esc(p.name)}">Remove</button>
+        </li>`;
+      })
+      .join('');
+    dlg.querySelector<HTMLElement>('[data-cart-empty]')!.hidden = count > 0;
+    dlg.querySelector<HTMLElement>('[data-cart-details]')!.hidden = count === 0;
+    dlg.querySelector<HTMLElement>('[data-cart-foot]')!.hidden = count === 0;
+    dlg.querySelector('[data-cart-sum]')!.textContent = rupees(total);
+    dlg.querySelector<HTMLAnchorElement>('[data-cart-order]')!.href =
+      `https://wa.me/${site.whatsapp}?text=${encodeURIComponent(orderText())}`;
+  };
+
+  const openCart = () => {
+    const dlg = document.querySelector<HTMLDialogElement>('[data-cart]');
+    if (!dlg || dlg.open) return;
+    const saved = profile.get();
+    const fill = (sel: string, v?: string) => {
+      const el = dlg.querySelector<HTMLInputElement | HTMLTextAreaElement>(sel);
+      if (el && !el.value && v) el.value = v;
+    };
+    fill('[data-c-name]', saved.name);
+    fill('[data-c-pin]', saved.pincode);
+    fill('[data-c-address]', saved.address);
+    dlg.querySelector<HTMLElement>('[data-cart-after]')!.hidden = true;
+    render();
+    dlg.showModal();
+  };
+
+  // One delegated handler for every cart control on the page.
+  document.addEventListener('click', (e) => {
+    const t = (e.target as HTMLElement).closest<HTMLElement>('button, a');
+    if (!t) return;
+    const d = t.dataset;
+    if (d.qtyInc) cart.add(d.qtyInc);
+    else if (d.qtyDec) cart.set(d.qtyDec, cart.qty(d.qtyDec) - 1);
+    else if (d.remove) cart.remove(d.remove);
+    else if ('cartOpen' in d) openCart();
+    else if ('cartClose' in d) document.querySelector<HTMLDialogElement>('[data-cart]')?.close();
+    else if ('cartClear' in d) {
+      if (window.confirm('Remove all items from your cart?')) cart.clear();
+    } else if ('cartOrder' in d) {
+      const dlg = document.querySelector<HTMLElement>('[data-cart]')!;
+      const v = (sel: string) => dlg.querySelector<HTMLInputElement | HTMLTextAreaElement>(sel)?.value ?? '';
+      profile.save({ name: v('[data-c-name]'), pincode: v('[data-c-pin]').replace(/\D/g, ''), address: v('[data-c-address]') });
+      dlg.querySelector<HTMLElement>('[data-cart-after]')!.hidden = false;
+    } else if ('cartDone' in d) {
+      cart.clear();
+      document.querySelector<HTMLDialogElement>('[data-cart]')?.close();
+    } else if ('cartKeep' in d) {
+      document.querySelector<HTMLElement>('[data-cart-after]')!.hidden = true;
+    }
+  });
+
+  document.addEventListener('input', (e) => {
+    if ((e.target as HTMLElement).closest('[data-cart]')) {
+      const a = document.querySelector<HTMLAnchorElement>('[data-cart-order]');
+      if (a) a.href = `https://wa.me/${site.whatsapp}?text=${encodeURIComponent(orderText())}`;
+    }
+  });
+
+  document.addEventListener(CART_EVENT, render);
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'dhobermans:cart') cart.reload();
+  });
+
+  const openFromHash = () => {
+    if (window.location.hash === '#cart') {
+      history.replaceState(null, '', window.location.pathname + window.location.search);
+      openCart();
+    }
+  };
+  window.addEventListener('hashchange', openFromHash);
+
+  document.addEventListener('astro:page-load', () => {
+    render();
+    const dlg = document.querySelector<HTMLDialogElement>('[data-cart]');
+    dlg?.addEventListener('click', (e) => {
+      if (e.target === dlg) dlg.close(); // backdrop
+    });
+    openFromHash();
+  });
+</script>

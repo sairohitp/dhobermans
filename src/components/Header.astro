@@ -21,6 +21,10 @@ const links = [
     </nav>
 
     <div class="header__actions">
+      <a href="/care/#cart" class="hcart" data-hcart hidden aria-label="Cart">
+        <Icon name="bag" size={20} />
+        <span class="hcart__count" data-hcart-count>0</span>
+      </a>
       <a href={wa()} target="_blank" rel="noopener" class="btn btn--primary btn--sm header__cta">
         <Icon name="whatsapp" size={18} /> Book a pickup
       </a>
@@ -71,7 +75,7 @@ const links = [
     font-family: var(--font-display);
     font-size: 24px;
     font-weight: 700;
-    letter-spacing: -0.04em;
+    letter-spacing: var(--tracking);
   }
 
   .nav {
@@ -95,6 +99,38 @@ const links = [
     display: flex;
     align-items: center;
     gap: 8px;
+  }
+
+  .hcart {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--white);
+    color: var(--ink);
+  }
+
+  .hcart[hidden] {
+    display: none;
+  }
+
+  .hcart__count {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    display: grid;
+    place-items: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: var(--brand);
+    color: var(--white);
+    font-size: 12px;
+    font-weight: 600;
   }
 
   .menu-btn {
@@ -167,6 +203,20 @@ const links = [
 </style>
 
 <script>
+  import { cart, CART_EVENT } from '../lib/store';
+
+  const renderBadge = () => {
+    const count = cart.count();
+    document.querySelectorAll<HTMLElement>('[data-hcart]').forEach((h) => {
+      h.hidden = count === 0;
+      const c = h.querySelector('[data-hcart-count]');
+      if (c) c.textContent = String(count);
+      h.setAttribute('aria-label', `Cart, ${count} item${count === 1 ? '' : 's'}`);
+    });
+  };
+  document.addEventListener(CART_EVENT, renderBadge);
+  document.addEventListener('astro:page-load', renderBadge);
+
   const onScroll = () => document.querySelector('[data-header]')?.classList.toggle('is-scrolled', window.scrollY > 8);
   window.addEventListener('scroll', onScroll, { passive: true });
 

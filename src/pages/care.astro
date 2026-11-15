@@ -1,18 +1,37 @@
 ---
 import Base from '../layouts/Base.astro';
 import Icon from '../components/Icon.astro';
+import Cart from '../components/Cart.astro';
 import { products, productCategories, categoryIcon } from '../data';
-import { wa, msg } from '../lib/wa';
+import { site } from '../config';
+
+const itemList = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: "dhobermans' care products",
+  itemListElement: products.map((p, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    item: {
+      '@type': 'Product',
+      name: p.name,
+      description: p.body,
+      category: p.category,
+      brand: { '@type': 'Brand', name: 'dhobermans' },
+      offers: { '@type': 'Offer', price: p.amount, priceCurrency: 'INR', url: `${site.url}/care/` },
+    },
+  })),
+};
 ---
 
 <Base
-  title="dhobermans' care | Detergents, comforter washes, diffusers and fragrances"
-  description="Our own line of detergents, comforter washes, diffusers, and fragrances, crafted to keep your fabrics and spaces feeling brand new."
+  title="dhobermans' care | Laundry detergents and fabric care in Bangalore"
+  description="Shop dhobermans' care: plant-based detergents, comforter wash, reed diffusers and linen sprays. Add to cart and order on WhatsApp in Bangalore."
 >
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify(itemList)} />
   <section class="care-hero">
     <div class="container">
       <a href="/" class="back"><Icon name="arrow-right" size={16} class="back__icon" /> Back to home</a>
-      <span class="eyebrow">dhobermans' care</span>
       <h1 class="h1">Care for what <span class="accent">you wear.</span></h1>
       <p class="lead">Our line of detergents, comforter washes, diffusers, and fragrances, crafted to keep your fabrics and spaces feeling brand new.</p>
     </div>
@@ -37,26 +56,26 @@ import { wa, msg } from '../lib/wa';
             <article class="item" data-category={p.category}>
               <div class="item__art">
                 <Icon name={categoryIcon[p.category]} size={44} stroke={1.5} />
-                <span class="item__size">{p.size}</span>
               </div>
               <div class="item__body">
-                <span class="tag">{p.category}</span>
+                <span class="item__meta">{p.category} · {p.size}</span>
                 <h2>{p.name}</h2>
                 <p>{p.body}</p>
                 <div class="item__foot">
                   <span class="item__price">{p.price}</span>
-                  <a class="btn btn--wa btn--sm" href={wa(msg.product(p.name, p.size, p.price))} target="_blank" rel="noopener">
-                    <Icon name="whatsapp" size={16} /> Order
-                  </a>
+                  <div class="item__ctl" data-cart-ctl={p.slug}>
+                    <button type="button" class="btn btn--primary btn--sm add" data-qty-inc={p.slug}>Add to cart</button>
+                  </div>
                 </div>
               </div>
             </article>
           ))
         }
       </div>
-      <p class="note">Tap Order to send your order to us on WhatsApp. We will confirm availability and delivery.</p>
+      <p class="note">Add what you need, then send the whole order to us on WhatsApp in one message.</p>
     </div>
   </section>
+  <Cart />
 </Base>
 
 <style>
@@ -96,13 +115,14 @@ import { wa, msg } from '../lib/wa';
   }
 
   .filter {
-    padding: 10px 18px;
+    min-height: 44px;
+    padding: 0 18px;
     border: 1px solid var(--line);
     border-radius: 999px;
     background: var(--white);
     color: var(--ink);
     font-size: 15px;
-    font-weight: 700;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.15s ease;
   }
@@ -154,16 +174,20 @@ import { wa, msg } from '../lib/wa';
     color: var(--brand);
   }
 
-  .item__size {
-    position: absolute;
-    right: 12px;
-    bottom: 12px;
-    padding: 4px 10px;
-    border-radius: 999px;
-    background: var(--white);
-    color: var(--ink);
-    font-size: 12px;
-    font-weight: 700;
+  .item__meta {
+    color: var(--subtle);
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .item__ctl {
+    display: flex;
+    justify-content: flex-end;
+    min-height: 44px;
+  }
+
+  .item__ctl :global(.add) {
+    min-height: 44px;
   }
 
   .item__body {
@@ -175,10 +199,10 @@ import { wa, msg } from '../lib/wa';
   }
 
   .item h2 {
-    margin-top: 12px;
+    margin-top: 4px;
     font-family: var(--font-body);
     font-size: 19px;
-    letter-spacing: -0.01em;
+    letter-spacing: var(--tracking);
     line-height: 1.25;
   }
 
@@ -193,6 +217,7 @@ import { wa, msg } from '../lib/wa';
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 8px;
     width: 100%;
     margin-top: 20px;
   }
@@ -202,7 +227,7 @@ import { wa, msg } from '../lib/wa';
     font-family: var(--font-display);
     font-size: 22px;
     font-weight: 700;
-    letter-spacing: -0.02em;
+    letter-spacing: var(--tracking);
   }
 
   .note {
@@ -275,6 +300,20 @@ import { wa, msg } from '../lib/wa';
 
     .item__price {
       font-size: 20px;
+    }
+
+    .item__ctl,
+    .item__ctl :global(.add),
+    .item__ctl :global(.qty) {
+      width: 100%;
+    }
+
+    .item__ctl :global(.qty) {
+      justify-content: space-between;
+    }
+
+    .item__meta {
+      font-size: 13px;
     }
   }
 </style>
