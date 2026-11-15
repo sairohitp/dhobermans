@@ -5,9 +5,9 @@ export const site = {
   name: 'dhobermans',
   url: 'https://dhobermans.com',
   city: 'Bangalore',
-  title: 'dhobermans | Laundry pickup and delivery in Bangalore',
+  title: 'Laundry pickup and delivery in HSR Layout, Bangalore | dhobermans',
   description:
-    'Laundry pickup and delivery, done right. Wash and fold, dry cleaning, steam ironing and more, collected from your door in Bangalore. Book on WhatsApp.',
+    'Laundry service in HSR Layout, Bangalore: wash, fold and iron at ₹100 per kg, back in 24 hours. Free pickup and delivery within 5 km. Book on WhatsApp.',
 
   /** WhatsApp number used by every booking touchpoint: digits only, with country code. */
   whatsapp: '918861761718',
@@ -18,6 +18,7 @@ export const site = {
   base: {
     label: 'HSR Layout, Sector 1',
     full: 'HSR Layout, Sector 1, Bengaluru, Karnataka',
+    postalCode: '560102',
     /**
      * APPROXIMATE: the centre of HSR Layout. Replace with the exact pin of the laundry
      * (in Google Maps, right-click the location and copy the coordinates).
@@ -37,4 +38,24 @@ export const site = {
   /** Social links (optional). */
   instagram: '',
   linkedin: '',
+
+  /**
+   * Marketing. Everything here is public (IDs only) and stays switched off while empty.
+   * Secrets (the Meta Conversions API token and the Brevo API key) never go in this file:
+   * they are stored as Cloudflare Worker secrets named META_CAPI_TOKEN and BREVO_API_KEY.
+   */
+  marketing: {
+    /** Meta Pixel (dataset) ID, digits only. Loads the Pixel and enables server-side events. */
+    metaPixelId: '',
+    /** Value of the facebook-domain-verification meta tag (Meta Business settings, Brand safety, Domains). */
+    metaDomainVerification: '',
+    /** Set to true once BREVO_API_KEY is saved in Cloudflare: shows the opt-in for offers in the booking flow. */
+    brevo: false,
+    /** Brevo list ID that opted-in contacts are added to (0 = no list). */
+    brevoListId: 0,
+  },
+
+  /** Search engine ownership tags (optional, only needed if DNS verification is not used). */
+  googleSiteVerification: '',
+  bingSiteVerification: '',
 };

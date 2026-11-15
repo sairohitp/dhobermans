@@ -1,0 +1,77 @@
+---
+import Content from '../../layouts/Content.astro';
+import { site } from '../../config';
+import { pricing, tierRate, plans } from '../../data';
+import { rupees } from '../../lib/store';
+import { faqSchema } from '../../seo';
+
+const business = plans.find((p) => p.id === 'business')!;
+const tiers = pricing.businessTiers.map((t) => ({
+  label: t.maxKg ? `${t.minKg} to ${t.maxKg} kg a month` : `${t.minKg} kg or more a month`,
+  rate: tierRate(t.discount),
+  off: Math.round(t.discount * 100),
+}));
+const first = pricing.businessTiers[0];
+const questions = [
+  { q: 'Who is the business plan for?', a: 'Any organisation with regular laundry: PGs and hostels, offices, short-stay hosts and similar businesses in and around HSR Layout.' },
+  {
+    q: 'How do business rates work?',
+    a: `Volume rates start at ${first.minKg} kg a month. ${tiers.map((t) => `${t.label}: ${rupees(t.rate)} per kg`).join('. ')}. Below that, the standard and monthly pack rates apply.`,
+  },
+  { q: 'How do I get a quote?', a: 'Tell us your business type, monthly volume and pickup frequency in the quote form. It opens in WhatsApp and we reply with a quote.' },
+];
+---
+
+<Content
+  title="Commercial laundry service for PGs, hostels and offices in Bangalore | dhobermans"
+  description={`Bulk laundry for PGs, hostels, offices and short-stay hosts around HSR Layout, Bangalore. Volume rates from ${rupees(business.rate)}/kg, scheduled pickups, monthly invoice.`}
+  h1="Laundry for businesses"
+  lead="Scheduled pickups, volume rates and one monthly invoice for PGs, hostels, offices and short-stay hosts."
+  schema={[faqSchema(questions)]}
+  flow="business"
+  cta="Get a business quote"
+>
+  <h2>Regular laundry, off your to-do list</h2>
+  <p>
+    If your business produces laundry every week, such as bed linen and towels for a PG or short-stay home, or uniforms for a team, we collect it
+    on fixed days, wash, fold and iron it, and bring it back. You deal with one account manager and one invoice a month.
+  </p>
+
+  <h2>What you get</h2>
+  <ul>
+    {business.features.map((f) => <li>{f}</li>)}
+    <li>Wash, fold and iron included in the per-kg rate</li>
+  </ul>
+
+  <h2>Volume rates</h2>
+  <ul class="facts">
+    {
+      tiers.map((t) => (
+        <li>
+          <span>{t.label}</span>
+          <strong>
+            {rupees(t.rate)} per kg ({t.off}% off)
+          </strong>
+        </li>
+      ))
+    }
+    <li><span>Standard rate, for comparison</span><strong>{rupees(pricing.perKg)} per kg</strong></li>
+  </ul>
+  <p class="note">Rates are for wash, fold and iron. Other services are quoted separately.</p>
+
+  <h2>Questions</h2>
+  {
+    questions.map((f) => (
+      <>
+        <h3>{f.q}</h3>
+        <p>{f.a}</p>
+      </>
+    ))
+  }
+
+  <h2>Where we collect</h2>
+  <p>
+    We are based in {site.base.label}, and pickup and delivery are free within {site.freeRadiusKm} km. See the
+    <a href="/laundry-service-hsr-layout/">areas we cover</a>, or browse <a href="/services/">all services</a>.
+  </p>
+</Content>

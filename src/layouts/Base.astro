@@ -6,6 +6,7 @@ import Footer from '../components/Footer.astro';
 import WhatsAppDock from '../components/WhatsAppDock.astro';
 import InstallPrompt from '../components/InstallPrompt.astro';
 import BookingSheet from '../components/BookingSheet.astro';
+import Analytics from '../components/Analytics.astro';
 import { site } from '../config';
 import heroImage from '../assets/hero-laundry.jpg';
 import { getImage } from 'astro:assets';
@@ -16,9 +17,11 @@ interface Props {
   title?: string;
   description?: string;
   noindex?: boolean;
+  /** Extra schema.org nodes for this page (added to the site-wide graph). */
+  schema?: Record<string, unknown>[];
 }
 
-const { title = site.title, description = site.description, noindex = false } = Astro.props;
+const { title = site.title, description = site.description, noindex = false, schema = [] } = Astro.props;
 const canonical = new URL(Astro.url.pathname, site.url).href;
 const og = await getImage({ src: heroImage, width: 1200, height: 630, fit: 'cover', format: 'jpg' });
 const ogUrl = new URL(og.src, site.url).href;
@@ -38,15 +41,23 @@ const business: Record<string, unknown> = {
     streetAddress: site.base.label,
     addressLocality: 'Bengaluru',
     addressRegion: 'Karnataka',
+    postalCode: site.base.postalCode,
     addressCountry: 'IN',
   },
-  areaServed: { '@type': 'City', name: 'Bengaluru', alternateName: 'Bangalore' },
+  areaServed: [
+    { '@type': 'GeoCircle', geoMidpoint: { '@type': 'GeoCoordinates', latitude: site.base.lat, longitude: site.base.lng }, geoRadius: site.freeRadiusKm * 1000 },
+    { '@type': 'City', name: 'Bengaluru', alternateName: 'Bangalore' },
+  ],
+  contactPoint: { '@type': 'ContactPoint', contactType: 'customer service', telephone: '+91-8861761718' },
   priceRange: '₹₹',
   hasOfferCatalog: {
     '@type': 'OfferCatalog',
     name: 'Laundry services',
     itemListElement: [
-      ...services.map((s) => ({ '@type': 'Offer', itemOffered: { '@type': 'Service', name: s.name, areaServed: 'Bengaluru' } })),
+      ...services.map((s) => ({
+        '@type': 'Offer',
+        itemOffered: { '@type': 'Service', name: s.name, url: `${site.url}/services/${s.slug}/`, areaServed: 'Bengaluru' },
+      })),
       {
         '@type': 'Offer',
         name: 'Wash, fold and iron (pay per pickup)',
@@ -67,6 +78,7 @@ const jsonLd = {
   '@graph': [
     business,
     { '@type': 'WebSite', '@id': `${site.url}/#website`, url: `${site.url}/`, name: site.name, inLanguage: 'en-IN', publisher: { '@id': `${site.url}/#business` } },
+    ...schema,
   ],
 };
 ---
@@ -87,6 +99,11 @@ const jsonLd = {
     <meta name="format-detection" content="telephone=no" />
     <meta name="apple-mobile-web-app-title" content="dhobermans" />
     {noindex && <meta name="robots" content="noindex" />}
+    <meta name="geo.region" content="IN-KA" />
+    <meta name="geo.placename" content="HSR Layout, Bengaluru" />
+    {site.googleSiteVerification && <meta name="google-site-verification" content={site.googleSiteVerification} />}
+    {site.bingSiteVerification && <meta name="msvalidate.01" content={site.bingSiteVerification} />}
+    {site.marketing.metaDomainVerification && <meta name="facebook-domain-verification" content={site.marketing.metaDomainVerification} />}
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="dhobermans" />
@@ -129,6 +146,7 @@ const jsonLd = {
     <WhatsAppDock />
     <InstallPrompt />
     <BookingSheet />
+    <Analytics />
 
     <script>
       let io: IntersectionObserver | undefined;

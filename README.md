@@ -9,6 +9,10 @@ Built with [Astro](https://astro.build) as a static site, hosted on Cloudflare W
 | ---------- | ---------------------------------------------------------------------------------------------------------- |
 | `/`        | Single-page site: hero, why us, services, how it works, pricing and plan finder, locations, care, Stain SOS, FAQs, pickup planner |
 | `/care/`   | dhobermans' care shop with category filters and a cart                                                     |
+| `/services/`, `/services/<slug>/` | Service overview and one page per service |
+| `/laundry-service-hsr-layout/`, `/business/` | Local landing page and business laundry page |
+| `/guides/stain-removal/`, `/guides/care-labels/`, `/privacy/` | Guides and the privacy notice |
+| `/api/event` | Marketing events endpoint (Worker), see Marketing below |
 | `/app/`    | The installed app: a four-step booking survey sent to WhatsApp (not indexed by search engines)             |
 | `/offline/`, `/404` | Offline and not-found pages                                                                       |
 
@@ -72,7 +76,7 @@ npm run build && npx wrangler dev
 
 ## Hosting and deploys (Cloudflare Workers)
 
-- `wrangler.jsonc` deploys `dist/` as static assets to the Worker `dhobermans`, attached to `dhobermans.com`.
+- `wrangler.jsonc` deploys `dist/` as static assets to the Worker `dhobermans`, attached to `dhobermans.com`. The script in `worker/` runs only for `/api/*`.
 - **Production:** every push to `main` builds and deploys to dhobermans.com.
 - **Previews:** pushes to any other branch build a preview version on `*.sssairohit.workers.dev` without touching the live site.
 - `public/_headers` sets security headers (HSTS, CSP, frame and referrer policies) and long-term caching for hashed files.
@@ -98,6 +102,35 @@ a commercial tile provider if traffic grows.
 | Images                                        | `src/assets/`           |
 | Colours, font, spacing                        | `src/styles/global.css` |
 | Security headers and caching                  | `public/_headers`       |
+
+## Search pages and sitemap
+
+- Indexable pages: `/`, `/services/` and one page per service (`/services/<slug>/`), `/laundry-service-hsr-layout/`, `/business/`, `/guides/stain-removal/`, `/guides/care-labels/`, `/care/`, `/privacy/`.
+- Copy for the service pages lives in `src/seo.ts`. Only Wash & Fold has a published price; keep every other statement true to how the business runs.
+- `sitemap.xml` is generated on every build (see `astro.config.mjs`) from all pages that are not marked `noindex`. Nothing to maintain by hand.
+- Structured data: business, services and prices site-wide; `Service`, `FAQPage` and `BreadcrumbList` on service pages; `FAQPage` on the home page; `HowTo` on the stain guide.
+
+## Marketing: Meta and Brevo
+
+Everything is off until it is configured. Public IDs go in `src/config.ts` under `marketing`; secrets are Cloudflare Worker secrets and never go in the repository.
+
+| What | Where | Effect |
+| --- | --- | --- |
+| `metaPixelId` | `src/config.ts` | Loads the Meta Pixel (PageView, Lead, Contact). Not loaded for browsers sending Global Privacy Control or Do Not Track. |
+| `metaDomainVerification` | `src/config.ts` | Adds the `facebook-domain-verification` meta tag. |
+| `META_CAPI_TOKEN` | Cloudflare secret | Sends the same events server-side through the Conversions API, deduplicated with the Pixel by event ID. |
+| `META_TEST_EVENT_CODE` | Cloudflare secret (optional) | Routes server events to the Test Events tab in Meta Events Manager. Remove after testing. |
+| `brevo: true`, `brevoListId` | `src/config.ts` | Shows the optional opt-in (mobile number) on the review step of the booking flow. |
+| `BREVO_API_KEY` | Cloudflare secret | Adds opted-in contacts to Brevo (`SMS` and `FIRSTNAME` attributes) and to the list. |
+
+Add a secret in the Cloudflare dashboard (Workers & Pages, dhobermans, Settings, Variables and Secrets, type Secret) or with `npx wrangler secret put META_CAPI_TOKEN`.
+
+How it works:
+
+- `src/lib/track.ts` remembers campaign tags (`utm_source`, `utm_medium`, `utm_campaign`, `fbclid`, `gclid`) for 30 days and adds a line such as `Ref: instagram / launch_offer` to the WhatsApp message, so every chat shows its campaign.
+- When a booking is handed to WhatsApp, the browser posts one event to `/api/event`. `worker/index.ts` forwards it to Meta and Brevo. Phone number and name are only sent when the visitor ticked the opt-in.
+- The Worker runs only for `/api/*`; all pages are still served as static assets. The endpoint accepts same-origin requests only and is rate limited to 10 a minute per address.
+- Tag every advert and campaign link, for example `https://dhobermans.com/?utm_source=instagram&utm_medium=paid&utm_campaign=launch_offer`.
 
 ## Search engine checklist
 

@@ -1,0 +1,74 @@
+---
+import Content from '../../layouts/Content.astro';
+import { site } from '../../config';
+import { services, pricing, packRate, faqs } from '../../data';
+import { nearbyAreas, faqSchema } from '../../seo';
+
+const local = [
+  {
+    q: 'Do you offer laundry pickup and delivery in HSR Layout?',
+    a: `Yes. dhobermans is based in ${site.base.label}, and pickup and delivery are free anywhere within ${site.freeRadiusKm} km of us.`,
+  },
+  {
+    q: 'How much does laundry cost per kg in HSR Layout?',
+    a: `Wash, fold and iron is ₹${pricing.perKg} per kg, or ₹${packRate} per kg with a monthly pack.`,
+  },
+  { q: 'What if I live more than 5 km away?', a: 'Message us on WhatsApp with your location and we will confirm whether we can collect and the delivery charge.' },
+];
+const turnaround = faqs.find((f) => f.q.startsWith('How long'))!;
+---
+
+<Content
+  title="Laundry service in HSR Layout, Bangalore: free pickup and delivery | dhobermans"
+  description={`Laundry pickup and delivery in HSR Layout, Bengaluru. Wash, fold and iron at ₹${pricing.perKg}/kg, back in 24 hours, free within 5 km of HSR Layout Sector 1.`}
+  h1="Laundry service in HSR Layout"
+  lead={`Doorstep laundry pickup and delivery from ${site.base.label}, free within ${site.freeRadiusKm} km.`}
+  schema={[faqSchema([...local, turnaround])]}
+>
+  <h2>Your neighbourhood laundry, at your door</h2>
+  <p>
+    dhobermans is a laundry pickup and delivery service based in {site.base.label}, Bengaluru {site.base.postalCode}. You choose a pickup
+    window, we collect from your door, and your clothes come back washed, folded and ironed within 24 hours.
+  </p>
+
+  <ul class="facts">
+    <li><span>Wash, fold and iron</span><strong>₹{pricing.perKg} per kg</strong></li>
+    <li><span>With a monthly pack</span><strong>₹{packRate} per kg</strong></li>
+    <li><span>Turnaround</span><strong>24 hours</strong></li>
+    <li><span>Pickup windows</span><strong>9 to 11 AM and 6 to 8 PM</strong></li>
+  </ul>
+
+  <h2>Areas we cover</h2>
+  <p>
+    Pickup and delivery are free within {site.freeRadiusKm} km of {site.base.label}. That includes all of HSR Layout and, depending on your
+    exact address, parts of these neighbouring areas:
+  </p>
+  <ul>
+    {nearbyAreas.map((a) => <li>{a}</li>)}
+  </ul>
+  <p>
+    Distance is measured in a straight line from our base to your pin. Use the <a href="/#why-us">distance checker</a> on the home page, or share
+    your location when you book and the form tells you straight away. Further out? Message us and we will confirm the delivery charge.
+  </p>
+
+  <h2>Services available in HSR Layout</h2>
+  <ul class="links">
+    {services.map((s) => <li><a href={`/services/${s.slug}/`}>{s.name}</a></li>)}
+  </ul>
+
+  <h2>Common questions</h2>
+  {
+    [...local, turnaround].map((f) => (
+      <>
+        <h3>{f.q}</h3>
+        <p>{f.a}</p>
+      </>
+    ))
+  }
+
+  <h2>For PGs, hostels and offices nearby</h2>
+  <p>
+    Sending 100 kg or more a month? See <a href="/business/">laundry for businesses</a> for volume rates, scheduled pickup days and monthly
+    invoicing.
+  </p>
+</Content>

@@ -1,0 +1,56 @@
+---
+import Content from '../../layouts/Content.astro';
+import { site } from '../../config';
+import { stains } from '../../data';
+
+const howTos = stains.map((s) => ({
+  '@type': 'HowTo',
+  name: `How to remove ${s.name.toLowerCase()} stains from clothes`,
+  step: s.steps.map((text, i) => ({ '@type': 'HowToStep', position: i + 1, text })),
+}));
+const article = {
+  '@type': 'Article',
+  headline: 'Stain removal guide: turmeric, tea, oil, ink, mud and makeup',
+  author: { '@id': `${site.url}/#business` },
+  publisher: { '@id': `${site.url}/#business` },
+  mainEntityOfPage: `${site.url}/guides/stain-removal/`,
+  inLanguage: 'en-IN',
+};
+---
+
+<Content
+  title="How to remove turmeric, oil, ink and tea stains from clothes | dhobermans"
+  description="Step-by-step first aid for turmeric and curry, tea and coffee, oil and ghee, ink, mud and makeup stains on clothes, from the dhobermans laundry team in Bangalore."
+  h1="Stain removal guide"
+  lead="What to do in the first few minutes after a spill, stain by stain."
+  schema={[article, ...howTos]}
+  flow="stain"
+  cta="Send us the stain"
+>
+  <h2>Three rules for any stain</h2>
+  <ul>
+    <li>Act quickly. Fresh stains come out far more easily than old ones.</li>
+    <li>Blot, do not rub. Rubbing pushes the stain deeper into the fabric.</li>
+    <li>Keep heat away until the stain is gone. Hot water, a dryer or an iron can set it.</li>
+  </ul>
+
+  {
+    stains.map((s) => (
+      <>
+        <h2 id={s.id}>{s.name}</h2>
+        <ol>
+          {s.steps.map((step) => (
+            <li>{step}</li>
+          ))}
+        </ol>
+      </>
+    ))
+  }
+
+  <h2>When to leave it to us</h2>
+  <p>
+    This is general guidance only. Always check the care label first and test on a hidden area. For silk, wool and anything marked dry clean
+    only, skip the home remedies: see our <a href="/services/stain-removal/">stain removal service</a> or
+    <a href="/services/dry-cleaning/">dry cleaning</a>. Unsure what a symbol means? Use the <a href="/guides/care-labels/">care label guide</a>.
+  </p>
+</Content>

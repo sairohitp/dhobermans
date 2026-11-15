@@ -2,6 +2,7 @@
 import '../styles/global.css';
 import interFont from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
 import { site } from '../config';
+import Analytics from '../components/Analytics.astro';
 
 interface Props {
   title?: string;
@@ -28,6 +29,7 @@ const { title = 'dhobermans: Book a pickup' } = Astro.props;
   </head>
   <body class="app-body">
     <slot />
+    <Analytics />
     <script>
       if (import.meta.env.PROD && 'serviceWorker' in navigator) {
         const register = () => navigator.serviceWorker.register('/sw.js').catch(() => {});

@@ -8,6 +8,7 @@ import StainSOS from '../components/StainSOS.astro';
 import heroImage from '../assets/hero-laundry.jpg';
 import CareLabels from '../components/CareLabels.astro';
 import { site } from '../config';
+import { faqSchema } from '../seo';
 import { wa, msg } from '../lib/wa';
 import { rupees } from '../lib/store';
 import { services, steps, plans, pricing, packPrice, fullPrice, tierRate, locations, products, categoryIcon, faqs } from '../data';
@@ -18,7 +19,7 @@ const ext = { target: '_blank', rel: 'noopener' };
 const defaultPack = pricing.defaultPack;
 ---
 
-<Base>
+<Base schema={[faqSchema(faqs)]}>
   <!-- Hero -->
   <section class="hero">
     <div class="container hero__grid">
@@ -36,7 +37,7 @@ const defaultPack = pricing.defaultPack;
         </button>
         <div class="promise" data-promise>
           <div class="promise__cell">
-            <span class="promise__k"><span class="promise__pulse"></span>Next pickup</span>
+            <span class="promise__k">Next pickup</span>
             <strong data-promise-pickup>Morning or evening</strong>
           </div>
           <span class="promise__arrow"><Icon name="arrow-right" size={18} /></span>
@@ -152,6 +153,7 @@ const defaultPack = pricing.defaultPack;
           ))
         }
       </div>
+      <p class="more-link reveal"><a href="/services/">See what each service includes <Icon name="arrow-right" size={16} /></a></p>
     </div>
   </section>
 
@@ -671,14 +673,6 @@ const defaultPack = pricing.defaultPack;
     color: var(--subtle);
   }
 
-  .promise__pulse {
-    flex: none;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #1faa59;
-    animation: live 2s infinite;
-  }
 
   @keyframes live {
     0% {
@@ -1171,6 +1165,20 @@ const defaultPack = pricing.defaultPack;
   }
 
   /* Services */
+  .more-link {
+    margin-top: 28px;
+    text-align: center;
+  }
+
+  .more-link a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+    color: var(--brand-600);
+    font-weight: 600;
+  }
+
   .services {
     display: grid;
     grid-template-columns: repeat(4, 1fr);

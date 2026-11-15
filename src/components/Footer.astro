@@ -9,13 +9,16 @@ const company = [
   { href: '/#why-us', label: 'Why us' },
   { href: '/#how-it-works', label: 'How it works' },
   { href: '/#pricing', label: 'Pricing' },
+  { href: '/laundry-service-hsr-layout/', label: 'Laundry in HSR Layout' },
+  { href: '/business/', label: 'For businesses' },
   { href: '/#locations', label: 'Self-laundry locations' },
   { href: '/care/', label: "Shop dhobermans' care" },
 ];
 const help = [
   { href: '/#book', label: 'Book a pickup' },
   { href: '/#plan-finder', label: 'Plan finder' },
-  { href: '/#stain-sos', label: 'Stain SOS & care labels' },
+  { href: '/guides/stain-removal/', label: 'Stain removal guide' },
+  { href: '/guides/care-labels/', label: 'Care label guide' },
   { href: '/#faq', label: 'FAQs' },
 ];
 const socials = [
@@ -59,9 +62,7 @@ const shareText = `I use dhobermans for laundry pickup and delivery in ${site.ci
           {
             services.map((s) => (
               <li>
-                <a href={wa(msg.service(s.name))} target="_blank" rel="noopener" data-flow="service" data-flow-service={s.name}>
-                  {s.name}
-                </a>
+                <a href={`/services/${s.slug}/`}>{s.name}</a>
               </li>
             ))
           }
@@ -91,7 +92,9 @@ const shareText = `I use dhobermans for laundry pickup and delivery in ${site.ci
           ))
         }
       </div>
-      <p>&copy; {year} dhobermans. All rights reserved.</p>
+      <p>
+        &copy; {year} dhobermans. All rights reserved. <a class="footer__legal" href="/privacy/">Privacy</a>
+      </p>
     </div>
   </div>
 </footer>
@@ -110,6 +113,13 @@ const shareText = `I use dhobermans for laundry pickup and delivery in ${site.ci
     gap: 40px;
     padding-bottom: 48px;
     border-bottom: 1px solid #262626;
+  }
+
+  .footer__legal {
+    margin-left: 8px;
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 
   .footer__wordmark {

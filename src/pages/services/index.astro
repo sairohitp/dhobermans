@@ -1,0 +1,47 @@
+---
+import Content from '../../layouts/Content.astro';
+import { site } from '../../config';
+import { services, pricing, packRate } from '../../data';
+import { servicePages } from '../../seo';
+
+const list = {
+  '@type': 'ItemList',
+  itemListElement: services.map((s, i) => ({ '@type': 'ListItem', position: i + 1, name: s.name, url: `${site.url}/services/${s.slug}/` })),
+};
+---
+
+<Content
+  title="Laundry and dry cleaning services in HSR Layout, Bangalore | dhobermans"
+  description="All dhobermans services in HSR Layout, Bangalore: wash and fold, dry cleaning, steam ironing, comforter, shoe and curtain cleaning. Free pickup within 5 km."
+  h1="Laundry services"
+  lead="Everything we collect, clean and deliver, from the weekly wash to the pieces that need extra care."
+  schema={[list]}
+>
+  <h2>Choose a service</h2>
+  <ul class="links">
+    {
+      services.map((s) => (
+        <li>
+          <a href={`/services/${s.slug}/`}>
+            <span>
+              {s.name}
+              <small>{servicePages[s.slug].lead}</small>
+            </span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+
+  <h2>Pricing in brief</h2>
+  <p>
+    Wash, fold and iron costs ₹{pricing.perKg} per kg, or ₹{packRate} per kg with a monthly pack. Every other service is priced per item and
+    confirmed on WhatsApp before pickup. See <a href="/#pricing">pricing</a> for packs and <a href="/business/">business rates</a>.
+  </p>
+
+  <h2>Pickup and delivery</h2>
+  <p>
+    Free within {site.freeRadiusKm} km of {site.base.label}. Read more about
+    <a href="/laundry-service-hsr-layout/">laundry pickup in HSR Layout</a> and the areas around it.
+  </p>
+</Content>

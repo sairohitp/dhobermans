@@ -4,6 +4,9 @@ import { fileURLToPath } from 'node:url';
 import { join, relative, sep } from 'node:path';
 import { createHash } from 'node:crypto';
 
+const SITE = 'https://dhobermans.com';
+const CORE_PAGES = ['/', '/care/', '/app/', '/offline/'];
+
 const walk = async (dir) =>
   (
     await Promise.all(
@@ -11,7 +14,7 @@ const walk = async (dir) =>
     )
   ).flat();
 
-/** Writes dist/sw.js after each build with a content-based version and the list of files to precache. */
+/** After each build: writes dist/sitemap.xml, and dist/sw.js with a content-based version and the files to precache. */
 function serviceWorker() {
   return {
     name: 'dhobermans-service-worker',
@@ -21,13 +24,35 @@ function serviceWorker() {
         const files = (await walk(root)).map((f) => `/${relative(root, f).split(sep).join('/')}`).filter((f) => f !== '/sw.js');
 
         const pages = files.filter((f) => f.endsWith('/index.html')).map((f) => f.replace(/index\.html$/, ''));
+
+        // sitemap.xml: every page that is not marked noindex.
+        const indexable = [];
+        for (const page of pages) {
+          const html = await readFile(join(root, page, 'index.html'), 'utf8');
+          if (!/<meta name="robots" content="noindex/.test(html)) indexable.push(page);
+        }
+        const today = new Date().toISOString().slice(0, 10);
+        const depth = (p) => p.split('/').length;
+        indexable.sort((a, b) => depth(a) - depth(b) || a.localeCompare(b));
+        const sitemap = [
+          '<?xml version="1.0" encoding="UTF-8"?>',
+          '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+          ...indexable.map((p) => `  <url><loc>${SITE}${p}</loc><lastmod>${today}</lastmod></url>`),
+          '</urlset>',
+          '',
+        ].join('\n');
+        await writeFile(join(root, 'sitemap.xml'), sitemap);
+        logger.info(`sitemap.xml written: ${indexable.length} pages`);
+
+        // Offline copy: the core screens only. Other pages are cached as they are visited.
+        const core = pages.filter((p) => CORE_PAGES.includes(p));
         const assets = files.filter(
           (f) => f.startsWith('/_astro/') && (/\.(css|js)$/.test(f) || /-latin-\d+-normal\.[\w-]+\.woff2$/.test(f)),
         );
         const statics = ['/manifest.webmanifest', '/favicon.svg', '/icon-192.png', '/icon-512.png', '/apple-touch-icon.png'].filter((f) =>
           files.includes(f),
         );
-        const precache = [...pages, ...assets, ...statics];
+        const precache = [...core, ...assets, ...statics];
 
         const hash = createHash('sha256');
         for (const f of [...files].sort()) {
@@ -46,7 +71,7 @@ function serviceWorker() {
 }
 
 export default defineConfig({
-  site: 'https://dhobermans.com',
+  site: SITE,
   trailingSlash: 'ignore',
   integrations: [serviceWorker()],
   // Keep every script as an external file (no inline module scripts), which suits the Content-Security-Policy.

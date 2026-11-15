@@ -4,6 +4,7 @@ import Icon from './Icon.astro';
 import { services } from '../data';
 import { planOptions, LOAD_SIZES, LOAD_MAX } from '../lib/booking';
 import { wa, msg } from '../lib/wa';
+import { site } from '../config';
 
 interface Props {
   mode: 'sheet' | 'page';
@@ -302,6 +303,21 @@ const sub: Record<string, string> = {
         <div class="chat__body"><p class="bubble" data-preview></p></div>
       </div>
       <button type="button" class="link" data-edit>Edit details</button>
+      {
+        site.marketing.brevo && (
+          <div class="offers">
+            <label class="offers__check">
+              <input type="checkbox" data-f="consent" />
+              <span>Send me offers and pickup reminders by SMS or WhatsApp</span>
+            </label>
+            <label class="field offers__phone" data-offers-phone hidden>
+              <span>Mobile number</span>
+              <input class="input" type="tel" inputmode="tel" autocomplete="tel" placeholder="98765 43210" data-f="phone" />
+            </label>
+            <small>Optional. You can stop these messages at any time. See our <a href="/privacy/">privacy notice</a>.</small>
+          </div>
+        )
+      }
     </section>
 
     <!-- Done -->
@@ -1148,6 +1164,47 @@ const sub: Record<string, string> = {
     text-align: center;
   }
 
+  /* Opt-in for offers (shown only when Brevo is switched on) */
+  .offers {
+    display: grid;
+    gap: 10px;
+    width: 100%;
+    max-width: 420px;
+    margin-top: 6px;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    text-align: left;
+  }
+
+  .offers__check {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    color: var(--ink);
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .offers__check input {
+    flex: none;
+    width: 20px;
+    height: 20px;
+    margin: 2px 0 0;
+    accent-color: var(--brand);
+  }
+
+  .offers small {
+    color: var(--subtle);
+    font-size: 13px;
+  }
+
+  .offers small a {
+    color: inherit;
+    text-decoration: underline;
+  }
+
   /* Review */
   .chat {
     width: 100%;
@@ -1419,6 +1476,7 @@ const sub: Record<string, string> = {
   import { cart, profile, lastOrder, rupees } from '../lib/store';
   import { products, packPrice } from '../data';
   import { site } from '../config';
+  import { refLine, track } from '../lib/track';
 
   type Panel = 'service' | 'time' | 'where' | 'business' | 'ask' | 'notify' | 'review' | 'done';
   type OpenOptions = { intent?: Intent; service?: string; plan?: string; location?: string; topic?: string; again?: boolean };
@@ -1709,7 +1767,7 @@ const sub: Record<string, string> = {
       $('[data-clearcart]').hidden = !(done && intent === 'order' && cart.count() > 0);
       if (panel === 'time') updateEta();
       if (panel === 'review') {
-        const text = compose(data());
+        const text = [compose(data()), refLine()].filter(Boolean).join('\n');
         $('[data-preview]').textContent = text;
         $<HTMLAnchorElement>('[data-wz-send]').href = waLink(site.whatsapp, text);
       }
@@ -1926,6 +1984,14 @@ const sub: Record<string, string> = {
       const f = data();
       const saved = profile.get();
       profile.save({ name: f.name || saved.name, pincode: f.pincode || saved.pincode, address: f.address || saved.address, pin: f.pin ?? saved.pin });
+      const consentBox = root.querySelector<HTMLInputElement>('[data-f="consent"]');
+      const phone = root.querySelector<HTMLInputElement>('[data-f="phone"]')?.value.trim() ?? '';
+      const consent = !!consentBox?.checked && phone.replace(/\D/g, '').length >= 10;
+      track(
+        intent === 'question' || intent === 'location' ? 'Contact' : 'Lead',
+        { content_category: intent, content_name: (f.services ?? []).join(', ') || f.business?.type || '' },
+        { consent, phone, name: f.name },
+      );
       if (isPickup()) {
         lastOrder.save({ services: services(), plan: field('plan').value, kg: loadKg(), repeat: repeat(), detergent: groupVal('detergent'), softener: softener().checked });
         document.dispatchEvent(new CustomEvent('dhb:booked'));
@@ -1939,6 +2005,11 @@ const sub: Record<string, string> = {
     });
     root.addEventListener('change', (e) => {
       const t = e.target as HTMLElement;
+      if (t.matches('[data-f="consent"]')) {
+        const box = $('[data-offers-phone]');
+        box.hidden = !(t as HTMLInputElement).checked;
+        if (!box.hidden) box.querySelector('input')?.focus();
+      }
       if (t.matches('input[name="wz-svc"], [data-f="plan"]')) updateService();
       $('[data-wz-hint]').textContent = '';
     });

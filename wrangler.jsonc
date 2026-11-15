@@ -1,13 +1,25 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  // Static site served by Cloudflare Workers (assets only, no Worker script).
+  // The site is static. The Worker script only runs for /api/* (marketing events); every other
+  // request is served straight from the asset cache without invoking it.
   "name": "dhobermans",
+  "main": "worker/index.ts",
   "compatibility_date": "2026-11-10",
   "assets": {
     "directory": "./dist",
+    "binding": "ASSETS",
     "not_found_handling": "404-page",
-    "html_handling": "auto-trailing-slash"
+    "html_handling": "auto-trailing-slash",
+    "run_worker_first": ["/api/*"]
   },
+  // At most 10 marketing events a minute from one address.
+  "ratelimits": [
+    {
+      "name": "LIMITER",
+      "namespace_id": "1001",
+      "simple": { "limit": 10, "period": 60 }
+    }
+  ],
   "observability": {
     "enabled": true
   }

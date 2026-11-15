@@ -1,0 +1,13 @@
+---
+/** Campaign attribution and the Meta Pixel. Does nothing visible; see src/lib/track.ts. */
+---
+
+<script>
+  import { captureAttribution, initPixel, pageView } from '../lib/track';
+
+  document.addEventListener('astro:page-load', () => {
+    captureAttribution();
+    initPixel();
+    pageView();
+  });
+</script>
