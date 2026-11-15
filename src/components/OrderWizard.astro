@@ -815,34 +815,45 @@ const sub: Record<string, string> = {
   }
 
   /* Day strip and time windows */
+  /* Seven equal day chips. They fill the row when there is room, and scroll sideways on narrow screens. */
   .days {
-    display: flex;
-    gap: 8px;
-    margin-inline: -28px;
-    padding: 2px 28px 4px;
-    overflow-x: auto;
-    scroll-snap-type: x proximity;
-    scrollbar-width: none;
-  }
-
-  .days::-webkit-scrollbar {
-    display: none;
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 6px;
   }
 
   .days :global(.day) {
     display: flex;
-    flex: none;
     flex-direction: column;
     align-items: center;
     gap: 2px;
-    min-width: 76px;
-    padding: 10px 12px;
+    min-width: 0;
+    padding: 10px 4px;
     border: 1.5px solid var(--line);
     border-radius: var(--radius-lg);
     background: var(--white);
     color: var(--ink);
+    font-size: 15px;
+    white-space: nowrap;
     cursor: pointer;
     scroll-snap-align: start;
+  }
+
+  @media (max-width: 640px) {
+    .days {
+      grid-template-columns: repeat(7, 90px);
+      gap: 8px;
+      margin-inline: -28px;
+      padding: 2px 28px 4px;
+      overflow-x: auto;
+      scroll-padding-inline: 28px;
+      scroll-snap-type: x proximity;
+      scrollbar-width: none;
+    }
+
+    .days::-webkit-scrollbar {
+      display: none;
+    }
   }
 
   .days :global(.day span) {
@@ -1449,6 +1460,7 @@ const sub: Record<string, string> = {
     .days {
       margin-inline: -16px;
       padding-inline: 16px;
+      scroll-padding-inline: 16px;
     }
 
     .loc__actions {
