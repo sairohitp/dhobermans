@@ -14,7 +14,6 @@ import { rupees } from '../lib/store';
 import { services, steps, plans, pricing, packPrice, fullPrice, tierRate, locations, products, categoryIcon, faqs } from '../data';
 
 const featuredProducts = products.filter((p) => p.featured);
-const marquee = ['Wash & Fold', 'Dry Cleaning', 'Steam Ironing', 'Free pickup within 5 km', '24-hour turnaround', '₹100/kg wash, fold & iron', 'Comforter Wash', 'Shoe Cleaning', 'Curtain Cleaning', 'Stain Removal'];
 const ext = { target: '_blank', rel: 'noopener' };
 const defaultPack = pricing.defaultPack;
 ---
@@ -67,15 +66,6 @@ const defaultPack = pricing.defaultPack;
     </div>
   </section>
 
-  <div class="marquee" aria-label="What we take care of">
-    <div class="marquee__track">
-      {[0, 1].map((n) => (
-        <ul aria-hidden={n === 1 ? 'true' : undefined}>
-          {marquee.map((m) => <li>{m}</li>)}
-        </ul>
-      ))}
-    </div>
-  </div>
 
   <!-- Why us -->
   <section id="why-us" class="section section--surface">
@@ -101,7 +91,7 @@ const defaultPack = pricing.defaultPack;
           <div class="bn__text">
             <p class="bn__big"><span data-countup="5">5</span><small>km</small></p>
             <h3>Free pickup &amp; delivery.</h3>
-            <p>Within {site.freeRadiusKm} km of our base in {site.base.label}.</p>
+            <p>Within {site.freeRadiusKm} km of our base in <span class="nowrap">{site.base.label}</span>.</p>
             <button type="button" class="bn__btn" data-distance><Icon name="locate" size={16} /> Check my distance</button>
             <p class="bn__result" data-distance-result aria-live="polite"></p>
           </div>
@@ -136,24 +126,24 @@ const defaultPack = pricing.defaultPack;
     <div class="container">
       <div class="section-head reveal">
         <h2 class="h2">Book trusted laundry care.</h2>
-        <p class="lead">From everyday wash &amp; fold to delicate dry cleaning, dhobermans handles it all. Tap a service to book it.</p>
+        <p class="lead">From everyday wash &amp; fold to delicate dry cleaning, dhobermans handles it all. Tap a service to see what is included and book it.</p>
       </div>
       <div class="services">
         {
           services.map((s) => (
-            <a class="service reveal" href={wa(msg.service(s.name))} {...ext} data-flow="service" data-flow-service={s.name} aria-label={`Book ${s.name}`}>
+            <a class="service reveal" href={`/services/${s.slug}/`}>
               <div class="service__img">
                 <Image src={s.image} alt={`${s.name} by dhobermans in Bangalore`} widths={[320, 480]} sizes="(max-width: 640px) 46vw, 280px" />
               </div>
               <div class="service__foot">
                 <h3>{s.name}</h3>
-                <span class="service__arrow"><Icon name="arrow-up-right" size={16} /></span>
+                <span class="service__arrow"><Icon name="arrow-right" size={16} /></span>
               </div>
             </a>
           ))
         }
       </div>
-      <p class="more-link reveal"><a href="/services/">See what each service includes <Icon name="arrow-right" size={16} /></a></p>
+      <p class="more-link reveal"><a href="/services/">Compare all services <Icon name="arrow-right" size={16} /></a></p>
     </div>
   </section>
 
@@ -572,10 +562,22 @@ const defaultPack = pricing.defaultPack;
   }
 
   .hero__actions {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 12px;
+    max-width: 520px;
     margin-top: 32px;
+  }
+
+  .hero__actions .btn {
+    width: 100%;
+    padding-inline: 12px;
+  }
+
+  @media (max-width: 480px) {
+    .hero__actions {
+      grid-template-columns: 1fr;
+    }
   }
 
   .hero__app {
@@ -781,50 +783,11 @@ const defaultPack = pricing.defaultPack;
   }
 
   /* Marquee */
-  .marquee {
-    overflow: hidden;
-    padding-block: 26px;
-    border-top: 1px solid var(--line);
-    mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
-  }
 
-  .marquee__track {
-    display: flex;
-    width: max-content;
-    animation: marquee 40s linear infinite;
-  }
 
-  .marquee ul {
-    display: flex;
-    gap: 48px;
-    margin: 0;
-    padding: 0 24px;
-    list-style: none;
-  }
 
-  .marquee li {
-    display: flex;
-    align-items: center;
-    gap: 48px;
-    color: #9aa3af;
-    font-size: clamp(1.25rem, 2vw, 1.6rem);
-    font-weight: 600;
-    white-space: nowrap;
-  }
 
-  .marquee li::after {
-    content: '';
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--brand-200);
-  }
 
-  @keyframes marquee {
-    to {
-      transform: translateX(-50%);
-    }
-  }
 
   /* Bento */
   .bento {
@@ -864,7 +827,7 @@ const defaultPack = pricing.defaultPack;
     gap: 6px;
     margin: 0 0 12px;
     color: var(--ink);
-    font-size: clamp(44px, 5vw, 60px);
+    font-size: 36px;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
     line-height: 1;
@@ -872,7 +835,7 @@ const defaultPack = pricing.defaultPack;
 
   .bn__big small {
     color: var(--muted);
-    font-size: 18px;
+    font-size: 15px;
     font-weight: 500;
   }
 
@@ -899,13 +862,8 @@ const defaultPack = pricing.defaultPack;
     color: var(--white);
   }
 
-  .bn--time .bn__big {
-    font-size: clamp(60px, 6.4vw, 84px);
-  }
-
   .bn--time .bn__big small {
     color: rgba(255, 255, 255, 0.8);
-    font-size: 20px;
   }
 
   .bn--time h3 {
@@ -1378,7 +1336,7 @@ const defaultPack = pricing.defaultPack;
     gap: 4px;
     margin-top: 24px;
     color: var(--ink);
-    font-size: 48px;
+    font-size: 36px;
     font-weight: 700;
     line-height: 1;
   }
@@ -1965,11 +1923,7 @@ const defaultPack = pricing.defaultPack;
     }
 
     .bn .bn__big {
-      font-size: 34px;
-    }
-
-    .bn--time .bn__big {
-      font-size: 56px;
+      font-size: 32px;
     }
 
     .bn--time {
@@ -2056,7 +2010,7 @@ const defaultPack = pricing.defaultPack;
     }
 
     .plan__price {
-      font-size: 42px;
+      font-size: 32px;
     }
 
     .map {
